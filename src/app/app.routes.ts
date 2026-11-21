@@ -31,6 +31,13 @@ export const routes: Routes = [
         canDeactivate: [(page: { canLeave(): boolean }) => page.canLeave()],
       },
       {
+        // Ticket details (after `tickets/new`, which must match first); `?channel=` selects a channel.
+        path: 'tickets/:number',
+        loadComponent: () =>
+          import('./features/tickets/ticket-details/ticket-details').then((m) => m.TicketDetails),
+        canDeactivate: [(page: { canLeave(): boolean }) => page.canLeave()],
+      },
+      {
         // ADMIN-only section; each child = one submenu entry (shell.ts).
         path: 'admin',
         canMatch: [adminGuard],

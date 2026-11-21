@@ -15,20 +15,42 @@
 
 <div class="page">
   <div class="panel">
-    <table class="table">
+    <table class="table table--clickable">
       <thead>
         <tr>
           <th>Number</th>
           <th>Title</th>
-          <th>Status</th>
+          <th>
+            Status
+            <app-info-hint label="About ticket statuses">
+              <p class="info-hint__title">Ticket statuses</p>
+              <p class="text-muted info-hint__text">
+                Each channel of a ticket has its own status. Click a status badge to change it.
+              </p>
+              <ul class="info-hint__list">
+                @for (status of statuses; track status) {
+                  <li>
+                    <span class="badge" [class]="statusMeta[status].badge">{{ statusMeta[status].label }}</span>
+                    <span class="text-muted">{{ statusMeta[status].description }}</span>
+                  </li>
+                }
+              </ul>
+              <p class="info-hint__tip">
+                <i class="fas fa-computer-mouse" aria-hidden="true"></i>
+                Right-click a ticket for more actions (open, change status, copy number…).
+              </p>
+            </app-info-hint>
+          </th>
           <th>Created by</th>
           <th>Customer</th>
         </tr>
       </thead>
       <tbody>
         @for (row of rows(); track row.number) {
-          <tr (contextmenu)="onContextMenu($event, row)">
-            <td class="table__code">{{ row.number }}</td>
+          <tr [routerLink]="['/tickets', row.number]" (contextmenu)="onContextMenu($event, row)">
+            <td class="table__code">
+              <a class="table__link" [routerLink]="['/tickets', row.number]">{{ row.number }}</a>
+            </td>
             <td>{{ row.title }}</td>
             <td>
               <!-- One badge per channel of the user (each channel has its own status). -->
@@ -39,7 +61,7 @@
                     type="button"
                     [class]="statusMeta[channel.status].badge"
                     [attr.title]="statusMeta[channel.status].description + ' Click to change.'"
-                    (click)="changeStatus(row, channel)"
+                    (click)="$event.stopPropagation(); changeStatus(row, channel)"
                   >
                     {{ statusMeta[channel.status].label }}
                   </button>

@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ClipboardService } from '../../core/clipboard/clipboard.service';
 import { NotificationService } from '../../core/notifications/notification.service';
 import { TicketChannel, TicketListItem, UserRef } from '../../core/services/ticket.models';
@@ -34,6 +34,7 @@ export class Tickets {
   private readonly panel = inject(SidePanelService);
   private readonly notifications = inject(NotificationService);
   private readonly service = inject(TicketService);
+  private readonly router = inject(Router);
 
   protected readonly statusMeta = TICKET_STATUS_META;
 
@@ -68,6 +69,11 @@ export class Tickets {
   /** Radial action menu on right-click on a row. */
   protected onContextMenu(event: MouseEvent, row: TicketRow): void {
     this.radial.open(event, [
+      {
+        label: 'Open',
+        icon: 'fas fa-arrow-right',
+        run: () => this.router.navigate(['/tickets', row.number]),
+      },
       {
         label: 'Change status',
         icon: 'fas fa-flag',

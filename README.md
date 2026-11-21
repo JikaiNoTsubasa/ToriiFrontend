@@ -82,7 +82,8 @@ are code comments.
 src/app/
 ├── core/          # auth, interceptors, guards, notifications, clipboard, problem-details,
 │                  # api-enum, services/ (httpResource-based API services)
-├── features/      # auth/login, home, tickets (list + ticket-create page `/tickets/new`),
+├── features/      # auth/login, home, tickets (list, `/tickets/new`, details `/tickets/:number`
+│                  #   with one channel-thread per channel), 
 │                  # admin/ (users, customers, customer-details, ticket-config: ticket edges)
 ├── layout/        # shell (sidebar with submenus + content), topbar
 └── shared/        # notifications (toasts), radial-menu (right-click), side-panel (forms),

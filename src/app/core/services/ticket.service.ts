@@ -2,7 +2,16 @@ import { HttpClient, httpResource, HttpResourceRef } from '@angular/common/http'
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { CreateTicketRequest, TicketListItem, TicketSendOption } from './ticket.models';
+import {
+  CreateTicketRequest,
+  ForwardMessageRequest,
+  ForwardResult,
+  OpenChannelRequest,
+  TicketDetail,
+  TicketListItem,
+  TicketMessage,
+  TicketSendOption,
+} from './ticket.models';
 import { TicketStatus } from './ticket-status';
 
 @Injectable({ providedIn: 'root' })
@@ -33,5 +42,39 @@ export class TicketService {
   /** Changes the status of one channel of a ticket; returns the updated listed ticket. */
   updateChannelStatus(number: string, channelId: number, status: TicketStatus): Observable<TicketListItem> {
     return this.http.put<TicketListItem>(`${this.baseUrl}/${number}/channels/${channelId}/status`, { status });
+  }
+
+  /**
+   * Ticket details as seen by the user (their channels + messages), as a signal resource
+   * reloading when `number()` changes.
+   */
+  ticket(number: () => string | undefined): HttpResourceRef<TicketDetail | undefined> {
+    return httpResource<TicketDetail>(() => {
+      const value = number();
+      return value ? `${this.baseUrl}/${encodeURIComponent(value)}` : undefined;
+    });
+  }
+
+  /** Replies in one channel of the ticket. */
+  postMessage(number: string, channelId: number, content: string): Observable<TicketMessage> {
+    return this.http.post<TicketMessage>(`${this.baseUrl}/${number}/channels/${channelId}/messages`, { content });
+  }
+
+  /** Forwards a message to another channel of the ticket (created when needed). */
+  forwardMessage(
+    number: string,
+    channelId: number,
+    messageId: number,
+    request: ForwardMessageRequest,
+  ): Observable<ForwardResult> {
+    return this.http.post<ForwardResult>(
+      `${this.baseUrl}/${number}/channels/${channelId}/messages/${messageId}/forward`,
+      request,
+    );
+  }
+
+  /** Opens a new channel on the ticket (with its first message); returns the updated details. */
+  openChannel(number: string, request: OpenChannelRequest): Observable<TicketDetail> {
+    return this.http.post<TicketDetail>(`${this.baseUrl}/${number}/channels`, request);
   }
 }

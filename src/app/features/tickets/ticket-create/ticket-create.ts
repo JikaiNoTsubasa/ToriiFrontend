@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { NotificationService } from '../../../core/notifications/notification.service';
 import { TicketService } from '../../../core/services/ticket.service';
 import { Topbar } from '../../../layout/topbar/topbar';
+import { isBlankHtml } from '../../../shared/rich-text-editor/html-text';
 import { RichTextEditorComponent } from '../../../shared/rich-text-editor/rich-text-editor';
 
 /** Form model; `<select>` values are customer ids as strings ('' = none). */
@@ -123,10 +124,4 @@ export class TicketCreate {
     const { title, content } = this.model();
     return !this.sent && (title.trim().length > 0 || !isBlankHtml(content));
   }
-}
-
-/** True when the editor HTML holds no visible text (e.g. "<p></p>"). */
-function isBlankHtml(html: string): boolean {
-  const text = new DOMParser().parseFromString(html, 'text/html').body.textContent ?? '';
-  return text.trim().length === 0;
 }

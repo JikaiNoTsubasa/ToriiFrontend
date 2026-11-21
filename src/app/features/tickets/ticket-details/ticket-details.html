@@ -1,0 +1,100 @@
+<app-topbar [heading]="ticket.value()?.title ?? number()">
+  <a class="btn btn--ghost" routerLink="/tickets"><i class="fa fa-arrow-left"></i> Tickets</a>
+  @if (ticket.value()) {
+    <button class="btn btn--ghost" type="button" (click)="copyNumber()"><i class="fas fa-copy"></i> Copy number</button>
+    @if (canOpenChannel()) {
+      <button class="btn" type="button" (click)="openChannel()">
+        <i class="fas fa-plus"></i> Open channel
+      </button>
+    }
+  }
+</app-topbar>
+
+<div class="page">
+  @if (ticket.value(); as t) {
+    <!-- Ticket summary -->
+    <div class="panel">
+      <dl class="detail__meta">
+        <div class="detail__meta-item">
+          <dt class="text-muted">Number</dt>
+          <dd class="table__code">{{ t.number }}</dd>
+        </div>
+        <div class="detail__meta-item">
+          <dt class="text-muted">Created by</dt>
+          <dd>
+            @if (t.createdBy; as author) {
+              <span class="user-chip">
+                <img class="user-chip__avatar" [src]="author.avatarUrl" alt="" />
+                <span class="user-chip__text">
+                  {{ author.displayName }}
+                  <small class="text-muted">{{ t.createdAt | date: 'MMM d, y, HH:mm' }}</small>
+                </span>
+              </span>
+            } @else {
+              —
+            }
+          </dd>
+        </div>
+        <div class="detail__meta-item">
+          <dt class="text-muted">Your customer</dt>
+          <dd>{{ ownCustomers() || '—' }}</dd>
+        </div>
+        <div class="detail__meta-item">
+          <dt class="text-muted">Your channels</dt>
+          <dd>{{ channels().length }}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="ticket-view" [class.ticket-view--multi]="multiChannel()">
+      <!-- Channel list (inbox-like), only when the user has several channels. -->
+      @if (multiChannel()) {
+        <nav class="panel channel-list" aria-label="Channels of this ticket">
+          <h2 class="channel-list__title">Channels</h2>
+          @for (ch of channels(); track ch.id) {
+            <button
+              class="channel-list__item"
+              type="button"
+              [class.channel-list__item--active]="ch.id === selectedId()"
+              [attr.aria-current]="ch.id === selectedId() ? 'true' : null"
+              (click)="select(ch)"
+            >
+              <span class="channel-list__head">
+                <strong class="channel-list__name">{{ counterpart(ch) }}</strong>
+                <span class="badge" [class]="meta[ch.status].badge">{{ meta[ch.status].label }}</span>
+              </span>
+              <span class="channel-list__preview text-muted">{{ preview(ch) }}</span>
+              <span class="channel-list__foot text-muted">
+                {{ ch.messages.length }} message{{ ch.messages.length > 1 ? 's' : '' }}
+                @if (lastActivity(ch); as at) {
+                  · {{ at | date: 'MMM d, HH:mm' }}
+                }
+              </span>
+            </button>
+          }
+        </nav>
+      }
+
+      <!-- One thread per channel, kept alive (own draft each); only the selected one is shown. -->
+      <div class="ticket-view__thread">
+        @for (ch of channels(); track ch.id) {
+          <app-channel-thread
+            [hidden]="ch.id !== selectedId()"
+            [ticketNumber]="t.number"
+            [channel]="ch"
+            (messagePosted)="onMessagePosted()"
+            (statusClick)="changeStatus(ch)"
+            (forwardClick)="forward(ch, $event)"
+          />
+        }
+      </div>
+    </div>
+  } @else if (ticket.isLoading()) {
+    <div class="panel"><p class="text-muted">Loading ticket…</p></div>
+  } @else {
+    <div class="panel detail__empty">
+      <p>This ticket could not be found, or none of your customers takes part in it.</p>
+      <a class="btn btn--ghost" routerLink="/tickets">Back to tickets</a>
+    </div>
+  }
+</div>

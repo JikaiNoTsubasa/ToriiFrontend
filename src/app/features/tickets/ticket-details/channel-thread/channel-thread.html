@@ -1,0 +1,100 @@
+<section class="panel thread">
+  <!-- Who talks to whom in this channel, and its status. -->
+  <header class="thread__header">
+    <div>
+      <h2 class="thread__title">Channel with {{ counterpart() }}</h2>
+      <p class="text-muted thread__parties">
+        {{ ownSide() || '—' }} <i class="fas fa-right-left"></i> {{ counterpart() }}
+        · {{ channel().messages.length }} message{{ channel().messages.length > 1 ? 's' : '' }}
+      </p>
+    </div>
+    <button
+      class="badge badge--button"
+      type="button"
+      [class]="meta[channel().status].badge"
+      [attr.title]="meta[channel().status].description + ' Click to change.'"
+      (click)="statusClick.emit()"
+    >
+      {{ meta[channel().status].label }}
+    </button>
+  </header>
+
+  <!-- Conversation, oldest first; the user's side is tinted. -->
+  <ol class="thread__messages">
+    @for (message of channel().messages; track message.id) {
+      <li class="message" [class.message--own]="message.isOwnSide">
+        <img class="message__avatar" [src]="message.author.avatarUrl" alt="" />
+        <div class="message__bubble">
+          <div class="message__meta">
+            <strong>{{ message.isMine ? 'You' : message.author.displayName }}</strong>
+            @if (message.authorCustomerName) {
+              <span class="badge">{{ message.authorCustomerName }}</span>
+            }
+            <time class="text-muted" [attr.datetime]="message.createdAt">
+              {{ message.createdAt | date: 'MMM d, y, HH:mm' }}
+            </time>
+            <button
+              class="message__action"
+              type="button"
+              title="Forward this message to another channel"
+              (click)="forwardClick.emit(message)"
+            >
+              <i class="fas fa-share"></i> Forward
+            </button>
+          </div>
+
+          @if (message.forwarded; as original) {
+            <!-- Forward: optional comment, then the quoted original. -->
+            @if (hasText(message.content)) {
+              <div class="message__content rich-content" [innerHTML]="message.content"></div>
+            }
+            <blockquote class="message__forward">
+              <div class="message__forward-label"><i class="fas fa-share"></i> Forwarded message</div>
+              <div class="message__meta">
+                <strong>{{ original.author.displayName }}</strong>
+                @if (original.authorCustomerName) {
+                  <span class="badge">{{ original.authorCustomerName }}</span>
+                }
+                <span class="text-muted">{{ original.createdAt | date: 'MMM d, y, HH:mm' }}</span>
+              </div>
+              <div class="rich-content" [innerHTML]="original.content"></div>
+            </blockquote>
+          } @else {
+            <div class="message__content rich-content" [innerHTML]="message.content"></div>
+          }
+        </div>
+      </li>
+    } @empty {
+      <li class="text-muted">No messages yet.</li>
+    }
+    <li #messagesEnd aria-hidden="true"></li>
+  </ol>
+
+  <!-- Reply composer, bound to this channel only (Ctrl/⌘ + Enter sends). -->
+  <form
+    class="composer"
+    novalidate
+    (submit)="send($event)"
+    (keydown.control.enter)="send($event)"
+    (keydown.meta.enter)="send($event)"
+  >
+    <div class="composer__label">
+      <i class="fas fa-reply"></i> Reply to <strong>{{ counterpart() }}</strong>
+      <span class="text-muted">— only this channel's participants will see it</span>
+    </div>
+    <app-rich-text-editor
+      placeholder="Write your reply… Type '/' to insert a block."
+      minHeight="7rem"
+      [formField]="form.content"
+    />
+    <div class="composer__actions">
+      @if (form.content().touched() && form.content().errors().length) {
+        <small class="field__error">{{ form.content().errors()[0].message }}</small>
+      }
+      <small class="text-muted composer__hint">Ctrl + Enter to send</small>
+      <button class="btn" type="submit" [disabled]="sending()">
+        <i class="fas fa-paper-plane"></i> {{ sending() ? 'Sending…' : 'Send to ' + counterpart() }}
+      </button>
+    </div>
+  </form>
+</section>

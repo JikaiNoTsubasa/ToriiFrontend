@@ -37,6 +37,71 @@ export interface ChannelParticipant {
   isOwn: boolean;
 }
 
+/** Ticket details as seen by the signed-in user — mirror of `TicketDetailDto`. */
+export interface TicketDetail extends TicketListItem {
+  channels: TicketChannelDetail[];
+}
+
+/** Channel with its conversation (messages oldest first) — mirror of `TicketChannelDetailDto`. */
+export interface TicketChannelDetail extends TicketChannel {
+  messages: TicketMessage[];
+}
+
+/** Message of a channel — mirror of `TicketMessageDto`. */
+export interface TicketMessage {
+  id: number;
+  channelId: number;
+  author: UserRef;
+  /** The author's customer in this channel. */
+  authorCustomerName: string | null;
+  /** Written by the signed-in user. */
+  isMine: boolean;
+  /** Written by someone of the user's own customer(s). */
+  isOwnSide: boolean;
+  /**
+   * HTML from the rich text editor (rendered through Angular's sanitizer). For a forward,
+   * the forwarder's optional comment (may be empty).
+   */
+  content: string;
+  createdAt: string;
+  /** Original message when this one is a forward. */
+  forwarded: ForwardedMessage | null;
+}
+
+/** Original of a forwarded message — mirror of `ForwardedMessageDto`. */
+export interface ForwardedMessage {
+  id: number;
+  author: UserRef;
+  authorCustomerName: string | null;
+  content: string;
+  createdAt: string;
+}
+
+/**
+ * Forward destination — mirror of `ForwardMessageRequest`: either an existing channel
+ * (`targetChannelId`) or a source/target customer pair (channel reused or created).
+ */
+export interface ForwardMessageRequest {
+  targetChannelId: number | null;
+  sourceCustomerId: number | null;
+  targetCustomerId: number | null;
+  comment: string | null;
+}
+
+/** Mirror of `ForwardResultDto`. */
+export interface ForwardResult {
+  channelId: number;
+  channelCreated: boolean;
+  message: TicketMessage;
+}
+
+/** New channel on an existing ticket — mirror of `OpenChannelRequest`. */
+export interface OpenChannelRequest {
+  sourceCustomerId: number;
+  targetCustomerId: number;
+  content: string;
+}
+
 /** Minimal customer reference — mirror of `CustomerRefDto`. */
 export interface CustomerRef {
   id: number;

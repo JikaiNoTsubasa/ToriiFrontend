@@ -1,0 +1,56 @@
+<form class="side-panel__form" novalidate (submit)="save($event)">
+  <div class="side-panel__body">
+    <p class="text-muted panel__hint">
+      Involve another customer in this ticket. The new channel and its messages are only visible
+      to the members of the two customers it links.
+    </p>
+
+    @if (hasSeveralSources()) {
+      <label class="field">
+        <span>From</span>
+        <select [formField]="form.source">
+          <option value="">Select your customer…</option>
+          @for (option of options(); track option.customerId) {
+            <option [value]="option.customerId">{{ option.customerName }}</option>
+          }
+        </select>
+        @if (form.source().touched() && form.source().errors().length) {
+          <small class="field__error">{{ form.source().errors()[0].message }}</small>
+        }
+      </label>
+    } @else if (options().length === 1) {
+      <p class="text-muted">From <strong>{{ options()[0].customerName }}</strong></p>
+    }
+
+    <label class="field">
+      <span>To</span>
+      <select [formField]="form.target">
+        <option value="">Select the customer to involve…</option>
+        @for (target of targets(); track target.id) {
+          <option [value]="target.id">{{ target.name }}</option>
+        }
+      </select>
+      @if (form.target().touched() && form.target().errors().length) {
+        <small class="field__error">{{ form.target().errors()[0].message }}</small>
+      }
+      @if (model().source && !targets().length) {
+        <small class="text-muted">No other customer can be involved from this customer.</small>
+      }
+    </label>
+
+    <div class="field">
+      <span>First message</span>
+      <app-rich-text-editor placeholder="Explain why you involve them…" minHeight="10rem" [formField]="form.content" />
+      @if (form.content().touched() && form.content().errors().length) {
+        <small class="field__error">{{ form.content().errors()[0].message }}</small>
+      }
+    </div>
+  </div>
+
+  <footer class="side-panel__footer">
+    <button class="btn btn--ghost" type="button" (click)="ref.close()">Cancel</button>
+    <button class="btn" type="submit" [disabled]="saving()">
+      {{ saving() ? 'Opening…' : 'Open channel' }}
+    </button>
+  </footer>
+</form>
