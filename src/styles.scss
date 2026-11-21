@@ -2861,3 +2861,540 @@ button.link {
     text-decoration: underline;
   }
 }
+
+/* =========================================================================
+   Home dashboard
+   ========================================================================= */
+
+$chart-hue: #0b62c4; // single-series charts (activity, statuses)
+
+.dashboard {
+  gap: 1.25rem;
+}
+
+.dashboard__hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.75rem 1.75rem 1.5rem;
+  background:
+    radial-gradient(circle at 100% 0%, rgba($color-primary, 0.12), transparent 55%),
+    $color-panel;
+  border-left: 4px solid $color-primary;
+}
+
+.dashboard__date {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.dashboard__greeting {
+  margin: 0.2rem 0 0.35rem;
+  font-size: 1.7rem;
+}
+
+.dashboard__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ----- KPI tiles ----- */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 1rem;
+}
+
+.kpi {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 1.1rem 1.25rem;
+  background: $color-panel;
+  border-bottom: 3px solid transparent;
+  color: $color-text;
+  text-decoration: none;
+  transition:
+    border-color 0.12s,
+    transform 0.12s;
+
+  &:is(a):hover {
+    border-bottom-color: $color-primary;
+    transform: translateY(-1px);
+  }
+}
+
+.kpi__icon {
+  position: absolute;
+  top: 1rem;
+  right: 1.1rem;
+  color: $color-muted;
+  font-size: 0.95rem;
+}
+
+.kpi__value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi__label {
+  font-size: 0.8rem;
+  color: $color-muted;
+}
+
+.kpi--accent {
+  background: $color-primary;
+  color: #fff;
+
+  .kpi__icon,
+  .kpi__label {
+    color: rgba(#fff, 0.8);
+  }
+
+  &:hover {
+    border-bottom-color: #fff;
+  }
+}
+
+/* ----- Grid & cards ----- */
+.dashboard__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.dashboard__col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.dash-card {
+  padding: 1.25rem;
+}
+
+.dash-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.dash-card__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+
+  i {
+    color: $color-primary;
+    font-size: 0.9rem;
+  }
+}
+
+.dash-card__hint {
+  font-size: 0.8rem;
+}
+
+.dash-card__figure {
+  font-size: 1.2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+
+  small {
+    font-size: 0.75rem;
+    font-weight: 400;
+  }
+}
+
+.dash-card__count {
+  min-width: 1.3rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: $color-primary;
+  color: #fff;
+  font-size: 0.72rem;
+  line-height: 1.3rem;
+  text-align: center;
+}
+
+.dash-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem 1rem;
+  color: $color-muted;
+  text-align: center;
+
+  i {
+    font-size: 1.5rem;
+  }
+}
+
+/* ----- Rows (attention, tickets, notifications) ----- */
+.dash-list {
+  margin: 0 -0.5rem;
+  padding: 0;
+  list-style: none;
+
+  li + li {
+    border-top: 1px solid $color-border;
+  }
+}
+
+.dash-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.5rem;
+  border-left: 3px solid transparent;
+  color: $color-text;
+  text-decoration: none;
+
+  &:hover {
+    background: $color-primary-soft;
+  }
+}
+
+.dash-row--notification {
+  align-items: flex-start;
+}
+
+.dash-row--unread {
+  border-left-color: $color-primary;
+}
+
+.dash-row__main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.dash-row__title {
+  overflow: hidden;
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dash-row__line {
+  font-size: 0.85rem;
+}
+
+.dash-row__sub {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.76rem;
+}
+
+.dash-row__preview {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 0.8rem;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.dash-row__avatar {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  object-fit: cover;
+
+  &--lg {
+    flex: none;
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+.dash-row__type {
+  flex: none;
+  width: 1.5rem;
+  color: $color-muted;
+  text-align: center;
+}
+
+.dash-row__statuses {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+
+/* ----- Activity chart (messages per day, single series) ----- */
+.activity-chart {
+  position: relative;
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 2px; // surface gap between adjacent bars
+  height: 190px;
+  padding-top: 1rem;
+  border-top: 1px dashed $color-border; // recessive reference line at the max
+}
+
+.activity-chart__max {
+  position: absolute;
+  top: -0.55rem;
+  left: 0;
+  padding-right: 0.3rem;
+  background: $color-panel;
+  font-size: 0.68rem;
+}
+
+.activity-chart__col {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+  cursor: default;
+  outline: none;
+
+  // Hit target = the whole column, larger than the bar.
+  &:hover,
+  &:focus-visible {
+    .activity-chart__track {
+      background: $color-primary-soft;
+    }
+
+    .activity-chart__tip {
+      opacity: 1;
+      transform: translate(-50%, -4px);
+    }
+  }
+}
+
+.activity-chart__track {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: flex-end;
+  justify-content: center;
+  border-bottom: 1px solid $color-border; // baseline
+}
+
+.activity-chart__bar {
+  width: min(70%, 28px);
+  min-height: 2px;
+  background: $chart-hue;
+  border-radius: 4px 4px 0 0; // rounded data end, square at the baseline
+
+  &--zero {
+    background: $color-border;
+  }
+}
+
+.activity-chart__col--today .activity-chart__day {
+  color: $color-text;
+  font-weight: 700;
+}
+
+.activity-chart__day,
+.activity-chart__month {
+  font-size: 0.68rem;
+  color: $color-muted;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.activity-chart__day {
+  margin-top: 0.3rem;
+}
+
+.activity-chart__col--weekend .activity-chart__day {
+  opacity: 0.6;
+}
+
+.activity-chart__month {
+  min-height: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.activity-chart__tip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.35rem 0.55rem;
+  background: $color-text;
+  color: #fff;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 0);
+  transition:
+    opacity 0.1s,
+    transform 0.1s;
+
+  span {
+    opacity: 0.75;
+    font-size: 0.7rem;
+  }
+}
+
+/* ----- Priority breakdown: one segmented bar + legend ----- */
+.priority-bar {
+  display: flex;
+  gap: 2px; // surface gap between segments
+  height: 14px;
+  margin-bottom: 0.9rem;
+
+  .priority-bar__segment:first-child {
+    border-radius: 4px 0 0 4px;
+  }
+
+  .priority-bar__segment:last-child {
+    border-radius: 0 4px 4px 0;
+  }
+
+  .priority-bar__segment:only-child {
+    border-radius: 4px;
+  }
+}
+
+.priority-bar__segment {
+  flex-basis: 0;
+  min-width: 6px;
+}
+
+.priority-bar__segment--critical {
+  background: $color-error;
+}
+
+.priority-bar__segment--high {
+  background: #c45a0b;
+}
+
+.priority-bar__segment--medium {
+  background: $chart-hue;
+}
+
+.priority-bar__segment--low {
+  background: #a3a3a3;
+}
+
+.priority-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.priority-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.2rem 0.25rem;
+  color: $color-text;
+  font-size: 0.82rem;
+  text-decoration: none;
+
+  &:hover {
+    background: $color-primary-soft;
+  }
+}
+
+.priority-legend__swatch {
+  flex: none;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 2px;
+}
+
+.priority-legend__label {
+  flex: 1 1 auto;
+}
+
+.priority-legend__value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.priority-legend__share {
+  width: 2.4rem;
+  font-size: 0.72rem;
+  text-align: right;
+}
+
+/* ----- Status breakdown: horizontal bars, single series ----- */
+.status-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.status-bars__row {
+  display: grid;
+  grid-template-columns: 9.5rem minmax(0, 1fr) 2rem;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.25rem;
+  color: $color-text;
+  font-size: 0.8rem;
+  text-decoration: none;
+
+  &:hover {
+    background: $color-primary-soft;
+  }
+
+  // Final statuses: same hue, lighter step.
+  &--done .status-bars__bar {
+    background: color-mix(in srgb, #{$chart-hue} 45%, #{$color-panel});
+  }
+
+  &--zero {
+    color: $color-muted;
+  }
+}
+
+.status-bars__label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.status-bars__track {
+  display: flex;
+  height: 10px;
+}
+
+.status-bars__bar {
+  min-width: 2px;
+  background: $chart-hue;
+  border-radius: 0 4px 4px 0; // rounded data end, square at the baseline
+}
+
+.status-bars__value {
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

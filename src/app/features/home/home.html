@@ -1,9 +1,301 @@
-<!-- Full-scroll page: no topbar, the content fills the whole area. -->
-<div class="page">
-  <div class="panel">
-    <h2>Welcome to Torii</h2>
-    <p class="text-muted">
-      You are signed in. Project management features will be added here.
-    </p>
+<div class="page dashboard">
+  <!-- Greeting + quick actions -->
+  <header class="dashboard__hero">
+    <div>
+      <p class="dashboard__date text-muted">{{ today | date: 'EEEE, MMMM d' }}</p>
+      <h1 class="dashboard__greeting">{{ greeting }}{{ firstName() ? ', ' + firstName() : '' }}</h1>
+      <p class="text-muted">
+        @if (dashboard.value(); as d) {
+          @if (d.kpis.awaitingReply) {
+            {{ d.kpis.awaitingReply }} conversation{{ d.kpis.awaitingReply > 1 ? 's are' : ' is' }} waiting for your answer.
+          } @else {
+            You're all caught up — nothing is waiting for your answer.
+          }
+        } @else {
+          Here is what is going on in your tickets.
+        }
+      </p>
+    </div>
+    <div class="dashboard__actions">
+      <a class="btn btn--ghost" routerLink="/tickets"><i class="fas fa-list"></i> All tickets</a>
+      @if (canCreate()) {
+        <a class="btn" routerLink="/tickets/new"><i class="fas fa-plus"></i> New ticket</a>
+      }
+    </div>
+  </header>
+
+  @if (dashboard.error() && !dashboard.value()) {
+    <div class="panel detail__empty">
+      <p>The dashboard could not be loaded.</p>
+      <button class="btn btn--ghost" type="button" (click)="dashboard.reload()">Retry</button>
+    </div>
+  }
+
+  <!-- KPI tiles -->
+  <section class="kpis" aria-label="Key figures">
+    @let k = dashboard.value()?.kpis;
+    <a class="kpi kpi--accent" href="#attention">
+      <span class="kpi__icon"><i class="fas fa-reply"></i></span>
+      <span class="kpi__value">{{ k?.awaitingReply ?? '–' }}</span>
+      <span class="kpi__label">Awaiting your reply</span>
+    </a>
+    <a class="kpi" routerLink="/tickets">
+      <span class="kpi__icon"><i class="fas fa-folder-open"></i></span>
+      <span class="kpi__value">{{ k?.openChannels ?? '–' }}</span>
+      <span class="kpi__label">Open conversations</span>
+    </a>
+    <a class="kpi" routerLink="/tickets" [queryParams]="{ status: 'all' }">
+      <span class="kpi__icon"><i class="fas fa-plus"></i></span>
+      <span class="kpi__value">{{ k?.createdLast7Days ?? '–' }}</span>
+      <span class="kpi__label">New tickets · 7 days</span>
+    </a>
+    <a class="kpi" routerLink="/tickets" [queryParams]="{ status: 'RESOLVED,CLOSED' }">
+      <span class="kpi__icon"><i class="fas fa-circle-check"></i></span>
+      <span class="kpi__value">{{ k?.resolvedLast30Days ?? '–' }}</span>
+      <span class="kpi__label">Resolved · 30 days</span>
+    </a>
+    <div class="kpi">
+      <span class="kpi__icon"><i class="fas fa-bell"></i></span>
+      <span class="kpi__value">{{ unreadCount() }}</span>
+      <span class="kpi__label">Unread notifications</span>
+    </div>
+  </section>
+
+  <div class="dashboard__grid">
+    <!-- Main column -->
+    <div class="dashboard__col">
+      <!-- Needs attention -->
+      <section class="panel dash-card" id="attention">
+        <header class="dash-card__head">
+          <h2 class="dash-card__title"><i class="fas fa-reply"></i> Waiting for your answer</h2>
+          <span class="text-muted dash-card__hint">Most urgent first</span>
+        </header>
+        @if (dashboard.value(); as d) {
+          @if (d.needsAttention.length) {
+            <ul class="dash-list">
+              @for (item of d.needsAttention; track item.channelId) {
+                <li>
+                  <a class="dash-row" [routerLink]="['/tickets', item.ticketNumber]" [queryParams]="{ channel: item.channelId }">
+                    <span class="badge priority" [class]="priorityMeta[item.priority].className" [attr.title]="priorityMeta[item.priority].label + ' priority'">
+                      <i [class]="priorityMeta[item.priority].icon" aria-hidden="true"></i>
+                    </span>
+                    <span class="dash-row__main">
+                      <span class="dash-row__title"><span class="table__code">{{ item.ticketNumber }}</span> {{ item.title }}</span>
+                      <span class="dash-row__sub text-muted">
+                        <img class="dash-row__avatar" [src]="item.lastAuthor.avatarUrl" alt="" />
+                        {{ item.lastAuthor.displayName }}
+                        @if (item.counterpart) {
+                          ({{ item.counterpart }})
+                        }
+                        · {{ timeAgo(item.lastMessageAt) }}
+                      </span>
+                    </span>
+                    <span class="badge" [class]="statusMeta[item.status].badge">{{ statusMeta[item.status].label }}</span>
+                  </a>
+                </li>
+              }
+            </ul>
+          } @else {
+            <div class="dash-empty">
+              <i class="fas fa-mug-hot"></i>
+              <p>Nothing waiting for you. Enjoy your coffee.</p>
+            </div>
+          }
+        } @else {
+          <p class="text-muted">Loading…</p>
+        }
+      </section>
+
+      <!-- Latest tickets -->
+      <section class="panel dash-card">
+        <header class="dash-card__head">
+          <h2 class="dash-card__title"><i class="fas fa-ticket"></i> Latest tickets</h2>
+          <a class="link dash-card__hint" routerLink="/tickets" [queryParams]="{ status: 'all' }">View all</a>
+        </header>
+        @if (dashboard.value(); as d) {
+          @if (d.latestTickets.length) {
+            <ul class="dash-list">
+              @for (t of d.latestTickets; track t.number) {
+                <li>
+                  <a class="dash-row" [routerLink]="['/tickets', t.number]">
+                    <span class="dash-row__type" [class]="typeMeta[t.type].className" [attr.title]="typeMeta[t.type].label">
+                      <i [class]="typeMeta[t.type].icon" aria-hidden="true"></i>
+                    </span>
+                    <span class="dash-row__main">
+                      <span class="dash-row__title"><span class="table__code">{{ t.number }}</span> {{ t.title }}</span>
+                      <span class="dash-row__sub text-muted">
+                        {{ counterpart(t) || '—' }} · {{ t.createdBy?.displayName ?? 'Unknown' }} · {{ timeAgo(t.createdAt) }}
+                      </span>
+                    </span>
+                    <span class="dash-row__statuses">
+                      @for (ch of t.channels; track ch.id) {
+                        <span class="badge" [class]="statusMeta[ch.status].badge">{{ statusMeta[ch.status].label }}</span>
+                      }
+                    </span>
+                  </a>
+                </li>
+              }
+            </ul>
+          } @else {
+            <div class="dash-empty">
+              <i class="fas fa-ticket"></i>
+              <p>No ticket yet.</p>
+              @if (canCreate()) {
+                <a class="btn btn--sm" routerLink="/tickets/new">Create the first one</a>
+              }
+            </div>
+          }
+        } @else {
+          <p class="text-muted">Loading…</p>
+        }
+      </section>
+
+      <!-- Activity: messages per day -->
+      <section class="panel dash-card">
+        <header class="dash-card__head">
+          <h2 class="dash-card__title"><i class="fas fa-chart-column"></i> Messages · last 14 days</h2>
+          <span class="dash-card__figure">{{ dashboard.value()?.kpis?.messagesLast14Days ?? 0 }} <small class="text-muted">total</small></span>
+        </header>
+        <div class="activity-chart" role="list" aria-label="Messages per day">
+          <span class="activity-chart__max text-muted" aria-hidden="true">{{ activityMax() }}</span>
+          @for (bar of activity(); track bar.date) {
+            <div
+              class="activity-chart__col"
+              role="listitem"
+              tabindex="0"
+              [class.activity-chart__col--weekend]="bar.weekend"
+              [class.activity-chart__col--today]="bar.isToday"
+              [attr.aria-label]="(bar.date | date: 'MMM d' : 'UTC') + ': ' + bar.count + ' message' + (bar.count === 1 ? '' : 's')"
+            >
+              <span class="activity-chart__tip" aria-hidden="true">
+                <strong>{{ bar.count }}</strong> message{{ bar.count === 1 ? '' : 's' }}
+                <span>{{ bar.date | date: 'EEE, MMM d' : 'UTC' }}</span>
+              </span>
+              <span class="activity-chart__track">
+                <span class="activity-chart__bar" [style.height.%]="bar.height" [class.activity-chart__bar--zero]="!bar.count"></span>
+              </span>
+              <span class="activity-chart__day" aria-hidden="true">{{ bar.day }}</span>
+              <span class="activity-chart__month" aria-hidden="true">{{ bar.month ?? '' }}</span>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+
+    <!-- Side column -->
+    <div class="dashboard__col">
+      <!-- Notifications -->
+      <section class="panel dash-card">
+        <header class="dash-card__head">
+          <h2 class="dash-card__title">
+            <i class="fas fa-bell"></i> Notifications
+            @if (unreadCount()) {
+              <span class="dash-card__count">{{ unreadCount() }}</span>
+            }
+          </h2>
+          <button class="btn btn--ghost btn--sm" type="button" [disabled]="!unreadCount()" (click)="markAllRead()">
+            Mark all as read
+          </button>
+        </header>
+        @if (notifications().length) {
+          <ul class="dash-list">
+            @for (n of notifications(); track n.id) {
+              <li>
+                <a
+                  class="dash-row dash-row--notification"
+                  [class.dash-row--unread]="!n.readAt"
+                  [routerLink]="['/tickets', n.ticketNumber]"
+                  [queryParams]="{ channel: n.channelId }"
+                  (click)="openNotification(n)"
+                >
+                  <img class="dash-row__avatar dash-row__avatar--lg" [src]="n.actor.avatarUrl" alt="" />
+                  <span class="dash-row__main">
+                    <span class="dash-row__line">
+                      <strong>{{ n.actor.displayName }}</strong> {{ n.isForward ? 'forwarded a message' : 'replied' }}
+                      on <span class="table__code">{{ n.ticketNumber }}</span>
+                      @if (n.count > 1) {
+                        <span class="notification-item__count">+{{ n.count - 1 }} more</span>
+                      }
+                    </span>
+                    @if (n.preview) {
+                      <span class="dash-row__preview text-muted">{{ n.preview }}</span>
+                    }
+                    <span class="dash-row__sub text-muted">{{ timeAgo(n.createdAt) }}</span>
+                  </span>
+                </a>
+              </li>
+            }
+          </ul>
+        } @else if (notificationsLoaded()) {
+          <div class="dash-empty">
+            <i class="fas fa-bell-slash"></i>
+            <p>No notification yet.</p>
+          </div>
+        } @else {
+          <p class="text-muted">Loading…</p>
+        }
+      </section>
+
+      <!-- Open tickets by priority -->
+      <section class="panel dash-card">
+        <header class="dash-card__head">
+          <h2 class="dash-card__title"><i class="fas fa-signal"></i> Open tickets by priority</h2>
+          <span class="dash-card__figure">{{ priorities().total }}</span>
+        </header>
+        @if (priorities().total) {
+          <div class="priority-bar" role="img" [attr.aria-label]="'Open tickets by priority'">
+            @for (p of priorities().items; track p.priority) {
+              @if (p.count) {
+                <span
+                  class="priority-bar__segment"
+                  [class]="'priority-bar__segment--' + p.priority.toLowerCase()"
+                  [style.flex-grow]="p.count"
+                  [attr.title]="priorityMeta[p.priority].label + ': ' + p.count"
+                ></span>
+              }
+            }
+          </div>
+          <ul class="priority-legend">
+            @for (p of priorities().items; track p.priority) {
+              <li>
+                <a class="priority-legend__item" routerLink="/tickets" [queryParams]="{ priority: p.priority }">
+                  <span class="priority-legend__swatch" [class]="'priority-bar__segment--' + p.priority.toLowerCase()"></span>
+                  <span class="priority-legend__label">{{ priorityMeta[p.priority].label }}</span>
+                  <span class="priority-legend__value">{{ p.count }}</span>
+                  <span class="priority-legend__share text-muted">{{ p.share | percent: '1.0-0' }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        } @else {
+          <div class="dash-empty"><p class="text-muted">No open ticket.</p></div>
+        }
+      </section>
+
+      <!-- Channels by status -->
+      <section class="panel dash-card">
+        <header class="dash-card__head">
+          <h2 class="dash-card__title"><i class="fas fa-flag"></i> Conversations by status</h2>
+        </header>
+        <ul class="status-bars">
+          @for (s of statuses(); track s.status) {
+            <li>
+              <a
+                class="status-bars__row"
+                [class.status-bars__row--done]="s.done"
+                [class.status-bars__row--zero]="!s.count"
+                routerLink="/tickets"
+                [queryParams]="{ status: s.status }"
+                [attr.title]="statusMeta[s.status].description"
+              >
+                <span class="status-bars__label">{{ statusMeta[s.status].label }}</span>
+                <span class="status-bars__track"><span class="status-bars__bar" [style.width.%]="s.width"></span></span>
+                <span class="status-bars__value">{{ s.count }}</span>
+              </a>
+            </li>
+          }
+        </ul>
+      </section>
+    </div>
   </div>
 </div>

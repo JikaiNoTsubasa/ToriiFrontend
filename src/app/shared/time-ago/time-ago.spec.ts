@@ -1,4 +1,4 @@
-import { timeAgo } from './notification-bell';
+import { timeAgo } from './time-ago';
 
 describe('timeAgo', () => {
   const now = Date.parse('2026-11-21T12:00:00Z');
