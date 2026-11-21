@@ -1,53 +1,53 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
-import { form, FormField, maxLength, required, submit } from '@angular/forms/signals';
+import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
 import { NotificationService } from '../../../core/notifications/notification.service';
-import { CustomerListItem } from '../../../core/services/admin-customer.models';
+import { CustomerDetail, CustomerListItem } from '../../../core/services/admin-customer.models';
 import { AdminCustomerService } from '../../../core/services/admin-customer.service';
 import { Topbar } from '../../../layout/topbar/topbar';
 import { RadialMenuService } from '../../../shared/radial-menu/radial-menu.service';
+import { SidePanelService } from '../../../shared/side-panel/side-panel.service';
+import { CustomerFormPanel } from './customer-form-panel/customer-form-panel';
 
 @Component({
   selector: 'app-admin-customers',
-  imports: [Topbar, RouterLink, DatePipe, FormField],
+  imports: [Topbar, RouterLink, DatePipe],
   templateUrl: './customers.html',
 })
 export class AdminCustomers {
   private readonly service = inject(AdminCustomerService);
   private readonly notifications = inject(NotificationService);
   private readonly radial = inject(RadialMenuService);
+  private readonly panel = inject(SidePanelService);
   private readonly router = inject(Router);
 
   protected readonly customers = this.service.customers();
 
-  // --- Creation ---
-  protected readonly creating = signal(false);
-  private readonly model = signal({ name: '' });
-  protected readonly createForm = form(this.model, (path) => {
-    required(path.name, { message: 'Name is required.' });
-    maxLength(path.name, 128, { message: '128 characters maximum.' });
-  });
+  // --- Create / edit (side panel) ---
+  protected openCreate(): void {
+    this.panel
+      .open<CustomerDetail>(CustomerFormPanel, { title: 'New customer' })
+      .closed.then((created) => {
+        if (created) {
+          this.notifications.success('Customer created', created.name);
+          this.customers.reload();
+        }
+      });
+  }
 
-  protected async create(event: Event): Promise<void> {
-    event.preventDefault();
-    if (this.creating()) {
-      return;
-    }
-    await submit(this.createForm, async () => {
-      this.creating.set(true);
-      try {
-        const created = await firstValueFrom(this.service.create(this.model().name));
-        this.notifications.success('Customer created', created.name);
-        this.router.navigate(['/admin/customers', created.id]);
-      } catch {
-        // Error already notified by errorInterceptor.
-      } finally {
-        this.creating.set(false);
-      }
-      return undefined;
-    });
+  protected openEdit(customer: CustomerListItem): void {
+    this.panel
+      .open<CustomerDetail>(CustomerFormPanel, {
+        title: 'Edit customer',
+        subtitle: customer.name,
+        inputs: { customer },
+      })
+      .closed.then((saved) => {
+        if (saved) {
+          this.notifications.success('Customer updated', saved.name);
+          this.customers.reload();
+        }
+      });
   }
 
   // --- Row actions ---
@@ -57,6 +57,11 @@ export class AdminCustomers {
         label: 'Open',
         icon: 'fas fa-arrow-right',
         run: () => this.router.navigate(['/admin/customers', customer.id]),
+      },
+      {
+        label: 'Edit',
+        icon: 'fas fa-pen',
+        run: () => this.openEdit(customer),
       },
       {
         label: 'Delete',

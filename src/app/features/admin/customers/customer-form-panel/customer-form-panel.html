@@ -1,0 +1,18 @@
+<form class="side-panel__form" novalidate (submit)="save($event)">
+  <div class="side-panel__body">
+    <label class="field">
+      <span>Name</span>
+      <input type="text" placeholder="Customer name" [formField]="form.name" />
+      @if (form.name().touched() && form.name().errors().length) {
+        <small class="field__error">{{ form.name().errors()[0].message }}</small>
+      }
+    </label>
+  </div>
+
+  <footer class="side-panel__footer">
+    <button class="btn btn--ghost" type="button" (click)="ref.close()">Cancel</button>
+    <button class="btn" type="submit" [disabled]="saving()">
+      {{ saving() ? 'Saving…' : isEdit() ? 'Save' : 'Create customer' }}
+    </button>
+  </footer>
+</form>

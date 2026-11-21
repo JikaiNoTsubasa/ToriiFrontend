@@ -1,6 +1,9 @@
 <app-topbar [heading]="customer.value()?.name ?? 'Customer'">
   <a class="btn btn--ghost" routerLink="/admin/customers"><i class="fa fa-arrow-left"></i> Customers</a>
   @if (customer.value()) {
+    <button class="btn btn--ghost" type="button" [disabled]="busy()" (click)="openEdit()">
+      <i class="fas fa-pen"></i> Edit
+    </button>
     <button class="btn btn--danger" type="button" [disabled]="busy()" (click)="remove()">
       <i class="fa fa-trash"></i> Delete
     </button>
@@ -14,9 +17,7 @@
       <dl class="detail__meta">
         <div class="detail__meta-item">
           <dt class="text-muted">Name</dt>
-          <dd>
-            <app-editable-input-text [(value)]="name" placeholder="Customer name" (save)="rename($event)" />
-          </dd>
+          <dd>{{ c.name }}</dd>
         </div>
         <div class="detail__meta-item">
           <dt class="text-muted">Created</dt>

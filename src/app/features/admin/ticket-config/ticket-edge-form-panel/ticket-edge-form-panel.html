@@ -1,0 +1,48 @@
+<form class="side-panel__form" novalidate (submit)="save($event)">
+  <div class="side-panel__body">
+    <p class="text-muted panel__hint">
+      The source customer will be allowed to send tickets to the target customer. Edges are
+      directed: add the reverse edge to allow both ways.
+    </p>
+
+    <label class="field">
+      <span>From (source)</span>
+      <select [formField]="form.source">
+        <option value="">Select a customer…</option>
+        @for (customer of customers.value(); track customer.id) {
+          <option [value]="customer.id">{{ customer.name }}</option>
+        }
+      </select>
+      @if (form.source().touched() && form.source().errors().length) {
+        <small class="field__error">{{ form.source().errors()[0].message }}</small>
+      }
+    </label>
+
+    <label class="field">
+      <span>To (target)</span>
+      <select [formField]="form.target">
+        <option value="">Select a customer…</option>
+        @for (customer of customers.value(); track customer.id) {
+          <option [value]="customer.id">{{ customer.name }}</option>
+        }
+      </select>
+      @if (form.target().touched() && form.target().errors().length) {
+        <small class="field__error">{{ form.target().errors()[0].message }}</small>
+      }
+    </label>
+
+    @if (isEdit()) {
+      <label class="field field--checkbox">
+        <input type="checkbox" [formField]="form.isActive" />
+        <span>Active <small class="text-muted">(a disabled edge does not allow sending)</small></span>
+      </label>
+    }
+  </div>
+
+  <footer class="side-panel__footer">
+    <button class="btn btn--ghost" type="button" (click)="ref.close()">Cancel</button>
+    <button class="btn" type="submit" [disabled]="saving()">
+      {{ saving() ? 'Saving…' : isEdit() ? 'Save' : 'Create edge' }}
+    </button>
+  </footer>
+</form>

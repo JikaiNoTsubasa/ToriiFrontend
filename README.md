@@ -82,9 +82,10 @@ are code comments.
 src/app/
 ├── core/          # auth, interceptors, guards, notifications, clipboard, problem-details,
 │                  # api-enum, services/ (httpResource-based API services)
-├── features/      # auth/login, home, tickets, admin/ (customers, customer-details)
+├── features/      # auth/login, home, tickets,
+│                  # admin/ (customers, customer-details, ticket-config: ticket edges)
 ├── layout/        # shell (sidebar with submenus + content), topbar
-└── shared/        # notifications (toasts), radial-menu (right-click),
+└── shared/        # notifications (toasts), radial-menu (right-click), side-panel (forms),
                    # editable-input-text, rich-text-editor (Tiptap + slash commands)
 ```
 
@@ -102,6 +103,26 @@ A `NAV` entry can have `children` (a submenu, expanded while the URL is under it
 admin screen: a child route of `admin` in `app.routes.ts` + a `children` entry in
 the Administration item of `NAV`. Route parameters arrive in component `input()`s
 (`withComponentInputBinding`).
+
+### Side panel (create / update forms)
+
+A single right-hand side panel is available everywhere (`shared/side-panel/`, host
+`<app-side-panel />` mounted in `app.html`). Open any component in it and get its result:
+
+```ts
+private readonly panel = inject(SidePanelService);
+
+this.panel
+  .open<CustomerDetail>(CustomerFormPanel, { title: 'Edit customer', subtitle: c.name, inputs: { customer: c } })
+  .closed.then((saved) => saved && this.customers.reload()); // undefined when dismissed
+```
+
+The content component injects `SidePanelRef` and calls `ref.close(result)`; its template
+uses the shared layout: `<form class="side-panel__form">` → `.side-panel__body` (scrolls) +
+`.side-panel__footer` (Cancel / Save). The host provides the header, the backdrop, Escape /
+backdrop-click dismissal and the slide-in animation. Opening a panel dismisses the previous
+one. Examples: `features/admin/customers/customer-form-panel`,
+`features/admin/ticket-config/ticket-edge-form-panel` (both handle create and edit).
 
 ## Build
 

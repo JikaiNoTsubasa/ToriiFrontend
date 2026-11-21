@@ -7,30 +7,29 @@ import { NotificationService } from '../../../core/notifications/notification.se
 import { CustomerDetail } from '../../../core/services/admin-customer.models';
 import { AdminCustomerService } from '../../../core/services/admin-customer.service';
 import { Topbar } from '../../../layout/topbar/topbar';
-import { EditableInputText } from '../../../shared/editable-input-text/editable-input-text';
+import { SidePanelService } from '../../../shared/side-panel/side-panel.service';
+import { CustomerFormPanel } from '../customers/customer-form-panel/customer-form-panel';
 
 /** Delay (ms) between the last keystroke and the user search. */
 const SEARCH_DEBOUNCE_MS = 300;
 
 @Component({
   selector: 'app-admin-customer-details',
-  imports: [Topbar, RouterLink, DatePipe, EditableInputText],
+  imports: [Topbar, RouterLink, DatePipe],
   templateUrl: './customer-details.html',
 })
 export class AdminCustomerDetails {
   private readonly service = inject(AdminCustomerService);
   private readonly notifications = inject(NotificationService);
   private readonly router = inject(Router);
+  private readonly panel = inject(SidePanelService);
 
   /** `:id` route parameter (withComponentInputBinding). */
   readonly id = input.required({ transform: numberAttribute });
 
   protected readonly customer = this.service.customer(() => this.id());
 
-  /** Name edited inline; resynchronized every time the customer loads. */
-  protected readonly name = signal('');
-
-  /** Request in progress (rename, member add/remove, delete). */
+  /** Request in progress (member add/remove, delete). */
   protected readonly busy = signal(false);
 
   // --- Search for users to add ---
@@ -45,13 +44,6 @@ export class AdminCustomerDetails {
   });
 
   constructor() {
-    effect(() => {
-      const customer = this.customer.value();
-      if (customer) {
-        this.name.set(customer.name);
-      }
-    });
-
     // Debounce: the search only fires after a pause in typing.
     effect((onCleanup) => {
       const value = this.search().trim();
@@ -60,8 +52,24 @@ export class AdminCustomerDetails {
     });
   }
 
-  protected rename(name: string): void {
-    this.mutate(this.service.rename(this.id(), name), 'Customer renamed');
+  /** Opens the edit side panel; the saved customer replaces the local value. */
+  protected openEdit(): void {
+    const customer = this.customer.value();
+    if (!customer) {
+      return;
+    }
+    this.panel
+      .open<CustomerDetail>(CustomerFormPanel, {
+        title: 'Edit customer',
+        subtitle: customer.name,
+        inputs: { customer },
+      })
+      .closed.then((saved) => {
+        if (saved) {
+          this.customer.set(saved);
+          this.notifications.success('Customer updated', saved.name);
+        }
+      });
   }
 
   protected addMember(user: UserDto): void {
@@ -99,11 +107,8 @@ export class AdminCustomerDetails {
         this.busy.set(false);
         this.notifications.success(title, detail);
       },
-      error: () => {
-        this.busy.set(false);
-        // Revert to the server name if the rename failed (error already notified).
-        this.name.set(this.customer.value()?.name ?? '');
-      },
+      // Error already notified by errorInterceptor.
+      error: () => this.busy.set(false),
     });
   }
 }

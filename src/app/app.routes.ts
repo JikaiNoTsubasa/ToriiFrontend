@@ -41,6 +41,11 @@ export const routes: Routes = [
                 (m) => m.AdminCustomerDetails,
               ),
           },
+          {
+            path: 'tickets',
+            loadComponent: () =>
+              import('./features/admin/ticket-config/ticket-config').then((m) => m.AdminTicketConfig),
+          },
         ],
       },
     ],

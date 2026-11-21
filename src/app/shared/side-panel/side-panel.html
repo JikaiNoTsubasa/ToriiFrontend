@@ -1,0 +1,38 @@
+@if (state(); as panel) {
+  <!-- Backdrop: dims the page and closes the panel on click. -->
+  <div
+    class="side-panel-backdrop"
+    animate.enter="side-panel-backdrop--enter"
+    animate.leave="side-panel-backdrop--leave"
+    (click)="close()"
+  ></div>
+
+  <aside
+    class="side-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="side-panel-title"
+    [style.width]="panel.options.width ?? null"
+    animate.enter="side-panel--enter"
+    animate.leave="side-panel--leave"
+  >
+    <header class="side-panel__header">
+      <div class="side-panel__heading">
+        <h2 id="side-panel-title" class="side-panel__title">{{ panel.options.title }}</h2>
+        @if (panel.options.subtitle) {
+          <p class="side-panel__subtitle text-muted">{{ panel.options.subtitle }}</p>
+        }
+      </div>
+      <button class="side-panel__close" type="button" aria-label="Close panel" (click)="close()">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </header>
+
+    <!-- Content component (form): uses .side-panel__body / .side-panel__footer. -->
+    <div class="side-panel__content">
+      <ng-container
+        *ngComponentOutlet="panel.component; inputs: panel.options.inputs ?? {}; injector: panel.injector"
+      />
+    </div>
+  </aside>
+}

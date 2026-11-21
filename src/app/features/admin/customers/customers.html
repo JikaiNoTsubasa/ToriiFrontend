@@ -2,24 +2,10 @@
   <span class="text-muted">
     {{ customers.value().length }} customer{{ customers.value().length > 1 ? 's' : '' }}
   </span>
+  <button class="btn" type="button" (click)="openCreate()">+ New customer</button>
 </app-topbar>
 
 <div class="page">
-  <!-- Creation -->
-  <form class="panel inline-form" novalidate (submit)="create($event)">
-    <label class="field inline-form__grow">
-      <span>New customer</span>
-      <input type="text" placeholder="Customer name" [formField]="createForm.name" />
-      @if (createForm.name().touched() && createForm.name().errors().length) {
-        <small class="field__error">{{ createForm.name().errors()[0].message }}</small>
-      }
-    </label>
-    <button class="btn" type="submit" [disabled]="creating()">
-      {{ creating() ? 'Creating…' : '+ Create' }}
-    </button>
-  </form>
-
-  <!-- List -->
   <div class="panel">
     <table class="table table--clickable">
       <thead>
@@ -27,6 +13,7 @@
           <th>Name</th>
           <th class="table__num">Members</th>
           <th>Created</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -35,10 +22,20 @@
             <td><a class="table__link" [routerLink]="[customer.id]">{{ customer.name }}</a></td>
             <td class="table__num">{{ customer.memberCount }}</td>
             <td class="text-muted">{{ customer.createdAt | date: 'MMM d, y' }}</td>
+            <td class="table__actions">
+              <!-- stopPropagation: editing must not trigger the row navigation. -->
+              <button
+                class="btn btn--ghost btn--sm"
+                type="button"
+                (click)="$event.stopPropagation(); openEdit(customer)"
+              >
+                <i class="fas fa-pen"></i> Edit
+              </button>
+            </td>
           </tr>
         } @empty {
           <tr>
-            <td class="table__empty" colspan="3">
+            <td class="table__empty" colspan="4">
               @if (customers.isLoading()) {
                 Loading customers…
               } @else if (customers.error()) {
