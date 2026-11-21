@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, input, linkedSignal, viewChildren } from '@angular/core';
+import { Component, computed, effect, inject, input, linkedSignal, untracked, viewChildren } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ClipboardService } from '../../../core/clipboard/clipboard.service';
 import { NotificationService } from '../../../core/notifications/notification.service';
@@ -11,6 +11,7 @@ import {
   TicketListItem,
   TicketMessage,
 } from '../../../core/services/ticket.models';
+import { InboxService } from '../../../core/services/inbox.service';
 import { TicketService } from '../../../core/services/ticket.service';
 import { TICKET_STATUS_META } from '../../../core/services/ticket-status';
 import { Topbar } from '../../../layout/topbar/topbar';
@@ -47,6 +48,7 @@ export class TicketDetails {
   private readonly notifications = inject(NotificationService);
   private readonly clipboard = inject(ClipboardService);
   private readonly router = inject(Router);
+  private readonly inbox = inject(InboxService);
 
   /** `:number` route parameter. */
   readonly number = input.required<string>();
@@ -77,6 +79,33 @@ export class TicketDetails {
   });
 
   private readonly threads = viewChildren(ChannelThread);
+
+  constructor() {
+    // Viewing a channel reads its notifications.
+    effect(() => {
+      const id = this.selectedId();
+      if (id !== null) {
+        this.inbox.markChannelRead(id).catch(() => {});
+      }
+    });
+
+    // A new message in one of this ticket's channels: reload to show it (drafts live in the
+    // threads, which are kept since they are tracked by channel id).
+    effect(() => {
+      const number = this.number();
+      const arrived = this.inbox.arrivals().filter((n) => n.ticketNumber === number);
+      if (arrived.length) {
+        untracked(() => {
+          this.ticket.reload();
+          // Already on screen: the selected channel's notification is read at once.
+          const selected = this.selectedId();
+          if (arrived.some((n) => n.channelId === selected)) {
+            this.inbox.markChannelRead(selected!).catch(() => {});
+          }
+        });
+      }
+    });
+  }
 
   protected select(channel: TicketChannelDetail): void {
     this.selectedId.set(channel.id);

@@ -90,7 +90,9 @@ src/app/
 │                  # tickets (list, `/tickets/new`, details `/tickets/:number`
 │                  #   with one channel-thread per channel), 
 │                  # admin/ (users, customers, customer-details, ticket-config: ticket edges)
-├── layout/        # shell (sidebar with submenus + content), topbar
+├── layout/        # shell (sidebar with submenus + content), topbar,
+│                  # notification-bell (unread badge + panel; InboxService polls every 30 s,
+│                  #   toasts new replies with an "Open" link, prefixes the tab title "(3)")
 └── shared/        # notifications (toasts), radial-menu (right-click), side-panel (forms),
                    # info-hint ("i" icon with a help popover, projected content),
                    # pagination (summary + numbered pages, for server-paged lists),

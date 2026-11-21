@@ -6,6 +6,11 @@
         @if (n.detail) {
           <span class="toast__detail">{{ n.detail }}</span>
         }
+        @if (n.link; as link) {
+          <a class="toast__link" [routerLink]="link.commands" [queryParams]="link.queryParams" (click)="dismiss(n.id)">
+            {{ link.label }} <i class="fas fa-arrow-right" aria-hidden="true"></i>
+          </a>
+        }
       </div>
       <button
         class="toast__close"

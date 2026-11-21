@@ -2,11 +2,19 @@ import { Injectable, signal } from '@angular/core';
 
 export type NotificationKind = 'error' | 'success' | 'info' | 'warning';
 
+/** Optional action link of a toast (router navigation). */
+export interface NotificationLink {
+  label: string;
+  commands: readonly unknown[];
+  queryParams?: Record<string, string | number>;
+}
+
 export interface Notification {
   id: number;
   kind: NotificationKind;
   title: string;
   detail?: string;
+  link?: NotificationLink;
 }
 
 /**
@@ -32,8 +40,8 @@ export class NotificationService {
     this.push('success', title, detail);
   }
 
-  info(title: string, detail?: string): void {
-    this.push('info', title, detail);
+  info(title: string, detail?: string, link?: NotificationLink): void {
+    this.push('info', title, detail, link);
   }
 
   warning(title: string, detail?: string): void {
@@ -48,9 +56,9 @@ export class NotificationService {
     this._items.set([]);
   }
 
-  private push(kind: NotificationKind, title: string, detail?: string): void {
+  private push(kind: NotificationKind, title: string, detail?: string, link?: NotificationLink): void {
     const id = this.nextId++;
-    this._items.update((items) => [...items, { id, kind, title, detail }]);
+    this._items.update((items) => [...items, { id, kind, title, detail, link }]);
     setTimeout(() => this.dismiss(id), this.autoDismissMs);
   }
 }

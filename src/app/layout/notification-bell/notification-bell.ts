@@ -1,0 +1,89 @@
+import { Component, ElementRef, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+import { InboxNotification } from '../../core/services/inbox.models';
+import { InboxService } from '../../core/services/inbox.service';
+
+/**
+ * Bell of the sidebar: unread badge, and a panel listing the latest notifications (loaded
+ * when opened). Clicking one marks it read and opens its channel. Closes on outside click
+ * or Escape.
+ */
+@Component({
+  selector: 'app-notification-bell',
+  templateUrl: './notification-bell.html',
+  host: {
+    class: 'notification-bell',
+    '(document:click)': 'closeOnOutsideClick($event)',
+    '(document:keydown.escape)': 'open.set(false)',
+  },
+})
+export class NotificationBell {
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly inbox = inject(InboxService);
+  private readonly router = inject(Router);
+
+  protected readonly unreadCount = this.inbox.unreadCount;
+  protected readonly open = signal(false);
+  protected readonly loading = signal(false);
+  protected readonly items = signal<InboxNotification[]>([]);
+  protected readonly timeAgo = timeAgo;
+
+  protected async toggle(): Promise<void> {
+    if (this.open()) {
+      this.open.set(false);
+      return;
+    }
+    this.open.set(true);
+    await this.load();
+  }
+
+  protected async openNotification(notification: InboxNotification): Promise<void> {
+    this.open.set(false);
+    this.router.navigate(['/tickets', notification.ticketNumber], { queryParams: { channel: notification.channelId } });
+    try {
+      await this.inbox.markRead(notification);
+    } catch {
+      // Already notified by errorInterceptor.
+    }
+  }
+
+  protected async markAllRead(): Promise<void> {
+    try {
+      await this.inbox.markAllRead();
+      const now = new Date().toISOString();
+      this.items.update((items) => items.map((n) => (n.readAt ? n : { ...n, readAt: now })));
+    } catch {
+      // Already notified by errorInterceptor.
+    }
+  }
+
+  protected closeOnOutsideClick(event: MouseEvent): void {
+    if (this.open() && !this.host.nativeElement.contains(event.target as Node)) {
+      this.open.set(false);
+    }
+  }
+
+  private async load(): Promise<void> {
+    this.loading.set(true);
+    try {
+      this.items.set((await firstValueFrom(this.inbox.list())).items);
+    } catch {
+      // Already notified by errorInterceptor; the panel shows what it had.
+    } finally {
+      this.loading.set(false);
+    }
+  }
+}
+
+/** "just now", "5 min ago", "3 h ago", "2 d ago", then the date. */
+export function timeAgo(iso: string, now = Date.now()): string {
+  const minutes = Math.floor((now - Date.parse(iso)) / 60_000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} d ago`;
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}

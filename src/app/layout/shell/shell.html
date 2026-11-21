@@ -4,6 +4,9 @@
     <div class="sidebar__brand">
       <span class="sidebar__logo"><img src="/Torii_logo.png" alt="Torii Logo" width="32" height="32" /></span>
       <span class="sidebar__name">Torii</span>
+      @if (user()) {
+        <app-notification-bell />
+      }
     </div>
 
     <nav class="sidebar__nav">

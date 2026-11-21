@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { NotificationService } from '../../core/notifications/notification.service';
 
 /**
@@ -7,6 +8,7 @@ import { NotificationService } from '../../core/notifications/notification.servi
  */
 @Component({
   selector: 'app-notifications',
+  imports: [RouterLink],
   templateUrl: './notifications.html',
 })
 export class Notifications {
