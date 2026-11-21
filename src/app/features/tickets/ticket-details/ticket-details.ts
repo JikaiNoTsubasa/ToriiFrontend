@@ -16,6 +16,8 @@ import { TICKET_STATUS_META } from '../../../core/services/ticket-status';
 import { Topbar } from '../../../layout/topbar/topbar';
 import { htmlToText } from '../../../shared/rich-text-editor/html-text';
 import { SidePanelService } from '../../../shared/side-panel/side-panel.service';
+import { TICKET_PRIORITY_META, TICKET_TYPE_META } from '../../../core/services/ticket-classification';
+import { TicketClassificationPanel } from '../ticket-classification-panel/ticket-classification-panel';
 import { TicketStatusPanel } from '../ticket-status-panel/ticket-status-panel';
 import { buildFeed, ChannelThread, sideNames } from './channel-thread/channel-thread';
 import { ForwardOutcome, ForwardPanel } from './forward-panel/forward-panel';
@@ -52,6 +54,8 @@ export class TicketDetails {
   readonly channel = input<string | undefined>();
 
   protected readonly meta = TICKET_STATUS_META;
+  protected readonly typeMeta = TICKET_TYPE_META;
+  protected readonly priorityMeta = TICKET_PRIORITY_META;
 
   protected readonly ticket = this.service.ticket(() => this.number());
   protected readonly sendOptions = this.service.sendOptions();
@@ -105,6 +109,26 @@ export class TicketDetails {
 
   protected onChanged(): void {
     this.ticket.reload();
+  }
+
+  /** Opens the type / priority side panel. */
+  protected editClassification(): void {
+    const ticket = this.ticket.value();
+    if (!ticket) {
+      return;
+    }
+    this.panel
+      .open<TicketListItem>(TicketClassificationPanel, {
+        title: 'Type & priority',
+        subtitle: `${ticket.number} — ${ticket.title}`,
+        inputs: { ticket },
+      })
+      .closed.then((updated) => {
+        if (updated) {
+          this.notifications.success('Ticket updated', updated.number);
+          this.ticket.reload();
+        }
+      });
   }
 
   protected changeStatus(channel: TicketChannelDetail): void {
@@ -222,5 +246,9 @@ function describeActivity(activity: TicketActivity, meta: typeof TICKET_STATUS_M
       return `${actor} uploaded ${activity.file?.fileName ?? 'a file'}`;
     case 'FILE_FORWARDED':
       return `${actor} forwarded ${activity.file?.fileName ?? 'a file'}`;
+    case 'TYPE_CHANGED':
+      return `${actor} set the type to ${activity.toType ? TICKET_TYPE_META[activity.toType].label : '—'}`;
+    case 'PRIORITY_CHANGED':
+      return `${actor} set the priority to ${activity.toPriority ? TICKET_PRIORITY_META[activity.toPriority].label : '—'}`;
   }
 }

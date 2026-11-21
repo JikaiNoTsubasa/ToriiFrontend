@@ -36,6 +36,28 @@
           </dd>
         </div>
         <div class="detail__meta-item">
+          <dt class="text-muted">Priority</dt>
+          <dd>
+            <button
+              class="badge badge--button priority"
+              type="button"
+              [class]="priorityMeta[t.priority].className"
+              [attr.title]="priorityMeta[t.priority].description + ' Click to change.'"
+              (click)="editClassification()"
+            >
+              <i [class]="priorityMeta[t.priority].icon" aria-hidden="true"></i> {{ priorityMeta[t.priority].label }}
+            </button>
+          </dd>
+        </div>
+        <div class="detail__meta-item">
+          <dt class="text-muted">Type</dt>
+          <dd>
+            <button class="ticket-type ticket-type--button" type="button" [class]="typeMeta[t.type].className" title="Click to change" (click)="editClassification()">
+              <i [class]="typeMeta[t.type].icon" aria-hidden="true"></i> {{ typeMeta[t.type].label }}
+            </button>
+          </dd>
+        </div>
+        <div class="detail__meta-item">
           <dt class="text-muted">Your customer</dt>
           <dd>{{ ownCustomers() || '—' }}</dd>
         </div>

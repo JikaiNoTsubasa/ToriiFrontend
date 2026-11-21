@@ -1,5 +1,16 @@
 import { OPEN_TICKET_STATUSES, TICKET_STATUSES, TicketStatus } from '../../core/services/ticket-status';
-import { apiStatuses, parsePageParam, parseStatusParam, statusParam } from './ticket-filters';
+import { TICKET_TYPES } from '../../core/services/ticket-classification';
+import {
+  apiStatuses,
+  apiValues,
+  parsePageParam,
+  parseSetParam,
+  parseStatusParam,
+  PRIORITY_FILTER,
+  setParam,
+  statusParam,
+  TYPE_FILTER,
+} from './ticket-filters';
 
 describe('ticket filters', () => {
   it('defaults to the open statuses (not resolved / closed / cancelled)', () => {
@@ -23,6 +34,17 @@ describe('ticket filters', () => {
     expect(apiStatuses(parseStatusParam('all'))).toBeNull();
     expect(apiStatuses(new Set<TicketStatus>(['CLOSED', 'NEW']))).toEqual(['NEW', 'CLOSED']);
     expect(apiStatuses(parseStatusParam(undefined))).toEqual([...OPEN_TICKET_STATUSES]);
+  });
+
+  it('defaults the type and priority filters to every value (no API filter)', () => {
+    const types = parseSetParam(TYPE_FILTER, undefined);
+    expect(types.size).toBe(TICKET_TYPES.length);
+    expect(setParam(TYPE_FILTER, types)).toBeNull();
+    expect(apiValues(TYPE_FILTER, types)).toBeNull();
+
+    const priorities = parseSetParam(PRIORITY_FILTER, 'critical,high');
+    expect(apiValues(PRIORITY_FILTER, priorities)).toEqual(['CRITICAL', 'HIGH']);
+    expect(setParam(PRIORITY_FILTER, priorities)).toBe('CRITICAL,HIGH');
   });
 
   it('parses the page parameter, falling back to 1', () => {

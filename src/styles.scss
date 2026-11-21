@@ -2329,3 +2329,309 @@ button.link {
   padding: 0 0.25rem;
   color: $color-muted;
 }
+
+/* ----- Search bar: several filters ----- */
+.search-bar {
+  flex-wrap: wrap;
+}
+
+/* A filter whose selection differs from its default. */
+.search-bar__filter-toggle--filtered strong {
+  color: $color-primary;
+}
+
+/* =========================================================================
+   Ticket classification: type (under the title) & priority badges
+   ========================================================================= */
+
+.ticket-title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ticket-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: $color-muted;
+}
+
+// Standalone modifiers (after .ticket-type, so they win): also used by the type dropdown.
+.ticket-type--bug {
+  color: $color-error;
+}
+
+.ticket-type--incident {
+  color: #c45a0b;
+}
+
+.priority {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.priority--critical {
+  color: #fff;
+  border-color: $color-error;
+  background: $color-error;
+}
+
+.priority--high {
+  color: #c45a0b;
+  border-color: #c45a0b;
+  background: rgba(#c45a0b, 0.1);
+}
+
+.priority--medium {
+  color: #0b62c4;
+  border-color: rgba(#0b62c4, 0.5);
+  background: rgba(#0b62c4, 0.06);
+}
+
+.priority--low {
+  color: $color-muted;
+  border-color: $color-border;
+  background: transparent;
+}
+
+/* Type shown as a clickable label (ticket details). */
+.ticket-type--button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* ----- Priority picker (ticket creation & classification panel): radio cards + level ----- */
+.priority-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.priority-picker__legend {
+  padding: 0;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem; // like .field labels
+}
+
+.priority-picker__current {
+  font-weight: 400;
+}
+
+.priority-picker__option {
+  --priority-color: #{$color-muted};
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid $color-border;
+  border-left: 3px solid transparent;
+  background: $color-input;
+  cursor: pointer;
+  transition:
+    border-color 0.12s,
+    background-color 0.12s;
+
+  &--critical {
+    --priority-color: #{$color-error};
+  }
+
+  &--high {
+    --priority-color: #c45a0b;
+  }
+
+  &--medium {
+    --priority-color: #0b62c4;
+  }
+
+  &:hover {
+    border-left-color: color-mix(in srgb, var(--priority-color) 40%, transparent);
+  }
+
+  &--selected {
+    border-color: var(--priority-color);
+    border-left-color: var(--priority-color);
+    background: color-mix(in srgb, var(--priority-color) 7%, transparent);
+
+    .priority-picker__text strong {
+      color: var(--priority-color);
+    }
+  }
+
+  &:has(:focus-visible) {
+    outline: 2px solid $color-primary;
+    outline-offset: 1px;
+  }
+}
+
+/* The native radio stays focusable / keyboard-operable but is drawn by the card. */
+.priority-picker__radio {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.priority-picker__level {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 1rem;
+  flex: none;
+}
+
+.priority-picker__bar {
+  width: 4px;
+  background: $color-border;
+
+  @for $i from 1 through 4 {
+    &:nth-child(#{$i}) {
+      height: 25% * $i;
+    }
+  }
+
+  &--on {
+    background: var(--priority-color);
+  }
+}
+
+.priority-picker__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  strong {
+    font-size: 0.875rem;
+  }
+
+  small {
+    font-size: 0.75rem;
+  }
+}
+
+/* =========================================================================
+   Rich select: dropdown whose options show an icon, a label and a description
+   ========================================================================= */
+
+.rich-select {
+  display: block;
+  position: relative;
+}
+
+.rich-select__toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid $color-border;
+  background: $color-input;
+  color: $color-text;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover:not(:disabled),
+  &--open {
+    border-color: $color-primary;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.rich-select__chevron {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: $color-muted;
+  transition: transform 0.15s;
+
+  .rich-select__toggle--open & {
+    transform: rotate(180deg);
+  }
+}
+
+/* Top-layer popover, positioned (fixed) by the component under / above the toggle. */
+.rich-select__list {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 0.3rem;
+  border: 1px solid $color-border;
+  background: $color-panel;
+  color: $color-text;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14);
+  overflow-y: auto;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.rich-select__option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.6rem;
+  border-left: 3px solid transparent;
+  cursor: pointer;
+
+  &--active {
+    background: $color-primary-soft;
+  }
+
+  &--selected {
+    border-left-color: $color-primary;
+  }
+}
+
+.rich-select__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1.25rem;
+  color: $color-muted;
+}
+
+.rich-select__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  strong {
+    font-size: 0.875rem;
+  }
+
+  small {
+    font-size: 0.75rem;
+  }
+}
+
+.rich-select__check {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: $color-primary;
+}

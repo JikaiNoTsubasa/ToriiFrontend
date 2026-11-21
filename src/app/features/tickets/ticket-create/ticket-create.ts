@@ -3,10 +3,19 @@ import { form, FormField, maxLength, required, submit, validate } from '@angular
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { NotificationService } from '../../../core/notifications/notification.service';
+import {
+  DEFAULT_TICKET_PRIORITY,
+  DEFAULT_TICKET_TYPE,
+  TICKET_TYPE_OPTIONS,
+  TicketPriority,
+  TicketType,
+} from '../../../core/services/ticket-classification';
 import { TicketService } from '../../../core/services/ticket.service';
 import { Topbar } from '../../../layout/topbar/topbar';
+import { RichSelect } from '../../../shared/rich-select/rich-select';
 import { isBlankHtml } from '../../../shared/rich-text-editor/html-text';
 import { RichTextEditorComponent } from '../../../shared/rich-text-editor/rich-text-editor';
+import { PriorityPicker } from '../priority-picker/priority-picker';
 
 /** Form model; `<select>` values are customer ids as strings ('' = none). */
 interface TicketForm {
@@ -14,6 +23,8 @@ interface TicketForm {
   target: string;
   title: string;
   content: string;
+  type: TicketType;
+  priority: TicketPriority;
 }
 
 /**
@@ -24,7 +35,7 @@ interface TicketForm {
  */
 @Component({
   selector: 'app-ticket-create',
-  imports: [Topbar, RouterLink, FormField, RichTextEditorComponent],
+  imports: [Topbar, RouterLink, FormField, RichTextEditorComponent, RichSelect, PriorityPicker],
   templateUrl: './ticket-create.html',
   host: {
     '(window:beforeunload)': 'onBeforeUnload($event)',
@@ -42,7 +53,25 @@ export class TicketCreate {
   /** Set once the ticket is sent, so leaving the page no longer asks for confirmation. */
   private sent = false;
 
-  private readonly model = signal<TicketForm>({ source: '', target: '', title: '', content: '' });
+  protected readonly typeOptions = TICKET_TYPE_OPTIONS;
+
+  protected readonly model = signal<TicketForm>({
+    source: '',
+    target: '',
+    title: '',
+    content: '',
+    type: DEFAULT_TICKET_TYPE,
+    priority: DEFAULT_TICKET_PRIORITY,
+  });
+
+  protected setType(type: TicketType): void {
+    this.model.update((m) => ({ ...m, type }));
+  }
+
+  protected setPriority(priority: TicketPriority): void {
+    this.model.update((m) => ({ ...m, priority }));
+  }
+
   protected readonly form = form(this.model, (path) => {
     required(path.source, { message: 'Select the customer you send from.' });
     required(path.target, { message: 'Select the recipient customer.' });
@@ -86,7 +115,7 @@ export class TicketCreate {
       return;
     }
     await submit(this.form, async () => {
-      const { source, target, title, content } = this.model();
+      const { source, target, title, content, type, priority } = this.model();
       this.saving.set(true);
       try {
         const created = await firstValueFrom(
@@ -95,6 +124,8 @@ export class TicketCreate {
             targetCustomerId: Number(target),
             title: title.trim(),
             content,
+            type,
+            priority,
           }),
         );
         this.sent = true;

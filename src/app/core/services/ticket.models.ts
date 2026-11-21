@@ -1,3 +1,4 @@
+import { TicketPriority, TicketType } from './ticket-classification';
 import { TicketStatus } from './ticket-status';
 
 /**
@@ -8,6 +9,9 @@ import { TicketStatus } from './ticket-status';
 export interface TicketListItem {
   number: string;
   title: string;
+  /** Ticket-level, shared by all its channels. */
+  type: TicketType;
+  priority: TicketPriority;
   /** Creator; `null` only for legacy tickets without any message. */
   createdBy: UserRef | null;
   createdAt: string;
@@ -72,7 +76,13 @@ export interface FileRef {
 }
 
 /** Activity kinds — mirror of the backend `TicketActivityType` enum. */
-export type TicketActivityType = 'CHANNEL_OPENED' | 'STATUS_CHANGED' | 'FILE_UPLOADED' | 'FILE_FORWARDED';
+export type TicketActivityType =
+  | 'CHANNEL_OPENED'
+  | 'STATUS_CHANGED'
+  | 'FILE_UPLOADED'
+  | 'FILE_FORWARDED'
+  | 'TYPE_CHANGED'
+  | 'PRIORITY_CHANGED';
 
 /** Activity event of a channel — mirror of `TicketActivityDto` (fields depend on `type`). */
 export interface TicketActivity {
@@ -83,6 +93,12 @@ export interface TicketActivity {
   /** STATUS_CHANGED: previous status (`null` when unknown, e.g. backfilled history). */
   fromStatus: TicketStatus | null;
   toStatus: TicketStatus | null;
+  /** TYPE_CHANGED (ticket-wide, logged in every channel of the ticket). */
+  fromType: TicketType | null;
+  toType: TicketType | null;
+  /** PRIORITY_CHANGED (ticket-wide, logged in every channel of the ticket). */
+  fromPriority: TicketPriority | null;
+  toPriority: TicketPriority | null;
   /** FILE_UPLOADED / FILE_FORWARDED. */
   file: FileRef | null;
 }
@@ -177,4 +193,6 @@ export interface CreateTicketRequest {
   targetCustomerId: number;
   title: string;
   content: string;
+  type: TicketType;
+  priority: TicketPriority;
 }

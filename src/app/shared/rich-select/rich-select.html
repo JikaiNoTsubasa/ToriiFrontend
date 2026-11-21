@@ -1,0 +1,63 @@
+<button
+  #toggleButton
+  class="rich-select__toggle"
+  type="button"
+  aria-haspopup="listbox"
+  [attr.aria-expanded]="open()"
+  [attr.aria-controls]="id + '-list'"
+  [class.rich-select__toggle--open]="open()"
+  [disabled]="disabled()"
+  (click)="toggle()"
+  (keydown)="onToggleKeydown($event)"
+>
+  @if (selected(); as option) {
+    <ng-container *ngTemplateOutlet="optionContent; context: { $implicit: option }" />
+  } @else {
+    <span class="text-muted">Select…</span>
+  }
+  <i class="fas fa-chevron-down rich-select__chevron" aria-hidden="true"></i>
+</button>
+
+<div
+  #list
+  class="rich-select__list"
+  popover="manual"
+  role="listbox"
+  tabindex="-1"
+  [id]="id + '-list'"
+  [attr.aria-label]="ariaLabel()"
+  [attr.aria-activedescendant]="open() ? id + '-option-' + active() : null"
+  (keydown)="onListKeydown($event)"
+>
+  @for (option of options(); track option.value; let i = $index) {
+    <div
+      class="rich-select__option"
+      role="option"
+      [id]="id + '-option-' + i"
+      [attr.aria-selected]="option.value === value()"
+      [class.rich-select__option--active]="i === active()"
+      [class.rich-select__option--selected]="option.value === value()"
+      (mouseenter)="active.set(i)"
+      (click)="pick(option)"
+    >
+      <ng-container *ngTemplateOutlet="optionContent; context: { $implicit: option }" />
+      @if (option.value === value()) {
+        <i class="fas fa-check rich-select__check" aria-hidden="true"></i>
+      }
+    </div>
+  }
+</div>
+
+<ng-template #optionContent let-option>
+  <span class="rich-select__icon" [class]="option.className ?? ''" aria-hidden="true">
+    @if (option.icon) {
+      <i [class]="option.icon"></i>
+    }
+  </span>
+  <span class="rich-select__text">
+    <strong [class]="option.className ?? ''">{{ option.label }}</strong>
+    @if (option.description) {
+      <small class="text-muted">{{ option.description }}</small>
+    }
+  </span>
+</ng-template>

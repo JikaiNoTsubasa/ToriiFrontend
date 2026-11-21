@@ -80,6 +80,15 @@
           }
         </label>
 
+        <h2 class="panel__title">Classification</h2>
+
+        <div class="field">
+          <span>Type</span>
+          <app-rich-select ariaLabel="Type" [options]="typeOptions" [value]="model().type" (valueChange)="setType($event)" />
+        </div>
+
+        <app-priority-picker [value]="model().priority" (valueChange)="setPriority($event)" />
+
         <p class="text-muted panel__hint">
           The ticket and its first message are shared with every member of both customers.
         </p>

@@ -1,46 +1,64 @@
-import { OPEN_TICKET_STATUSES, TICKET_STATUSES, TicketStatus } from '../../core/services/ticket-status';
 import { parseApiEnum } from '../../core/http/api-enum';
+import { TICKET_PRIORITIES, TICKET_TYPES, TicketPriority, TicketType } from '../../core/services/ticket-classification';
+import { OPEN_TICKET_STATUSES, TICKET_STATUSES, TicketStatus } from '../../core/services/ticket-status';
 
-/** `?status=` value selecting every status (no value = the default open statuses). */
-export const ALL_STATUSES_PARAM = 'all';
-/** `?status=` value selecting no status at all. */
-export const NO_STATUS_PARAM = 'none';
+/** URL value selecting every value of a filter. */
+export const ALL_PARAM = 'all';
+/** URL value selecting no value at all. */
+export const NONE_PARAM = 'none';
+
+/** A multi-select filter over an API enum: its values (display order) and its default selection. */
+export interface EnumFilter<T extends string> {
+  all: readonly T[];
+  defaults: readonly T[];
+}
+
+/** Status filter: defaults to the open statuses (not resolved / closed / cancelled). */
+export const STATUS_FILTER: EnumFilter<TicketStatus> = { all: TICKET_STATUSES, defaults: OPEN_TICKET_STATUSES };
+/** Type filter: defaults to every type. */
+export const TYPE_FILTER: EnumFilter<TicketType> = { all: TICKET_TYPES, defaults: TICKET_TYPES };
+/** Priority filter: defaults to every priority. */
+export const PRIORITY_FILTER: EnumFilter<TicketPriority> = { all: TICKET_PRIORITIES, defaults: TICKET_PRIORITIES };
 
 /**
- * Statuses selected by the `?status=` query parameter: absent → the open statuses (default),
- * `all`, `none`, or a comma-separated list (unknown values are ignored).
+ * Selection from a query parameter: absent → the filter's defaults, `all`, `none`, or a
+ * comma-separated list (unknown values are ignored, case-insensitive).
  */
-export function parseStatusParam(param: string | null | undefined): ReadonlySet<TicketStatus> {
-  if (param == null || param === '') return new Set(OPEN_TICKET_STATUSES);
-  if (param === ALL_STATUSES_PARAM) return new Set(TICKET_STATUSES);
-  if (param === NO_STATUS_PARAM) return new Set();
-  const statuses = param
+export function parseSetParam<T extends string>(filter: EnumFilter<T>, param: string | null | undefined): ReadonlySet<T> {
+  if (param == null || param === '') return new Set(filter.defaults);
+  if (param === ALL_PARAM) return new Set(filter.all);
+  if (param === NONE_PARAM) return new Set();
+  const values = param
     .split(',')
-    .map((value) => parseApiEnum(TICKET_STATUSES, value.trim()))
-    .filter((status): status is TicketStatus => status !== null);
-  return new Set(statuses);
+    .map((value) => parseApiEnum(filter.all, value.trim()))
+    .filter((value): value is T => value !== null);
+  return new Set(values);
 }
 
-/** `?status=` value for a selection (`null` = the default, so it is left out of the URL). */
-export function statusParam(selected: ReadonlySet<TicketStatus>): string | null {
-  if (sameStatuses(selected, OPEN_TICKET_STATUSES)) return null;
-  if (selected.size === TICKET_STATUSES.length) return ALL_STATUSES_PARAM;
-  if (selected.size === 0) return NO_STATUS_PARAM;
-  // Workflow order keeps the URL stable whatever the click order.
-  return TICKET_STATUSES.filter((status) => selected.has(status)).join(',');
+/** Query parameter for a selection (`null` = the defaults, left out of the URL). */
+export function setParam<T extends string>(filter: EnumFilter<T>, selected: ReadonlySet<T>): string | null {
+  if (sameValues(selected, filter.defaults)) return null;
+  if (selected.size === filter.all.length) return ALL_PARAM;
+  if (selected.size === 0) return NONE_PARAM;
+  // Display order keeps the URL stable whatever the click order.
+  return filter.all.filter((value) => selected.has(value)).join(',');
 }
 
-export function sameStatuses(selected: ReadonlySet<TicketStatus>, statuses: readonly TicketStatus[]): boolean {
-  return selected.size === statuses.length && statuses.every((status) => selected.has(status));
+/** API parameters for a selection: `null` when every value is selected (no filter). */
+export function apiValues<T extends string>(filter: EnumFilter<T>, selected: ReadonlySet<T>): T[] | null {
+  return selected.size === filter.all.length ? null : filter.all.filter((value) => selected.has(value));
 }
 
-/**
- * `status` parameters sent to the API (filtering is done server-side): `null` when every
- * status is selected (no filter), otherwise the selection in workflow order.
- */
-export function apiStatuses(selected: ReadonlySet<TicketStatus>): TicketStatus[] | null {
-  return selected.size === TICKET_STATUSES.length ? null : TICKET_STATUSES.filter((status) => selected.has(status));
+export function sameValues<T extends string>(selected: ReadonlySet<T>, values: readonly T[]): boolean {
+  return selected.size === values.length && values.every((value) => selected.has(value));
 }
+
+// --- Status shortcuts ---
+
+export const parseStatusParam = (param: string | null | undefined) => parseSetParam(STATUS_FILTER, param);
+export const statusParam = (selected: ReadonlySet<TicketStatus>) => setParam(STATUS_FILTER, selected);
+export const apiStatuses = (selected: ReadonlySet<TicketStatus>) => apiValues(STATUS_FILTER, selected);
+export const sameStatuses = sameValues<TicketStatus>;
 
 /** `?page=` value (1-based; anything invalid → 1). */
 export function parsePageParam(param: string | null | undefined): number {

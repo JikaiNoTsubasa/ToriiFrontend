@@ -16,15 +16,19 @@ import {
   TicketSendOption,
 } from './ticket.models';
 import { PagedResult } from '../http/paged-result';
+import { TicketPriority, TicketType } from './ticket-classification';
 import { TicketStatus } from './ticket-status';
 
 /**
  * Ticket list query. `statuses` keeps tickets where at least one of the user's channels has
- * one of them (`null` = any status); `page` is 1-based.
+ * one of them; `types` / `priorities` keep tickets of one of them (`null` = no filter);
+ * `page` is 1-based.
  */
 export interface TicketListQuery {
   search: string;
   statuses: readonly TicketStatus[] | null;
+  types: readonly TicketType[] | null;
+  priorities: readonly TicketPriority[] | null;
   page: number;
   pageSize: number;
 }
@@ -53,6 +57,12 @@ export class TicketService {
       if (q.statuses) {
         params['status'] = q.statuses;
       }
+      if (q.types) {
+        params['type'] = q.types;
+      }
+      if (q.priorities) {
+        params['priority'] = q.priorities;
+      }
       return { url: this.baseUrl, params };
     });
   }
@@ -65,6 +75,11 @@ export class TicketService {
   /** Creates the ticket, its channel and the first message; returns the listed ticket. */
   create(request: CreateTicketRequest): Observable<TicketListItem> {
     return this.http.post<TicketListItem>(this.baseUrl, request);
+  }
+
+  /** Changes the type and priority of a ticket (shared by all its channels). */
+  updateClassification(number: string, type: TicketType, priority: TicketPriority): Observable<TicketListItem> {
+    return this.http.put<TicketListItem>(`${this.baseUrl}/${number}/classification`, { type, priority });
   }
 
   /** Changes the status of one channel of a ticket; returns the updated listed ticket. */

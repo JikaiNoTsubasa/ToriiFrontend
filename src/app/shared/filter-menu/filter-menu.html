@@ -1,0 +1,52 @@
+<button
+  class="search-bar__filter-toggle"
+  type="button"
+  aria-haspopup="true"
+  [attr.aria-expanded]="open()"
+  [class.search-bar__filter-toggle--active]="open()"
+  [class.search-bar__filter-toggle--filtered]="isFiltered()"
+  (click)="open.set(!open())"
+>
+  <i [class]="icon()" aria-hidden="true"></i>
+  {{ label() }}: <strong>{{ summary() }}</strong>
+  <i class="fas fa-chevron-down search-bar__chevron" aria-hidden="true"></i>
+</button>
+
+@if (open()) {
+  <div class="filter-menu" role="group" [attr.aria-label]="'Filter by ' + label().toLowerCase()">
+    <div class="filter-menu__presets">
+      @for (preset of presets(); track preset.label) {
+        <button class="btn btn--ghost btn--sm" type="button" (click)="apply(preset.values)">{{ preset.label }}</button>
+      }
+      <button class="btn btn--ghost btn--sm" type="button" (click)="selectAll()">All</button>
+      <button class="btn btn--ghost btn--sm" type="button" (click)="apply([])">None</button>
+    </div>
+    <ul class="filter-menu__list">
+      @for (option of options(); track option.value) {
+        <li>
+          <label class="filter-menu__option">
+            <input type="checkbox" [checked]="selected().has(option.value)" (change)="toggle(option.value)" />
+            @if (option.className) {
+              <span class="badge" [class]="option.className">
+                @if (option.icon) {
+                  <i [class]="option.icon" aria-hidden="true"></i>
+                }
+                {{ option.label }}
+              </span>
+            } @else {
+              <span>
+                @if (option.icon) {
+                  <i [class]="option.icon" aria-hidden="true"></i>
+                }
+                {{ option.label }}
+              </span>
+            }
+          </label>
+        </li>
+      }
+    </ul>
+    @if (hint(); as text) {
+      <p class="text-muted filter-menu__hint">{{ text }}</p>
+    }
+  </div>
+}

@@ -1,0 +1,34 @@
+<fieldset class="priority-picker">
+  <legend class="priority-picker__legend">{{ legend() }}</legend>
+  @for (priority of priorities; track priority; let i = $index) {
+    <label
+      class="priority-picker__option"
+      [class]="'priority-picker__option--' + priority.toLowerCase()"
+      [class.priority-picker__option--selected]="value() === priority"
+    >
+      <input
+        class="priority-picker__radio"
+        type="radio"
+        [name]="name"
+        [value]="priority"
+        [checked]="value() === priority"
+        (change)="value.set(priority)"
+      />
+      <!-- Signal-strength style level: 4 bars for Critical … 1 for Low. -->
+      <span class="priority-picker__level" aria-hidden="true">
+        @for (bar of bars; track bar) {
+          <span class="priority-picker__bar" [class.priority-picker__bar--on]="bar <= priorities.length - i"></span>
+        }
+      </span>
+      <span class="priority-picker__text">
+        <strong>
+          {{ meta[priority].label }}
+          @if (current() === priority) {
+            <small class="text-muted priority-picker__current">(current)</small>
+          }
+        </strong>
+        <small class="text-muted">{{ meta[priority].description }}</small>
+      </span>
+    </label>
+  }
+</fieldset>

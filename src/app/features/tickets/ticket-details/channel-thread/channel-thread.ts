@@ -21,6 +21,7 @@ import {
 } from '../../../../core/services/ticket.models';
 import { TicketService } from '../../../../core/services/ticket.service';
 import { TICKET_STATUS_META } from '../../../../core/services/ticket-status';
+import { TICKET_PRIORITY_META, TICKET_TYPE_META } from '../../../../core/services/ticket-classification';
 import {
   fileIcon,
   formatFileSize,
@@ -65,6 +66,8 @@ export class ChannelThread {
   readonly forwardFileClick = output<FileRef>();
 
   protected readonly meta = TICKET_STATUS_META;
+  protected readonly typeMeta = TICKET_TYPE_META;
+  protected readonly priorityMeta = TICKET_PRIORITY_META;
   protected readonly sending = signal(false);
   /** Uploads in progress (pastes can overlap, so a counter rather than a flag). */
   private readonly pendingUploads = signal(0);

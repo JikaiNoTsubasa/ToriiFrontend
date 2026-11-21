@@ -102,6 +102,8 @@
               @case ('STATUS_CHANGED') { <i class="fas fa-flag"></i> }
               @case ('FILE_UPLOADED') { <i class="fas fa-paperclip"></i> }
               @case ('FILE_FORWARDED') { <i class="fas fa-share"></i> }
+              @case ('TYPE_CHANGED') { <i class="fas fa-tag"></i> }
+              @case ('PRIORITY_CHANGED') { <i class="fas fa-signal"></i> }
             }
           </span>
           <span class="activity__text">
@@ -124,6 +126,24 @@
               }
               @case ('FILE_FORWARDED') {
                 forwarded
+              }
+              @case ('TYPE_CHANGED') {
+                changed the type
+                @if (activity.fromType) {
+                  from <span class="ticket-type" [class]="typeMeta[activity.fromType].className"><i [class]="typeMeta[activity.fromType].icon" aria-hidden="true"></i> {{ typeMeta[activity.fromType].label }}</span>
+                }
+                @if (activity.toType) {
+                  to <span class="ticket-type" [class]="typeMeta[activity.toType].className"><i [class]="typeMeta[activity.toType].icon" aria-hidden="true"></i> {{ typeMeta[activity.toType].label }}</span>
+                }
+              }
+              @case ('PRIORITY_CHANGED') {
+                changed the priority
+                @if (activity.fromPriority) {
+                  from <span class="badge priority" [class]="priorityMeta[activity.fromPriority].className"><i [class]="priorityMeta[activity.fromPriority].icon" aria-hidden="true"></i> {{ priorityMeta[activity.fromPriority].label }}</span>
+                }
+                @if (activity.toPriority) {
+                  to <span class="badge priority" [class]="priorityMeta[activity.toPriority].className"><i [class]="priorityMeta[activity.toPriority].icon" aria-hidden="true"></i> {{ priorityMeta[activity.toPriority].label }}</span>
+                }
               }
             }
             @if (activity.file; as file) {

@@ -94,6 +94,8 @@ src/app/
 └── shared/        # notifications (toasts), radial-menu (right-click), side-panel (forms),
                    # info-hint ("i" icon with a help popover, projected content),
                    # pagination (summary + numbered pages, for server-paged lists),
+                   # filter-menu (multi-select dropdown for search bars, with presets),
+                   # rich-select (single-choice dropdown with icon + label + description),
                    # editable-input-text, rich-text-editor (Tiptap + slash commands)
 ```
 

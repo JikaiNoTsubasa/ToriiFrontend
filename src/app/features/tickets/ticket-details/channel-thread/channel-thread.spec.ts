@@ -31,7 +31,7 @@ function message(id: number, createdAt: string): TicketMessage {
 }
 
 function activity(id: number, createdAt: string, type: TicketActivity['type'] = 'STATUS_CHANGED'): TicketActivity {
-  return { id, type, actor: user, createdAt, fromStatus: 'NEW', toStatus: 'IN_PROGRESS', file: null };
+  return { id, type, actor: user, createdAt, fromStatus: 'NEW', toStatus: 'IN_PROGRESS', fromType: null, toType: null, fromPriority: null, toPriority: null, file: null };
 }
 
 describe('sideNames', () => {

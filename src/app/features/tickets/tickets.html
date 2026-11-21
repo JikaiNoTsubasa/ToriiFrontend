@@ -17,7 +17,7 @@
 
 <div class="page">
   <div class="panel">
-    <!-- Search bar with the status filter built in -->
+    <!-- Search bar with the filters built in -->
     <div class="search-bar" role="search">
       <i class="fas fa-magnifying-glass search-bar__icon" aria-hidden="true"></i>
       <input
@@ -29,43 +29,32 @@
         (input)="searchInput.set($any($event.target).value)"
       />
 
-      <div class="search-bar__filter" #statusFilter>
-        <button
-          class="search-bar__filter-toggle"
-          type="button"
-          aria-haspopup="true"
-          [attr.aria-expanded]="statusMenuOpen()"
-          [class.search-bar__filter-toggle--active]="statusMenuOpen()"
-          (click)="statusMenuOpen.set(!statusMenuOpen())"
-        >
-          <i class="fas fa-filter" aria-hidden="true"></i>
-          Status: <strong>{{ statusSummary() }}</strong>
-          <i class="fas fa-chevron-down search-bar__chevron" aria-hidden="true"></i>
-        </button>
-
-        @if (statusMenuOpen()) {
-          <div class="filter-menu" role="group" aria-label="Filter by status">
-            <div class="filter-menu__presets">
-              <button class="btn btn--ghost btn--sm" type="button" (click)="selectStatuses(openStatuses)">Open only</button>
-              <button class="btn btn--ghost btn--sm" type="button" (click)="selectStatuses(statuses)">All</button>
-              <button class="btn btn--ghost btn--sm" type="button" (click)="selectStatuses([])">None</button>
-            </div>
-            <ul class="filter-menu__list">
-              @for (status of statuses; track status) {
-                <li>
-                  <label class="filter-menu__option">
-                    <input type="checkbox" [checked]="selectedStatuses().has(status)" (change)="toggleStatus(status)" />
-                    <span class="badge" [class]="statusMeta[status].badge">{{ statusMeta[status].label }}</span>
-                  </label>
-                </li>
-              }
-            </ul>
-            <p class="text-muted filter-menu__hint">
-              A ticket is shown when at least one of its channels has a selected status.
-            </p>
-          </div>
-        }
-      </div>
+      <app-filter-menu
+        label="Status"
+        icon="fas fa-flag"
+        defaultLabel="Open"
+        hint="A ticket is shown when at least one of its channels has a selected status."
+        [options]="statusOptions"
+        [defaults]="openStatuses"
+        [presets]="statusPresets"
+        [selected]="selectedStatuses()"
+        (selectedChange)="setStatuses($event)"
+      />
+      <app-filter-menu
+        label="Type"
+        icon="fas fa-shapes"
+        [options]="typeOptions"
+        [selected]="selectedTypes()"
+        (selectedChange)="setTypes($event)"
+      />
+      <app-filter-menu
+        label="Priority"
+        icon="fas fa-signal"
+        [options]="priorityOptions"
+        [presets]="priorityPresets"
+        [selected]="selectedPriorities()"
+        (selectedChange)="setPriorities($event)"
+      />
 
       @if (isFiltered()) {
         <button class="btn btn--ghost btn--sm" type="button" (click)="resetFilters()">
@@ -79,6 +68,7 @@
         <tr>
           <th>Number</th>
           <th>Title</th>
+          <th>Priority</th>
           <th>
             Status
             <app-info-hint label="About ticket statuses">
@@ -110,7 +100,19 @@
             <td class="table__code">
               <a class="table__link" [routerLink]="['/tickets', row.number]">{{ row.number }}</a>
             </td>
-            <td>{{ row.title }}</td>
+            <td>
+              <span class="ticket-title">
+                {{ row.title }}
+                <span class="ticket-type" [class]="typeMeta[row.type].className">
+                  <i [class]="typeMeta[row.type].icon" aria-hidden="true"></i> {{ typeMeta[row.type].label }}
+                </span>
+              </span>
+            </td>
+            <td>
+              <span class="badge priority" [class]="priorityMeta[row.priority].className" [attr.title]="priorityMeta[row.priority].description">
+                <i [class]="priorityMeta[row.priority].icon" aria-hidden="true"></i> {{ priorityMeta[row.priority].label }}
+              </span>
+            </td>
             <td>
               <!-- One badge per channel of the user (each channel has its own status). -->
               <span class="badge-list">
@@ -144,9 +146,9 @@
           </tr>
         } @empty {
           <tr>
-            <td class="table__empty" colspan="5">
-              @if (noStatusSelected()) {
-                Select at least one status to see tickets.
+            <td class="table__empty" colspan="6">
+              @if (emptySelection()) {
+                Select at least one value in each filter to see tickets.
                 <button class="link" type="button" (click)="resetFilters()">Reset filters</button>
               } @else if (tickets.isLoading()) {
                 Loading tickets…

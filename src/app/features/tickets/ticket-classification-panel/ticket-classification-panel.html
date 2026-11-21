@@ -1,0 +1,24 @@
+<form class="side-panel__form" novalidate (submit)="save($event)">
+  <div class="side-panel__body">
+    <p class="text-muted panel__hint">
+      Type and priority are shared by every channel of the ticket; a change is logged in each channel's feed.
+    </p>
+
+    <app-priority-picker [(value)]="priority" [current]="ticket().priority" />
+
+    <div class="field">
+      <span>Type</span>
+      <app-rich-select ariaLabel="Type" [options]="typeOptions" [(value)]="type" />
+      @if (type() !== ticket().type) {
+        <small class="text-muted">Currently {{ typeMeta[ticket().type].label }}.</small>
+      }
+    </div>
+  </div>
+
+  <footer class="side-panel__footer">
+    <button class="btn btn--ghost" type="button" (click)="ref.close()">Cancel</button>
+    <button class="btn" type="submit" [disabled]="saving() || unchanged()">
+      {{ saving() ? 'Saving…' : 'Save' }}
+    </button>
+  </footer>
+</form>
