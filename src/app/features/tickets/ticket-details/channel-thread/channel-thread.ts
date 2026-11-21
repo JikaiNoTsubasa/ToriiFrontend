@@ -21,7 +21,13 @@ import {
 } from '../../../../core/services/ticket.models';
 import { TicketService } from '../../../../core/services/ticket.service';
 import { TICKET_STATUS_META } from '../../../../core/services/ticket-status';
-import { fileIcon, formatFileSize, saveBlob } from '../../../../shared/files/files';
+import {
+  fileIcon,
+  formatFileSize,
+  lastImageIndex,
+  namePastedImage,
+  saveBlob,
+} from '../../../../shared/files/files';
 import { isBlankHtml } from '../../../../shared/rich-text-editor/html-text';
 import { RichTextEditorComponent } from '../../../../shared/rich-text-editor/rich-text-editor';
 
@@ -60,7 +66,9 @@ export class ChannelThread {
 
   protected readonly meta = TICKET_STATUS_META;
   protected readonly sending = signal(false);
-  protected readonly uploading = signal(false);
+  /** Uploads in progress (pastes can overlap, so a counter rather than a flag). */
+  private readonly pendingUploads = signal(0);
+  protected readonly uploading = computed(() => this.pendingUploads() > 0);
   protected readonly fileIcon = fileIcon;
   protected readonly formatFileSize = formatFileSize;
 
@@ -117,14 +125,34 @@ export class ChannelThread {
     });
   }
 
-  /** Uploads the picked files to this channel right away (they appear in the feed). */
-  protected async upload(input: HTMLInputElement): Promise<void> {
+  /** Uploads the files picked with "Attach files". */
+  protected upload(input: HTMLInputElement): void {
     const files = Array.from(input.files ?? []);
     input.value = ''; // allow picking the same file again
-    if (!files.length || this.uploading()) {
+    void this.uploadFiles(files);
+  }
+
+  /**
+   * Images pasted into the reply are uploaded as `image_1.png`, `image_2.png`… Numbering
+   * continues from the channel's existing `image_N` files and from this session's pastes.
+   */
+  protected pasteImages(images: File[]): void {
+    const named = images.map((image) => {
+      this.lastImageIndex = Math.max(this.lastImageIndex, lastImageIndex(this.channel().files.map((f) => f.fileName))) + 1;
+      return namePastedImage(image, this.lastImageIndex);
+    });
+    void this.uploadFiles(named);
+  }
+
+  /** Highest `image_N` index assigned by this composer (pastes may outrun the ticket reload). */
+  private lastImageIndex = 0;
+
+  /** Uploads files to this channel right away (they appear in the feed). */
+  private async uploadFiles(files: File[]): Promise<void> {
+    if (!files.length) {
       return;
     }
-    this.uploading.set(true);
+    this.pendingUploads.update((n) => n + 1);
     try {
       const uploaded = await firstValueFrom(this.service.uploadFiles(this.ticketNumber(), this.channel().id, files));
       this.notifications.success(
@@ -135,7 +163,7 @@ export class ChannelThread {
     } catch {
       // Error already notified by errorInterceptor.
     } finally {
-      this.uploading.set(false);
+      this.pendingUploads.update((n) => n - 1);
     }
   }
 

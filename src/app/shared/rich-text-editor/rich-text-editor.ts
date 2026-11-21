@@ -59,8 +59,17 @@ export class RichTextEditorComponent implements OnDestroy, ControlValueAccessor 
   /** Minimum height of the writing area (CSS length, e.g. `'24rem'`); default 120px. */
   readonly minHeight = input<string | null>(null);
 
+  /**
+   * Intercepts pasted images: instead of being dropped by the editor, they are emitted
+   * through `imagesPasted` (e.g. to upload them). Off by default.
+   */
+  readonly pasteImages = input(false);
+
   /** Emitted on every content change, with the current HTML. */
   readonly contentChange = output<string>();
+
+  /** Images pasted into the editor (only when `pasteImages` is on). */
+  readonly imagesPasted = output<File[]>();
 
   /** Emitted on blur, with the current HTML (handy for saving). */
   readonly editorBlur = output<string>();
@@ -108,6 +117,9 @@ export class RichTextEditorComponent implements OnDestroy, ControlValueAccessor 
         }),
       ],
       content: this.pendingContent,
+      editorProps: {
+        handlePaste: (_view, event) => this.handleImagePaste(event),
+      },
       onUpdate: ({ editor }) => {
         const html = editor.getHTML();
         this.onChange(html);
@@ -118,6 +130,20 @@ export class RichTextEditorComponent implements OnDestroy, ControlValueAccessor 
         this.editorBlur.emit(editor.getHTML());
       },
     });
+  }
+
+  /** Returns true (paste handled) when the clipboard holds images and `pasteImages` is on. */
+  private handleImagePaste(event: ClipboardEvent): boolean {
+    if (!this.pasteImages()) {
+      return false;
+    }
+    const images = Array.from(event.clipboardData?.files ?? []).filter((file) => file.type.startsWith('image/'));
+    if (!images.length) {
+      return false;
+    }
+    event.preventDefault();
+    this.imagesPasted.emit(images);
+    return true;
   }
 
   ngOnDestroy(): void {

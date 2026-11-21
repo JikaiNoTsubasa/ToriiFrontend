@@ -165,9 +165,11 @@
       <span class="text-muted">— only this channel's participants will see it</span>
     </div>
     <app-rich-text-editor
-      placeholder="Write your reply… Type '/' to insert a block."
+      placeholder="Write your reply… Type '/' to insert a block, or paste an image to attach it."
       minHeight="7rem"
+      [pasteImages]="true"
       [formField]="form.content"
+      (imagesPasted)="pasteImages($event)"
     />
     <div class="composer__actions">
       <!-- Files are uploaded to this channel right away (visible in the feed). -->
@@ -184,7 +186,7 @@
       @if (form.content().touched() && form.content().errors().length) {
         <small class="field__error">{{ form.content().errors()[0].message }}</small>
       }
-      <small class="text-muted composer__hint">Ctrl + Enter to send</small>
+      <small class="text-muted composer__hint">Ctrl + Enter to send · paste an image to attach it</small>
       <button class="btn" type="submit" [disabled]="sending()">
         <i class="fas fa-paper-plane"></i> {{ sending() ? 'Sending…' : 'Send to ' + counterpart() }}
       </button>

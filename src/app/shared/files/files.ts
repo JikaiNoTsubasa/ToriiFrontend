@@ -26,6 +26,32 @@ export function fileIcon(contentType: string, fileName: string): string {
   return 'fas fa-file';
 }
 
+/** File extensions of common image types. */
+const IMAGE_EXTENSIONS: Record<string, string> = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/gif': 'gif',
+  'image/webp': 'webp',
+  'image/svg+xml': 'svg',
+  'image/bmp': 'bmp',
+  'image/avif': 'avif',
+};
+
+/** Highest N among existing `image_N.ext` file names (0 when none). */
+export function lastImageIndex(fileNames: readonly string[]): number {
+  return fileNames.reduce((max, name) => {
+    const match = /^image_(\d+)\.[a-z0-9]+$/i.exec(name);
+    return match ? Math.max(max, Number(match[1])) : max;
+  }, 0);
+}
+
+/** Renames a pasted image to `image_{index}.{ext}` (extension from its type, `png` by default). */
+export function namePastedImage(image: File, index: number): File {
+  const fromName = /\.([a-z0-9]+)$/i.exec(image.name)?.[1]?.toLowerCase();
+  const extension = IMAGE_EXTENSIONS[image.type] ?? fromName ?? 'png';
+  return new File([image], `image_${index}.${extension}`, { type: image.type || 'image/png' });
+}
+
 /** Triggers a browser download of `blob` under `fileName`. */
 export function saveBlob(blob: Blob, fileName: string): void {
   const url = URL.createObjectURL(blob);
