@@ -14,6 +14,14 @@ export const TICKET_STATUSES = apiEnum(
 );
 export type TicketStatus = ApiEnumValue<typeof TICKET_STATUSES>;
 
+/** Statuses of finished work (hidden by the default ticket list filter). */
+export const DONE_TICKET_STATUSES: readonly TicketStatus[] = ['RESOLVED', 'CLOSED', 'CANCELLED'];
+
+/** Statuses still needing attention (default ticket list filter). */
+export const OPEN_TICKET_STATUSES: readonly TicketStatus[] = TICKET_STATUSES.filter(
+  (status) => !DONE_TICKET_STATUSES.includes(status),
+);
+
 export interface TicketStatusMeta {
   label: string;
   /** Badge modifier class (styles.scss). */

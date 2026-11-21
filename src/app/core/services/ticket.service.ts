@@ -15,7 +15,19 @@ import {
   TicketMessage,
   TicketSendOption,
 } from './ticket.models';
+import { PagedResult } from '../http/paged-result';
 import { TicketStatus } from './ticket-status';
+
+/**
+ * Ticket list query. `statuses` keeps tickets where at least one of the user's channels has
+ * one of them (`null` = any status); `page` is 1-based.
+ */
+export interface TicketListQuery {
+  search: string;
+  statuses: readonly TicketStatus[] | null;
+  page: number;
+  pageSize: number;
+}
 
 @Injectable({ providedIn: 'root' })
 export class TicketService {
@@ -23,13 +35,26 @@ export class TicketService {
   private readonly baseUrl = `${environment.apiUrl}/tickets`;
 
   /**
-   * Tickets visible to the signed-in user, as a signal resource
-   * (`value()`, `isLoading()`, `error()`, `reload()`). Call it in an injection
-   * context (component field initializer): the request lives and dies with the
-   * component. Errors go through errorInterceptor (toast + AppError).
+   * One page of the tickets visible to the signed-in user, filtered and paginated by the API,
+   * as a signal resource reloading whenever `query()` changes (`undefined` = no request).
+   * Call it in an injection context (component field initializer). Errors go through
+   * errorInterceptor (toast + AppError).
    */
-  visibleTickets(): HttpResourceRef<TicketListItem[]> {
-    return httpResource<TicketListItem[]>(() => this.baseUrl, { defaultValue: [] });
+  visibleTickets(query: () => TicketListQuery | undefined): HttpResourceRef<PagedResult<TicketListItem> | undefined> {
+    return httpResource<PagedResult<TicketListItem>>(() => {
+      const q = query();
+      if (!q) {
+        return undefined;
+      }
+      const params: Record<string, string | number | readonly string[]> = { page: q.page, pageSize: q.pageSize };
+      if (q.search) {
+        params['search'] = q.search;
+      }
+      if (q.statuses) {
+        params['status'] = q.statuses;
+      }
+      return { url: this.baseUrl, params };
+    });
   }
 
   /** Customers the user may send tickets from, with their allowed targets (signal resource). */

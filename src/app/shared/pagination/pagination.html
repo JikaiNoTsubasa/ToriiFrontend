@@ -1,0 +1,42 @@
+<nav class="pagination" aria-label="Pagination">
+  <span class="pagination__summary text-muted">
+    @if (totalCount()) {
+      Showing <strong>{{ from() }}–{{ to() }}</strong> of <strong>{{ totalCount() }}</strong>
+      {{ itemLabel() }}{{ totalCount() > 1 ? 's' : '' }}
+    } @else {
+      No {{ itemLabel() }}s
+    }
+  </span>
+
+  @if (totalPages() > 1) {
+    <div class="pagination__pages">
+      <button class="pagination__button" type="button" aria-label="Previous page" [disabled]="page() <= 1" (click)="go(page() - 1)">
+        <i class="fas fa-chevron-left" aria-hidden="true"></i>
+      </button>
+      @for (item of items(); track item.kind === 'page' ? item.page : item.key) {
+        @if (item.kind === 'page') {
+          <button
+            class="pagination__button"
+            type="button"
+            [class.pagination__button--current]="item.page === page()"
+            [attr.aria-current]="item.page === page() ? 'page' : null"
+            (click)="go(item.page)"
+          >
+            {{ item.page }}
+          </button>
+        } @else {
+          <span class="pagination__gap" aria-hidden="true">…</span>
+        }
+      }
+      <button
+        class="pagination__button"
+        type="button"
+        aria-label="Next page"
+        [disabled]="page() >= totalPages()"
+        (click)="go(page() + 1)"
+      >
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+      </button>
+    </div>
+  }
+</nav>

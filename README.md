@@ -93,6 +93,7 @@ src/app/
 ├── layout/        # shell (sidebar with submenus + content), topbar
 └── shared/        # notifications (toasts), radial-menu (right-click), side-panel (forms),
                    # info-hint ("i" icon with a help popover, projected content),
+                   # pagination (summary + numbered pages, for server-paged lists),
                    # editable-input-text, rich-text-editor (Tiptap + slash commands)
 ```
 
