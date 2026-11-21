@@ -20,8 +20,9 @@
         <tr>
           <th>Number</th>
           <th>Title</th>
-          <th>Customers</th>
-          <th class="table__num">Channels</th>
+          <th>Status</th>
+          <th>Created by</th>
+          <th>Customer</th>
         </tr>
       </thead>
       <tbody>
@@ -29,12 +30,40 @@
           <tr (contextmenu)="onContextMenu($event, row)">
             <td class="table__code">{{ row.number }}</td>
             <td>{{ row.title }}</td>
+            <td>
+              <!-- One badge per channel of the user (each channel has its own status). -->
+              <span class="badge-list">
+                @for (channel of row.channels; track channel.id) {
+                  <button
+                    class="badge badge--button"
+                    type="button"
+                    [class]="statusMeta[channel.status].badge"
+                    [attr.title]="statusMeta[channel.status].description + ' Click to change.'"
+                    (click)="changeStatus(row, channel)"
+                  >
+                    {{ statusMeta[channel.status].label }}
+                  </button>
+                }
+              </span>
+            </td>
+            <td>
+              @if (row.createdBy; as author) {
+                <span class="user-chip">
+                  <img class="user-chip__avatar" [src]="author.avatarUrl" alt="" />
+                  <span class="user-chip__text">
+                    {{ author.displayName }}
+                    <small class="text-muted">{{ row.createdAt | date: 'MMM d, y, HH:mm' }}</small>
+                  </span>
+                </span>
+              } @else {
+                <span class="text-muted">—</span>
+              }
+            </td>
             <td class="text-muted">{{ row.customers || '—' }}</td>
-            <td class="table__num">{{ row.channelCount }}</td>
           </tr>
         } @empty {
           <tr>
-            <td class="table__empty" colspan="4">
+            <td class="table__empty" colspan="5">
               @if (tickets.isLoading()) {
                 Loading tickets…
               } @else if (tickets.error()) {

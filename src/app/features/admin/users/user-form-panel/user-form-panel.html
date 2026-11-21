@@ -1,0 +1,60 @@
+<form class="side-panel__form" novalidate (submit)="save($event)">
+  <div class="side-panel__body">
+    <label class="field">
+      <span>Email</span>
+      <input type="email" autocomplete="off" placeholder="name@company.com" [formField]="form.email" />
+      @if (form.email().touched() && form.email().errors().length) {
+        <small class="field__error">{{ form.email().errors()[0].message }}</small>
+      }
+    </label>
+
+    <label class="field">
+      <span>Display name</span>
+      <input type="text" placeholder="First and last name" [formField]="form.displayName" />
+      @if (form.displayName().touched() && form.displayName().errors().length) {
+        <small class="field__error">{{ form.displayName().errors()[0].message }}</small>
+      }
+    </label>
+
+    <label class="field">
+      <span>Role</span>
+      <select [formField]="form.role">
+        <option value="USER">User</option>
+        <option value="ADMIN">Administrator</option>
+      </select>
+      @if (form.role().disabledReasons().length) {
+        <small class="text-muted">{{ form.role().disabledReasons()[0].message }}</small>
+      }
+    </label>
+
+    <label class="field">
+      <span>{{ isEdit() ? 'New password' : 'Initial password' }}</span>
+      <input
+        type="password"
+        autocomplete="new-password"
+        [attr.placeholder]="isEdit() ? 'Leave empty to keep the current password' : '8 characters minimum'"
+        [formField]="form.password"
+      />
+      @if (form.password().touched() && form.password().errors().length) {
+        <small class="field__error">{{ form.password().errors()[0].message }}</small>
+      }
+    </label>
+
+    @if (isEdit()) {
+      <label class="field field--checkbox">
+        <input type="checkbox" [formField]="form.isActive" />
+        <span>Active <small class="text-muted">(a disabled user cannot sign in)</small></span>
+      </label>
+      @if (form.isActive().disabledReasons().length) {
+        <small class="text-muted">{{ form.isActive().disabledReasons()[0].message }}</small>
+      }
+    }
+  </div>
+
+  <footer class="side-panel__footer">
+    <button class="btn btn--ghost" type="button" (click)="ref.close()">Cancel</button>
+    <button class="btn" type="submit" [disabled]="saving()">
+      {{ saving() ? 'Saving…' : isEdit() ? 'Save' : 'Create user' }}
+    </button>
+  </footer>
+</form>

@@ -232,6 +232,18 @@ p {
   object-fit: cover;
 }
 
+/* Name + secondary line (e.g. a date) stacked next to the avatar. */
+.user-chip__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+
+  small {
+    font-size: 0.75rem;
+    font-weight: 400;
+  }
+}
+
 /* ----- Messages ----- */
 .alert {
   padding: 0.6rem 0.75rem;
@@ -565,6 +577,92 @@ $sidebar-width: 260px;
   border-color: $color-border;
   background: transparent;
   text-decoration: line-through;
+}
+
+.badge--waiting {
+  color: #c47a0b;
+  border-color: #c47a0b;
+  background: rgba(#c47a0b, 0.1);
+}
+
+.badge--hold {
+  color: #6b4fa0;
+  border-color: #6b4fa0;
+  background: rgba(#6b4fa0, 0.1);
+}
+
+.badge--closed {
+  color: $color-panel;
+  border-color: $color-muted;
+  background: $color-muted;
+}
+
+/* Clickable badge (e.g. a status that opens its edit panel). */
+.badge--button {
+  font-family: inherit;
+  cursor: pointer;
+
+  &:hover {
+    filter: brightness(0.92);
+  }
+}
+
+/* Several badges in one cell. */
+.badge-list {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* ----- Status picker (radio list with descriptions) ----- */
+.status-picker {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.status-picker__legend {
+  margin-bottom: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.status-picker__option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid $color-border;
+  background: $color-input;
+  cursor: pointer;
+
+  &:hover {
+    border-color: $color-primary;
+  }
+
+  &--selected {
+    border-color: $color-primary;
+    background: $color-primary-soft;
+  }
+
+  input {
+    margin-top: 0.2rem;
+    accent-color: $color-primary;
+  }
+}
+
+.status-picker__text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.status-picker__description {
+  flex-basis: 100%;
+  font-size: 0.8rem;
 }
 
 /* ----- Tabs ----- */

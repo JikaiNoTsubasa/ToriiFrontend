@@ -33,7 +33,9 @@ export class AdminCustomerService {
     return httpResource<UserDto[]>(
       () => {
         const value = search();
-        return value ? { url: this.usersUrl, params: { search: value } } : undefined;
+        return value
+          ? { url: this.usersUrl, params: { search: value, activeOnly: true, take: 20 } }
+          : undefined;
       },
       { defaultValue: [] },
     );

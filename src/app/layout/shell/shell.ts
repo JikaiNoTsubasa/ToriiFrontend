@@ -26,6 +26,7 @@ const NAV: NavItem[] = [
     path: '/admin',
     adminOnly: true,
     children: [
+      { label: 'Users', icon: 'fa fa-users', path: '/admin/users' },
       { label: 'Customers', icon: 'fa fa-building', path: '/admin/customers' },
       { label: 'Tickets', icon: 'fa fa-ticket', path: '/admin/tickets' },
     ],

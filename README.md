@@ -83,7 +83,7 @@ src/app/
 ├── core/          # auth, interceptors, guards, notifications, clipboard, problem-details,
 │                  # api-enum, services/ (httpResource-based API services)
 ├── features/      # auth/login, home, tickets (list + ticket-create page `/tickets/new`),
-│                  # admin/ (customers, customer-details, ticket-config: ticket edges)
+│                  # admin/ (users, customers, customer-details, ticket-config: ticket edges)
 ├── layout/        # shell (sidebar with submenus + content), topbar
 └── shared/        # notifications (toasts), radial-menu (right-click), side-panel (forms),
                    # editable-input-text, rich-text-editor (Tiptap + slash commands)

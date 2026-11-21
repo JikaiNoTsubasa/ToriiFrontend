@@ -1,0 +1,98 @@
+<app-topbar heading="Users">
+  <span class="text-muted">
+    {{ users.value().length }} user{{ users.value().length > 1 ? 's' : '' }} · {{ activeCount() }} active
+  </span>
+  <button class="btn" type="button" (click)="openCreate()">+ New user</button>
+</app-topbar>
+
+<div class="page">
+  <div class="panel">
+    <div class="panel__head">
+      <label class="field inline-form__grow">
+        <input
+          type="search"
+          placeholder="Filter by name or email"
+          [value]="search()"
+          (input)="search.set($any($event.target).value)"
+        />
+      </label>
+    </div>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th class="table__num">Customers</th>
+          <th>Created</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of filtered(); track user.id) {
+          <tr [class.table__row--muted]="!user.isActive" (contextmenu)="onContextMenu($event, user)">
+            <td>
+              <span class="user-chip">
+                <img class="user-chip__avatar" [src]="user.avatarUrl" alt="" />
+                {{ user.displayName }}
+                @if (isSelf(user)) {
+                  <span class="badge">You</span>
+                }
+              </span>
+            </td>
+            <td class="text-muted">{{ user.email }}</td>
+            <td>
+              <span class="badge" [class.badge--new]="user.role === 'ADMIN'">
+                {{ user.role === 'ADMIN' ? 'Administrator' : 'User' }}
+              </span>
+            </td>
+            <td>
+              <span class="badge" [class.badge--done]="user.isActive" [class.badge--cancelled]="!user.isActive">
+                {{ user.isActive ? 'Active' : 'Disabled' }}
+              </span>
+            </td>
+            <td class="table__num">{{ user.customerCount }}</td>
+            <td class="text-muted">{{ user.createdAt | date: 'MMM d, y' }}</td>
+            <td class="table__actions">
+              <button class="btn btn--ghost btn--sm" type="button" (click)="openEdit(user)">
+                <i class="fas fa-pen"></i> Edit
+              </button>
+              <button
+                class="btn btn--ghost btn--sm"
+                type="button"
+                [disabled]="busy() || isSelf(user)"
+                (click)="toggleActive(user)"
+              >
+                {{ user.isActive ? 'Disable' : 'Enable' }}
+              </button>
+              <button
+                class="btn btn--ghost btn--sm"
+                type="button"
+                [disabled]="busy() || isSelf(user)"
+                (click)="remove(user)"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td class="table__empty" colspan="7">
+              @if (users.isLoading()) {
+                Loading users…
+              } @else if (users.error()) {
+                Unable to load users.
+              } @else if (search()) {
+                No user matches "{{ search() }}".
+              } @else {
+                No users yet.
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

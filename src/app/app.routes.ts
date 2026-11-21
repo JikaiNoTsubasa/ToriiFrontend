@@ -37,6 +37,10 @@ export const routes: Routes = [
         children: [
           { path: '', pathMatch: 'full', redirectTo: 'customers' },
           {
+            path: 'users',
+            loadComponent: () => import('./features/admin/users/users').then((m) => m.AdminUsers),
+          },
+          {
             path: 'customers',
             loadComponent: () =>
               import('./features/admin/customers/customers').then((m) => m.AdminCustomers),

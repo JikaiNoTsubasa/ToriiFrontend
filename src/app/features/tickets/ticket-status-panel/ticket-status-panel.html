@@ -1,0 +1,39 @@
+<form class="side-panel__form" novalidate (submit)="save($event)">
+  <div class="side-panel__body">
+    @if (ticket().channels.length > 1) {
+      <label class="field">
+        <span>Channel</span>
+        <select [value]="selectedChannelId()" (change)="selectChannel($any($event.target).value)">
+          @for (ch of ticket().channels; track ch.id) {
+            <option [value]="ch.id">With {{ counterpart(ch) }} — {{ meta[ch.status].label }}</option>
+          }
+        </select>
+      </label>
+    } @else if (channel(); as ch) {
+      <p class="text-muted">Channel with <strong>{{ counterpart(ch) }}</strong></p>
+    }
+
+    <fieldset class="status-picker">
+      <legend class="status-picker__legend">Status</legend>
+      @for (value of statuses; track value) {
+        <label class="status-picker__option" [class.status-picker__option--selected]="status() === value">
+          <input type="radio" name="status" [value]="value" [checked]="status() === value" (change)="status.set(value)" />
+          <span class="status-picker__text">
+            <span class="badge" [class]="meta[value].badge">{{ meta[value].label }}</span>
+            @if (channel()?.status === value) {
+              <small class="text-muted">(current)</small>
+            }
+            <small class="text-muted status-picker__description">{{ meta[value].description }}</small>
+          </span>
+        </label>
+      }
+    </fieldset>
+  </div>
+
+  <footer class="side-panel__footer">
+    <button class="btn btn--ghost" type="button" (click)="ref.close()">Cancel</button>
+    <button class="btn" type="submit" [disabled]="saving() || unchanged()">
+      {{ saving() ? 'Saving…' : 'Change status' }}
+    </button>
+  </footer>
+</form>

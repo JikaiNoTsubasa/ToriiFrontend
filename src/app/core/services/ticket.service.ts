@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { CreateTicketRequest, TicketListItem, TicketSendOption } from './ticket.models';
+import { TicketStatus } from './ticket-status';
 
 @Injectable({ providedIn: 'root' })
 export class TicketService {
@@ -27,5 +28,10 @@ export class TicketService {
   /** Creates the ticket, its channel and the first message; returns the listed ticket. */
   create(request: CreateTicketRequest): Observable<TicketListItem> {
     return this.http.post<TicketListItem>(this.baseUrl, request);
+  }
+
+  /** Changes the status of one channel of a ticket; returns the updated listed ticket. */
+  updateChannelStatus(number: string, channelId: number, status: TicketStatus): Observable<TicketListItem> {
+    return this.http.put<TicketListItem>(`${this.baseUrl}/${number}/channels/${channelId}/status`, { status });
   }
 }
