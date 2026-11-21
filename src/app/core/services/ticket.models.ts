@@ -42,9 +42,62 @@ export interface TicketDetail extends TicketListItem {
   channels: TicketChannelDetail[];
 }
 
-/** Channel with its conversation (messages oldest first) — mirror of `TicketChannelDetailDto`. */
+/**
+ * Channel with its conversation — mirror of `TicketChannelDetailDto`: messages and activity
+ * events (both oldest first, merged into one feed by the UI) and the attached files.
+ */
 export interface TicketChannelDetail extends TicketChannel {
   messages: TicketMessage[];
+  activities: TicketActivity[];
+  files: ChannelFile[];
+}
+
+/** File attached to a channel — mirror of `ChannelFileDto` (`fileId` is shared by forwards). */
+export interface ChannelFile {
+  fileId: number;
+  fileName: string;
+  contentType: string;
+  size: number;
+  addedBy: UserRef;
+  addedAt: string;
+  isForwarded: boolean;
+}
+
+/** File reference — mirror of `FileRefDto`. */
+export interface FileRef {
+  fileId: number;
+  fileName: string;
+  contentType: string;
+  size: number;
+}
+
+/** Activity kinds — mirror of the backend `TicketActivityType` enum. */
+export type TicketActivityType = 'CHANNEL_OPENED' | 'STATUS_CHANGED' | 'FILE_UPLOADED' | 'FILE_FORWARDED';
+
+/** Activity event of a channel — mirror of `TicketActivityDto` (fields depend on `type`). */
+export interface TicketActivity {
+  id: number;
+  type: TicketActivityType;
+  actor: UserRef;
+  createdAt: string;
+  /** STATUS_CHANGED: previous status (`null` when unknown, e.g. backfilled history). */
+  fromStatus: TicketStatus | null;
+  toStatus: TicketStatus | null;
+  /** FILE_UPLOADED / FILE_FORWARDED. */
+  file: FileRef | null;
+}
+
+/** File forward destination — mirror of `ForwardFileRequest`. */
+export interface ForwardFileRequest {
+  targetChannelId: number | null;
+  sourceCustomerId: number | null;
+  targetCustomerId: number | null;
+}
+
+/** Mirror of `ForwardFileResultDto`. */
+export interface ForwardFileResult {
+  channelId: number;
+  channelCreated: boolean;
 }
 
 /** Message of a channel — mirror of `TicketMessageDto`. */

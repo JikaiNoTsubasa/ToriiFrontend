@@ -4,7 +4,8 @@ import { Router, RouterLink } from '@angular/router';
 import { ClipboardService } from '../../../core/clipboard/clipboard.service';
 import { NotificationService } from '../../../core/notifications/notification.service';
 import {
-  ForwardResult,
+  FileRef,
+  TicketActivity,
   TicketChannelDetail,
   TicketDetail,
   TicketListItem,
@@ -16,8 +17,8 @@ import { Topbar } from '../../../layout/topbar/topbar';
 import { htmlToText } from '../../../shared/rich-text-editor/html-text';
 import { SidePanelService } from '../../../shared/side-panel/side-panel.service';
 import { TicketStatusPanel } from '../ticket-status-panel/ticket-status-panel';
-import { ChannelThread, sideNames } from './channel-thread/channel-thread';
-import { ForwardMessagePanel } from './forward-message-panel/forward-message-panel';
+import { buildFeed, ChannelThread, sideNames } from './channel-thread/channel-thread';
+import { ForwardOutcome, ForwardPanel } from './forward-panel/forward-panel';
 import { OpenChannelPanel } from './open-channel-panel/open-channel-panel';
 
 /** Length of the last-message preview in the channel list. */
@@ -82,24 +83,27 @@ export class TicketDetails {
     return sideNames(channel, false) || sideNames(channel, true);
   }
 
+  /** Preview of the latest feed entry (message or activity) for the channel list. */
   protected preview(channel: TicketChannelDetail): string {
-    const last = channel.messages.at(-1);
+    const last = buildFeed(channel).at(-1);
     if (!last) {
-      return 'No messages yet.';
+      return 'Nothing yet.';
     }
-    const comment = htmlToText(last.content);
-    const text = last.forwarded
-      ? `↪ ${comment || htmlToText(last.forwarded.content)}`
-      : comment;
-    const author = last.isMine ? 'You' : last.author.displayName;
+    if (last.kind === 'activity') {
+      return describeActivity(last.activity, this.meta);
+    }
+    const message = last.message;
+    const comment = htmlToText(message.content);
+    const text = message.forwarded ? `↪ ${comment || htmlToText(message.forwarded.content)}` : comment;
+    const author = message.isMine ? 'You' : message.author.displayName;
     return `${author}: ${text.length > PREVIEW_LENGTH ? text.slice(0, PREVIEW_LENGTH) + '…' : text}`;
   }
 
   protected lastActivity(channel: TicketChannelDetail): string | null {
-    return channel.messages.at(-1)?.createdAt ?? null;
+    return buildFeed(channel).at(-1)?.at ?? null;
   }
 
-  protected onMessagePosted(): void {
+  protected onChanged(): void {
     this.ticket.reload();
   }
 
@@ -122,18 +126,25 @@ export class TicketDetails {
       });
   }
 
-  /** Opens the forward panel for `message`; then shows the channel it landed in. */
-  protected forward(channel: TicketChannelDetail, message: TicketMessage): void {
+  /** Opens the forward panel for a message or a file; then shows the channel it landed in. */
+  protected forward(channel: TicketChannelDetail, item: { message: TicketMessage } | { file: FileRef }): void {
     const ticket = this.ticket.value();
     if (!ticket) {
       return;
     }
+    const isFile = 'file' in item;
     this.panel
-      .open<ForwardResult>(ForwardMessagePanel, {
-        title: 'Forward message',
+      .open<ForwardOutcome>(ForwardPanel, {
+        title: isFile ? 'Forward file' : 'Forward message',
         subtitle: `From the channel with ${this.counterpart(channel)}`,
         width: '560px',
-        inputs: { ticket, channel, message, options: this.sendOptions.value() },
+        inputs: {
+          ticket,
+          channel,
+          message: isFile ? null : item.message,
+          file: isFile ? item.file : null,
+          options: this.sendOptions.value(),
+        },
       })
       .closed.then((result) => {
         if (!result) {
@@ -146,9 +157,8 @@ export class TicketDetails {
           queryParamsHandling: 'merge',
           replaceUrl: true,
         });
-        this.notifications.success(
-          result.channelCreated ? 'Message forwarded to a new channel' : 'Message forwarded',
-        );
+        const what = isFile ? 'File' : 'Message';
+        this.notifications.success(result.channelCreated ? `${what} forwarded to a new channel` : `${what} forwarded`);
       });
   }
 
@@ -197,5 +207,20 @@ export class TicketDetails {
 
   private hasDrafts(): boolean {
     return this.threads().some((thread) => thread.hasDraft());
+  }
+}
+
+/** One-line summary of an activity event (channel list preview). */
+function describeActivity(activity: TicketActivity, meta: typeof TICKET_STATUS_META): string {
+  const actor = activity.actor.displayName;
+  switch (activity.type) {
+    case 'CHANNEL_OPENED':
+      return `${actor} opened this channel`;
+    case 'STATUS_CHANGED':
+      return `${actor} set the status to ${activity.toStatus ? meta[activity.toStatus].label : '—'}`;
+    case 'FILE_UPLOADED':
+      return `${actor} uploaded ${activity.file?.fileName ?? 'a file'}`;
+    case 'FILE_FORWARDED':
+      return `${actor} forwarded ${activity.file?.fileName ?? 'a file'}`;
   }
 }

@@ -82,9 +82,10 @@
             [hidden]="ch.id !== selectedId()"
             [ticketNumber]="t.number"
             [channel]="ch"
-            (messagePosted)="onMessagePosted()"
+            (changed)="onChanged()"
             (statusClick)="changeStatus(ch)"
-            (forwardClick)="forward(ch, $event)"
+            (forwardClick)="forward(ch, { message: $event })"
+            (forwardFileClick)="forward(ch, { file: $event })"
           />
         }
       </div>

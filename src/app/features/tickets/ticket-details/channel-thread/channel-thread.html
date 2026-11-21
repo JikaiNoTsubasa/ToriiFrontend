@@ -1,11 +1,12 @@
 <section class="panel thread">
-  <!-- Who talks to whom in this channel, and its status. -->
+  <!-- Who talks to whom in this channel, its status, and its files. -->
   <header class="thread__header">
     <div>
       <h2 class="thread__title">Channel with {{ counterpart() }}</h2>
       <p class="text-muted thread__parties">
         {{ ownSide() || '—' }} <i class="fas fa-right-left"></i> {{ counterpart() }}
         · {{ channel().messages.length }} message{{ channel().messages.length > 1 ? 's' : '' }}
+        · {{ channel().files.length }} file{{ channel().files.length > 1 ? 's' : '' }}
       </p>
     </div>
     <button
@@ -19,58 +20,139 @@
     </button>
   </header>
 
-  <!-- Conversation, oldest first; the user's side is tinted. -->
-  <ol class="thread__messages">
-    @for (message of channel().messages; track message.id) {
-      <li class="message" [class.message--own]="message.isOwnSide">
-        <img class="message__avatar" [src]="message.author.avatarUrl" alt="" />
-        <div class="message__bubble">
-          <div class="message__meta">
-            <strong>{{ message.isMine ? 'You' : message.author.displayName }}</strong>
-            @if (message.authorCustomerName) {
-              <span class="badge">{{ message.authorCustomerName }}</span>
-            }
-            <time class="text-muted" [attr.datetime]="message.createdAt">
-              {{ message.createdAt | date: 'MMM d, y, HH:mm' }}
-            </time>
-            <button
-              class="message__action"
-              type="button"
-              title="Forward this message to another channel"
-              (click)="forwardClick.emit(message)"
-            >
-              <i class="fas fa-share"></i> Forward
+  @if (channel().files.length) {
+    <details class="thread__files">
+      <summary>
+        <i class="fas fa-paperclip"></i> Files ({{ channel().files.length }})
+      </summary>
+      <ul class="file-list">
+        @for (file of channel().files; track file.fileId) {
+          <li class="file-chip">
+            <i [class]="fileIcon(file.contentType, file.fileName)" aria-hidden="true"></i>
+            <button class="file-chip__name" type="button" title="Download" (click)="download(file)">
+              {{ file.fileName }}
             </button>
-          </div>
+            <span class="text-muted file-chip__meta">
+              {{ formatFileSize(file.size) }} · {{ file.isForwarded ? 'forwarded' : 'uploaded' }} by
+              {{ file.addedBy.displayName }}, {{ file.addedAt | date: 'MMM d, HH:mm' }}
+            </span>
+            <button class="message__action" type="button" title="Forward this file" (click)="forwardFileClick.emit(file)">
+              <i class="fas fa-share"></i>
+            </button>
+          </li>
+        }
+      </ul>
+    </details>
+  }
 
-          @if (message.forwarded; as original) {
-            <!-- Forward: optional comment, then the quoted original. -->
-            @if (hasText(message.content)) {
+  <!-- Feed: messages interleaved with activity events, oldest first; the user's side is tinted. -->
+  <ol class="thread__messages">
+    @for (item of feed(); track item.key) {
+      @if (item.kind === 'message') {
+        @let message = item.message;
+        <li class="message" [class.message--own]="message.isOwnSide">
+          <img class="message__avatar" [src]="message.author.avatarUrl" alt="" />
+          <div class="message__bubble">
+            <div class="message__meta">
+              <strong>{{ message.isMine ? 'You' : message.author.displayName }}</strong>
+              @if (message.authorCustomerName) {
+                <span class="badge">{{ message.authorCustomerName }}</span>
+              }
+              <time class="text-muted" [attr.datetime]="message.createdAt">
+                {{ message.createdAt | date: 'MMM d, y, HH:mm' }}
+              </time>
+              <button
+                class="message__action"
+                type="button"
+                title="Forward this message to another channel"
+                (click)="forwardClick.emit(message)"
+              >
+                <i class="fas fa-share"></i> Forward
+              </button>
+            </div>
+
+            @if (message.forwarded; as original) {
+              <!-- Forward: optional comment, then the quoted original. -->
+              @if (hasText(message.content)) {
+                <div class="message__content rich-content" [innerHTML]="message.content"></div>
+              }
+              <blockquote class="message__forward">
+                <div class="message__forward-label"><i class="fas fa-share"></i> Forwarded message</div>
+                <div class="message__meta">
+                  <strong>{{ original.author.displayName }}</strong>
+                  @if (original.authorCustomerName) {
+                    <span class="badge">{{ original.authorCustomerName }}</span>
+                  }
+                  <span class="text-muted">{{ original.createdAt | date: 'MMM d, y, HH:mm' }}</span>
+                </div>
+                <div class="rich-content" [innerHTML]="original.content"></div>
+              </blockquote>
+            } @else {
               <div class="message__content rich-content" [innerHTML]="message.content"></div>
             }
-            <blockquote class="message__forward">
-              <div class="message__forward-label"><i class="fas fa-share"></i> Forwarded message</div>
-              <div class="message__meta">
-                <strong>{{ original.author.displayName }}</strong>
-                @if (original.authorCustomerName) {
-                  <span class="badge">{{ original.authorCustomerName }}</span>
+          </div>
+        </li>
+      } @else {
+        @let activity = item.activity;
+        <!-- Activity event: compact system line. -->
+        <li class="activity">
+          <span class="activity__icon" aria-hidden="true">
+            @switch (activity.type) {
+              @case ('CHANNEL_OPENED') { <i class="fas fa-door-open"></i> }
+              @case ('STATUS_CHANGED') { <i class="fas fa-flag"></i> }
+              @case ('FILE_UPLOADED') { <i class="fas fa-paperclip"></i> }
+              @case ('FILE_FORWARDED') { <i class="fas fa-share"></i> }
+            }
+          </span>
+          <span class="activity__text">
+            <strong>{{ activity.actor.displayName }}</strong>
+            @switch (activity.type) {
+              @case ('CHANNEL_OPENED') {
+                opened this channel
+              }
+              @case ('STATUS_CHANGED') {
+                changed the status
+                @if (activity.fromStatus) {
+                  from <span class="badge" [class]="meta[activity.fromStatus].badge">{{ meta[activity.fromStatus].label }}</span>
                 }
-                <span class="text-muted">{{ original.createdAt | date: 'MMM d, y, HH:mm' }}</span>
-              </div>
-              <div class="rich-content" [innerHTML]="original.content"></div>
-            </blockquote>
-          } @else {
-            <div class="message__content rich-content" [innerHTML]="message.content"></div>
-          }
-        </div>
-      </li>
+                @if (activity.toStatus) {
+                  to <span class="badge" [class]="meta[activity.toStatus].badge">{{ meta[activity.toStatus].label }}</span>
+                }
+              }
+              @case ('FILE_UPLOADED') {
+                uploaded
+              }
+              @case ('FILE_FORWARDED') {
+                forwarded
+              }
+            }
+            @if (activity.file; as file) {
+              <span class="file-chip file-chip--inline">
+                <i [class]="fileIcon(file.contentType, file.fileName)" aria-hidden="true"></i>
+                <button class="file-chip__name" type="button" title="Download" (click)="download(file)">
+                  {{ file.fileName }}
+                </button>
+                <span class="text-muted file-chip__meta">{{ formatFileSize(file.size) }}</span>
+                <button class="message__action" type="button" title="Forward this file" (click)="forwardFileClick.emit(file)">
+                  <i class="fas fa-share"></i> Forward
+                </button>
+              </span>
+            } @else if (activity.type === 'FILE_UPLOADED' || activity.type === 'FILE_FORWARDED') {
+              <span class="text-muted">a file that is no longer available</span>
+            }
+          </span>
+          <time class="activity__time text-muted" [attr.datetime]="activity.createdAt">
+            {{ activity.createdAt | date: 'MMM d, y, HH:mm' }}
+          </time>
+        </li>
+      }
     } @empty {
-      <li class="text-muted">No messages yet.</li>
+      <li class="text-muted">Nothing yet.</li>
     }
-    <li #messagesEnd aria-hidden="true"></li>
+    <li #feedEnd aria-hidden="true"></li>
   </ol>
 
-  <!-- Reply composer, bound to this channel only (Ctrl/⌘ + Enter sends). -->
+  <!-- Composer, bound to this channel only (Ctrl/⌘ + Enter sends). -->
   <form
     class="composer"
     novalidate
@@ -88,6 +170,17 @@
       [formField]="form.content"
     />
     <div class="composer__actions">
+      <!-- Files are uploaded to this channel right away (visible in the feed). -->
+      <label class="btn btn--ghost btn--sm" [class.is-disabled]="uploading()">
+        <i class="fas fa-paperclip"></i> {{ uploading() ? 'Uploading…' : 'Attach files' }}
+        <input
+          class="visually-hidden"
+          type="file"
+          multiple
+          [disabled]="uploading()"
+          (change)="upload($any($event.target))"
+        />
+      </label>
       @if (form.content().touched() && form.content().errors().length) {
         <small class="field__error">{{ form.content().errors()[0].message }}</small>
       }

@@ -1,19 +1,31 @@
 <form class="side-panel__form" novalidate (submit)="save($event)">
   <div class="side-panel__body">
-    <!-- Message being forwarded -->
-    <div class="field">
-      <span>Message</span>
-      <blockquote class="message__forward">
-        <div class="message__meta">
-          <strong>{{ quoted().author }}</strong>
-          @if (quoted().customer) {
-            <span class="badge">{{ quoted().customer }}</span>
-          }
-          <span class="text-muted">{{ quoted().createdAt | date: 'MMM d, y, HH:mm' }}</span>
-        </div>
-        <div class="rich-content message__forward-content--clamped" [innerHTML]="quoted().content"></div>
-      </blockquote>
-    </div>
+    <!-- Item being forwarded -->
+    @if (quoted(); as q) {
+      <div class="field">
+        <span>Message</span>
+        <blockquote class="message__forward">
+          <div class="message__meta">
+            <strong>{{ q.author }}</strong>
+            @if (q.customer) {
+              <span class="badge">{{ q.customer }}</span>
+            }
+            <span class="text-muted">{{ q.createdAt | date: 'MMM d, y, HH:mm' }}</span>
+          </div>
+          <div class="rich-content message__forward-content--clamped" [innerHTML]="q.content"></div>
+        </blockquote>
+      </div>
+    } @else if (file(); as f) {
+      <div class="field">
+        <span>File</span>
+        <span class="file-chip">
+          <i [class]="fileIcon(f.contentType, f.fileName)" aria-hidden="true"></i>
+          <strong>{{ f.fileName }}</strong>
+          <span class="text-muted file-chip__meta">{{ formatFileSize(f.size) }}</span>
+        </span>
+        <small class="text-muted">The same file is linked to the target channel (it is not copied).</small>
+      </div>
+    }
 
     <!-- Destination -->
     <fieldset class="status-picker">
@@ -41,22 +53,24 @@
 
       @if (!existing().length && !newChannels().length) {
         <p class="text-muted">
-          No other channel on this ticket, and no customer you can open a channel with.
+          No other channel to forward to, and no customer you can open a channel with.
         </p>
       }
     </fieldset>
 
     @if (destination()?.isNew) {
       <p class="text-muted panel__hint">
-        A new channel will be created on this ticket: it and its messages are only visible to the
+        A new channel will be created on this ticket: it and its content are only visible to the
         members of the two customers it links.
       </p>
     }
 
-    <div class="field">
-      <span>Comment <small class="text-muted">(optional)</small></span>
-      <app-rich-text-editor placeholder="Add a note for the recipients…" minHeight="6rem" [formField]="form.comment" />
-    </div>
+    @if (message()) {
+      <div class="field">
+        <span>Comment <small class="text-muted">(optional)</small></span>
+        <app-rich-text-editor placeholder="Add a note for the recipients…" minHeight="6rem" [formField]="form.comment" />
+      </div>
+    }
   </div>
 
   <footer class="side-panel__footer">

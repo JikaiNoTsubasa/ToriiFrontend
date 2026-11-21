@@ -4,6 +4,9 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   CreateTicketRequest,
+  FileRef,
+  ForwardFileRequest,
+  ForwardFileResult,
   ForwardMessageRequest,
   ForwardResult,
   OpenChannelRequest,
@@ -69,6 +72,35 @@ export class TicketService {
   ): Observable<ForwardResult> {
     return this.http.post<ForwardResult>(
       `${this.baseUrl}/${number}/channels/${channelId}/messages/${messageId}/forward`,
+      request,
+    );
+  }
+
+  /** Uploads files to a channel (recorded in its activity feed). */
+  uploadFiles(number: string, channelId: number, files: readonly File[]): Observable<FileRef[]> {
+    const body = new FormData();
+    for (const file of files) {
+      body.append('files', file, file.name);
+    }
+    return this.http.post<FileRef[]>(`${this.baseUrl}/${number}/channels/${channelId}/files`, body);
+  }
+
+  /** File content of a channel, as a Blob (the API requires the Bearer token, so no plain link). */
+  downloadFile(number: string, channelId: number, fileId: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${number}/channels/${channelId}/files/${fileId}`, {
+      responseType: 'blob',
+    });
+  }
+
+  /** Forwards a file to another channel of the ticket (only its id is linked; created when needed). */
+  forwardFile(
+    number: string,
+    channelId: number,
+    fileId: number,
+    request: ForwardFileRequest,
+  ): Observable<ForwardFileResult> {
+    return this.http.post<ForwardFileResult>(
+      `${this.baseUrl}/${number}/channels/${channelId}/files/${fileId}/forward`,
       request,
     );
   }

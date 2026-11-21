@@ -87,6 +87,7 @@ src/app/
 │                  # admin/ (users, customers, customer-details, ticket-config: ticket edges)
 ├── layout/        # shell (sidebar with submenus + content), topbar
 └── shared/        # notifications (toasts), radial-menu (right-click), side-panel (forms),
+                   # info-hint ("i" icon with a help popover, projected content),
                    # editable-input-text, rich-text-editor (Tiptap + slash commands)
 ```
 

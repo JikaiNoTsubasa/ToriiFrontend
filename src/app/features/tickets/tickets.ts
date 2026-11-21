@@ -5,8 +5,9 @@ import { ClipboardService } from '../../core/clipboard/clipboard.service';
 import { NotificationService } from '../../core/notifications/notification.service';
 import { TicketChannel, TicketListItem, UserRef } from '../../core/services/ticket.models';
 import { TicketService } from '../../core/services/ticket.service';
-import { TICKET_STATUS_META } from '../../core/services/ticket-status';
+import { TICKET_STATUS_META, TICKET_STATUSES } from '../../core/services/ticket-status';
 import { Topbar } from '../../layout/topbar/topbar';
+import { InfoHint } from '../../shared/info-hint/info-hint';
 import { RadialMenuService } from '../../shared/radial-menu/radial-menu.service';
 import { SidePanelService } from '../../shared/side-panel/side-panel.service';
 import { TicketStatusPanel } from './ticket-status-panel/ticket-status-panel';
@@ -25,7 +26,7 @@ interface TicketRow {
 
 @Component({
   selector: 'app-tickets',
-  imports: [Topbar, RouterLink, DatePipe],
+  imports: [Topbar, RouterLink, DatePipe, InfoHint],
   templateUrl: './tickets.html',
 })
 export class Tickets {
@@ -37,6 +38,7 @@ export class Tickets {
   private readonly router = inject(Router);
 
   protected readonly statusMeta = TICKET_STATUS_META;
+  protected readonly statuses = TICKET_STATUSES;
 
   protected readonly tickets = this.service.visibleTickets();
 

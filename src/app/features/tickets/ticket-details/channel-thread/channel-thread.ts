@@ -12,17 +12,30 @@ import {
 } from '@angular/core';
 import { form, FormField, submit, validate } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
-import { TicketChannelDetail, TicketMessage } from '../../../../core/services/ticket.models';
+import { NotificationService } from '../../../../core/notifications/notification.service';
+import {
+  FileRef,
+  TicketActivity,
+  TicketChannelDetail,
+  TicketMessage,
+} from '../../../../core/services/ticket.models';
 import { TicketService } from '../../../../core/services/ticket.service';
 import { TICKET_STATUS_META } from '../../../../core/services/ticket-status';
+import { fileIcon, formatFileSize, saveBlob } from '../../../../shared/files/files';
 import { isBlankHtml } from '../../../../shared/rich-text-editor/html-text';
 import { RichTextEditorComponent } from '../../../../shared/rich-text-editor/rich-text-editor';
 
+/** One entry of the channel feed: a message or an activity event. */
+export type FeedItem =
+  | { kind: 'message'; key: string; at: string; message: TicketMessage }
+  | { kind: 'activity'; key: string; at: string; activity: TicketActivity };
+
 /**
- * One channel of a ticket: header (who talks to whom + status), the conversation and a
- * reply composer bound to *this* channel. The ticket page keeps one instance per channel
- * (only the selected one is shown), so each channel has its own draft and a reply can
- * never be sent to the wrong channel.
+ * One channel of a ticket: header (who talks to whom + status + files), the activity feed
+ * (messages interleaved with status changes, uploads, forwards…) and a composer bound to
+ * *this* channel (reply + file upload). The ticket page keeps one instance per channel (only
+ * the selected one is shown), so each channel has its own draft and nothing can be sent to
+ * the wrong channel.
  */
 @Component({
   selector: 'app-channel-thread',
@@ -31,23 +44,32 @@ import { RichTextEditorComponent } from '../../../../shared/rich-text-editor/ric
 })
 export class ChannelThread {
   private readonly service = inject(TicketService);
+  private readonly notifications = inject(NotificationService);
 
   readonly ticketNumber = input.required<string>();
   readonly channel = input.required<TicketChannelDetail>();
 
-  /** A reply was posted (the page reloads the ticket). */
-  readonly messagePosted = output<TicketMessage>();
+  /** The channel changed (reply posted, files uploaded): the page reloads the ticket. */
+  readonly changed = output<void>();
   /** The status badge was clicked (the page opens the status panel). */
   readonly statusClick = output<void>();
   /** "Forward" was clicked on a message (the page opens the forward panel). */
   readonly forwardClick = output<TicketMessage>();
+  /** "Forward" was clicked on a file (the page opens the forward panel). */
+  readonly forwardFileClick = output<FileRef>();
 
   protected readonly meta = TICKET_STATUS_META;
   protected readonly sending = signal(false);
+  protected readonly uploading = signal(false);
+  protected readonly fileIcon = fileIcon;
+  protected readonly formatFileSize = formatFileSize;
 
   /** The other side of the channel (falls back to everyone when the user is on both sides). */
   protected readonly counterpart = computed(() => sideNames(this.channel(), false) || sideNames(this.channel(), true));
   protected readonly ownSide = computed(() => sideNames(this.channel(), true));
+
+  /** Messages and activity events in chronological order (activities first on equal dates). */
+  protected readonly feed = computed<FeedItem[]>(() => buildFeed(this.channel()));
 
   private readonly model = signal({ content: '' });
   protected readonly form = form(this.model, (path) => {
@@ -56,13 +78,13 @@ export class ChannelThread {
     );
   });
 
-  private readonly messagesEnd = viewChild<ElementRef<HTMLElement>>('messagesEnd');
+  private readonly feedEnd = viewChild<ElementRef<HTMLElement>>('feedEnd');
 
   constructor() {
-    // Keep the latest message in view when the conversation grows.
+    // Keep the latest entry in view when the feed grows.
     afterRenderEffect(() => {
-      this.channel().messages.length;
-      this.messagesEnd()?.nativeElement.scrollIntoView({ block: 'nearest' });
+      this.feed().length;
+      this.feedEnd()?.nativeElement.scrollIntoView({ block: 'nearest' });
     });
   }
 
@@ -83,11 +105,9 @@ export class ChannelThread {
     await submit(this.form, async () => {
       this.sending.set(true);
       try {
-        const message = await firstValueFrom(
-          this.service.postMessage(this.ticketNumber(), this.channel().id, this.model().content),
-        );
+        await firstValueFrom(this.service.postMessage(this.ticketNumber(), this.channel().id, this.model().content));
         this.form().reset({ content: '' });
-        this.messagePosted.emit(message);
+        this.changed.emit();
       } catch {
         // Error already notified by errorInterceptor; the draft is kept.
       } finally {
@@ -95,6 +115,37 @@ export class ChannelThread {
       }
       return undefined;
     });
+  }
+
+  /** Uploads the picked files to this channel right away (they appear in the feed). */
+  protected async upload(input: HTMLInputElement): Promise<void> {
+    const files = Array.from(input.files ?? []);
+    input.value = ''; // allow picking the same file again
+    if (!files.length || this.uploading()) {
+      return;
+    }
+    this.uploading.set(true);
+    try {
+      const uploaded = await firstValueFrom(this.service.uploadFiles(this.ticketNumber(), this.channel().id, files));
+      this.notifications.success(
+        uploaded.length > 1 ? `${uploaded.length} files uploaded` : 'File uploaded',
+        uploaded.map((f) => f.fileName).join(', '),
+      );
+      this.changed.emit();
+    } catch {
+      // Error already notified by errorInterceptor.
+    } finally {
+      this.uploading.set(false);
+    }
+  }
+
+  protected async download(file: FileRef): Promise<void> {
+    try {
+      const blob = await firstValueFrom(this.service.downloadFile(this.ticketNumber(), this.channel().id, file.fileId));
+      saveBlob(blob, file.fileName);
+    } catch {
+      // Error already notified by errorInterceptor.
+    }
   }
 }
 
@@ -104,4 +155,26 @@ export function sideNames(channel: TicketChannelDetail, own: boolean): string {
     .filter((p) => p.isOwn === own)
     .map((p) => p.customerName)
     .join(', ');
+}
+
+/** Merges messages and activities chronologically (an activity before a message on equal dates). */
+export function buildFeed(channel: TicketChannelDetail): FeedItem[] {
+  const items: FeedItem[] = [
+    ...channel.activities.map((activity) => ({
+      kind: 'activity' as const,
+      key: `a${activity.id}`,
+      at: activity.createdAt,
+      activity,
+    })),
+    ...channel.messages.map((message) => ({
+      kind: 'message' as const,
+      key: `m${message.id}`,
+      at: message.createdAt,
+      message,
+    })),
+  ];
+  return items.sort((a, b) => {
+    const byDate = Date.parse(a.at) - Date.parse(b.at);
+    return byDate !== 0 ? byDate : a.kind === b.kind ? 0 : a.kind === 'activity' ? -1 : 1;
+  });
 }

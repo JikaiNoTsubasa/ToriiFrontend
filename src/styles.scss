@@ -1599,3 +1599,231 @@ $side-panel-duration: 0.22s;
   max-height: 10rem;
   overflow-y: auto;
 }
+
+/* =========================================================================
+   Info hint (app-info-hint): "i" icon revealing a help popover (hover / focus)
+   ========================================================================= */
+
+.info-hint {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 0.3rem;
+}
+
+.info-hint__icon {
+  display: inline-flex;
+  color: $color-muted;
+  font-size: 0.85rem;
+  cursor: help;
+
+  &:hover,
+  &:focus-visible {
+    color: $color-primary;
+    outline: none;
+  }
+}
+
+.info-hint__popover {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: -0.75rem;
+  z-index: 50; // above the sticky topbar (10) and table rows
+  width: min(380px, calc(100vw - 2rem));
+  padding: 0.9rem 1rem;
+  border: 1px solid $color-border;
+  background: $color-panel;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+  // Reset the inherited table header styles (uppercase, muted, nowrap…).
+  color: $color-text;
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1.4;
+  text-align: left;
+  text-transform: none;
+  white-space: normal;
+  cursor: default;
+
+  // Hidden by default, revealed on hover / keyboard focus (with a hover bridge).
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease,
+    visibility 0.12s;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: 0.6rem;
+  }
+
+  .info-hint:hover &,
+  .info-hint:focus-within & {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .info-hint--end & {
+    left: auto;
+    right: -0.75rem;
+  }
+}
+
+.info-hint__title {
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+}
+
+.info-hint__text {
+  margin-bottom: 0.6rem;
+}
+
+.info-hint__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+
+  li {
+    display: grid;
+    grid-template-columns: 9.5rem 1fr;
+    align-items: start;
+    gap: 0.6rem;
+  }
+
+  .badge {
+    justify-self: start;
+  }
+}
+
+.info-hint__tip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid $color-border;
+  color: $color-muted;
+  font-size: 0.8rem;
+}
+
+/* ----- Channel files & activity feed ----- */
+
+/* Hidden but focusable / clickable through its label (e.g. a styled file input). */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Label styled as a button (file picker). */
+label.btn {
+  position: relative;
+}
+
+.is-disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Collapsible list of the channel's files, under the thread header. */
+.thread__files {
+  margin: 0 1.5rem;
+  border: 1px solid $color-border;
+  background: $color-input;
+
+  summary {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.88rem;
+    cursor: pointer;
+  }
+}
+
+.file-list {
+  margin: 0;
+  padding: 0 0.75rem 0.6rem;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.file-chip {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+
+  > .fas {
+    color: $color-muted;
+  }
+
+  &--inline {
+    margin-left: 0.25rem;
+    padding: 0.15rem 0.5rem;
+    border: 1px solid $color-border;
+    background: $color-input;
+  }
+}
+
+.file-chip__name {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $color-text;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    color: $color-primary;
+    text-decoration: underline;
+  }
+}
+
+.file-chip__meta {
+  font-size: 0.78rem;
+}
+
+/* Activity event: compact, centered system line between messages. */
+.activity {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-self: center;
+  max-width: 95%;
+  padding: 0.35rem 0.8rem;
+  border: 1px dashed $color-border;
+  color: $color-text;
+  font-size: 0.85rem;
+}
+
+.activity__icon {
+  color: $color-muted;
+}
+
+.activity__text {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.activity__time {
+  font-size: 0.75rem;
+}
