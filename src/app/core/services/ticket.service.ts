@@ -1,10 +1,12 @@
-import { httpResource, HttpResourceRef } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { HttpClient, httpResource, HttpResourceRef } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { TicketListItem } from './ticket.models';
+import { CreateTicketRequest, TicketListItem, TicketSendOption } from './ticket.models';
 
 @Injectable({ providedIn: 'root' })
 export class TicketService {
+  private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/tickets`;
 
   /**
@@ -15,5 +17,15 @@ export class TicketService {
    */
   visibleTickets(): HttpResourceRef<TicketListItem[]> {
     return httpResource<TicketListItem[]>(() => this.baseUrl, { defaultValue: [] });
+  }
+
+  /** Customers the user may send tickets from, with their allowed targets (signal resource). */
+  sendOptions(): HttpResourceRef<TicketSendOption[]> {
+    return httpResource<TicketSendOption[]>(() => `${this.baseUrl}/send-options`, { defaultValue: [] });
+  }
+
+  /** Creates the ticket, its channel and the first message; returns the listed ticket. */
+  create(request: CreateTicketRequest): Observable<TicketListItem> {
+    return this.http.post<TicketListItem>(this.baseUrl, request);
   }
 }

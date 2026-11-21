@@ -4,6 +4,13 @@
   <button class="btn btn--ghost" type="button" [disabled]="tickets.isLoading()" (click)="tickets.reload()">
     <i class="fas fa-rotate"></i> Refresh
   </button>
+  @if (canCreate()) {
+    <a class="btn" routerLink="/tickets/new">+ New ticket</a>
+  } @else {
+    <button class="btn" type="button" disabled title="None of your customers is allowed to send tickets yet.">
+      + New ticket
+    </button>
+  }
 </app-topbar>
 
 <div class="page">
@@ -27,7 +34,7 @@
           </tr>
         } @empty {
           <tr>
-            <td class="table__empty" colspan="3">
+            <td class="table__empty" colspan="4">
               @if (tickets.isLoading()) {
                 Loading tickets…
               } @else if (tickets.error()) {

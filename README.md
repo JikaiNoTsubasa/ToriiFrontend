@@ -82,7 +82,7 @@ are code comments.
 src/app/
 ├── core/          # auth, interceptors, guards, notifications, clipboard, problem-details,
 │                  # api-enum, services/ (httpResource-based API services)
-├── features/      # auth/login, home, tickets,
+├── features/      # auth/login, home, tickets (list + ticket-create page `/tickets/new`),
 │                  # admin/ (customers, customer-details, ticket-config: ticket edges)
 ├── layout/        # shell (sidebar with submenus + content), topbar
 └── shared/        # notifications (toasts), radial-menu (right-click), side-panel (forms),
@@ -103,6 +103,14 @@ A `NAV` entry can have `children` (a submenu, expanded while the URL is under it
 admin screen: a child route of `admin` in `app.routes.ts` + a `children` entry in
 the Administration item of `NAV`. Route parameters arrive in component `input()`s
 (`withComponentInputBinding`).
+
+### Writing pages vs side panel
+
+Short forms on list rows (customers, ticket edges) use the side panel below. Content that
+needs room to work on (e.g. a new ticket with its rich text message) gets a dedicated page
+using the `.compose` layout (main column + sticky side column with the actions), guarded
+by a `canDeactivate` that confirms before dropping a started draft (see
+`features/tickets/ticket-create`).
 
 ### Side panel (create / update forms)
 

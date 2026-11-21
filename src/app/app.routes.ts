@@ -24,6 +24,13 @@ export const routes: Routes = [
           import('./features/tickets/tickets').then((m) => m.Tickets),
       },
       {
+        // Dedicated writing page; asks before dropping a started draft.
+        path: 'tickets/new',
+        loadComponent: () =>
+          import('./features/tickets/ticket-create/ticket-create').then((m) => m.TicketCreate),
+        canDeactivate: [(page: { canLeave(): boolean }) => page.canLeave()],
+      },
+      {
         // ADMIN-only section; each child = one submenu entry (shell.ts).
         path: 'admin',
         canMatch: [adminGuard],

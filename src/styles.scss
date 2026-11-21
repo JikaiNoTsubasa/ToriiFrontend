@@ -1122,3 +1122,45 @@ $side-panel-duration: 0.22s;
     opacity: 1;
   }
 }
+
+/* =========================================================================
+   Compose layout (writing page: main column + side column with actions)
+   ========================================================================= */
+
+.compose {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 1rem;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.compose__main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Larger title input, the main heading of the draft. */
+.field .compose__title {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+/* Side column stays visible while the main column scrolls. */
+.compose__aside {
+  position: sticky;
+  top: 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.compose__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}

@@ -56,6 +56,9 @@ export class RichTextEditorComponent implements OnDestroy, ControlValueAccessor 
   /** Switches the editor to read-only (e.g. history view / audit log). */
   readonly editable = input(true);
 
+  /** Minimum height of the writing area (CSS length, e.g. `'24rem'`); default 120px. */
+  readonly minHeight = input<string | null>(null);
+
   /** Emitted on every content change, with the current HTML. */
   readonly contentChange = output<string>();
 

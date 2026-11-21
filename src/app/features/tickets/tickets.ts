@@ -1,4 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ClipboardService } from '../../core/clipboard/clipboard.service';
 import { TicketListItem } from '../../core/services/ticket.models';
 import { TicketService } from '../../core/services/ticket.service';
@@ -15,14 +16,19 @@ interface TicketRow {
 
 @Component({
   selector: 'app-tickets',
-  imports: [Topbar],
+  imports: [Topbar, RouterLink],
   templateUrl: './tickets.html',
 })
 export class Tickets {
   private readonly clipboard = inject(ClipboardService);
   private readonly radial = inject(RadialMenuService);
+  private readonly service = inject(TicketService);
 
-  protected readonly tickets = inject(TicketService).visibleTickets();
+  protected readonly tickets = this.service.visibleTickets();
+
+  /** Customers the user may send from (+ allowed targets); empty = cannot create tickets. */
+  protected readonly sendOptions = this.service.sendOptions();
+  protected readonly canCreate = computed(() => this.sendOptions.value().length > 0);
 
   protected readonly rows = computed<TicketRow[]>(() =>
     (this.tickets.hasValue() ? this.tickets.value() : []).map(toRow),

@@ -1,0 +1,96 @@
+<app-topbar heading="New ticket">
+  <a class="btn btn--ghost" routerLink="/tickets"><i class="fa fa-arrow-left"></i> Tickets</a>
+</app-topbar>
+
+<div class="page">
+  @if (options.isLoading()) {
+    <div class="panel"><p class="text-muted">Loading…</p></div>
+  } @else if (!options.value().length) {
+    <div class="panel detail__empty">
+      <p>None of your customers is allowed to send tickets yet.</p>
+      <p class="text-muted">An administrator must configure a ticket edge from one of your customers.</p>
+      <a class="btn btn--ghost" routerLink="/tickets">Back to tickets</a>
+    </div>
+  } @else {
+    <form class="compose" novalidate (submit)="send($event)">
+      <!-- Writing area -->
+      <div class="panel compose__main">
+        <label class="field">
+          <span>Title</span>
+          <input
+            class="compose__title"
+            type="text"
+            placeholder="Short summary of the request"
+            [formField]="form.title"
+          />
+          @if (form.title().touched() && form.title().errors().length) {
+            <small class="field__error">{{ form.title().errors()[0].message }}</small>
+          }
+        </label>
+
+        <div class="field">
+          <span>Content</span>
+          <app-rich-text-editor
+            placeholder="Describe the request… Type '/' to insert a block (heading, list, code…)."
+            minHeight="24rem"
+            [formField]="form.content"
+          />
+          @if (form.content().touched() && form.content().errors().length) {
+            <small class="field__error">{{ form.content().errors()[0].message }}</small>
+          }
+        </div>
+      </div>
+
+      <!-- Routing + send -->
+      <aside class="panel compose__aside">
+        <h2 class="panel__title">Recipient</h2>
+
+        @if (hasSeveralSources()) {
+          <label class="field">
+            <span>From</span>
+            <select [formField]="form.source">
+              <option value="">Select your customer…</option>
+              @for (option of options.value(); track option.customerId) {
+                <option [value]="option.customerId">{{ option.customerName }}</option>
+              }
+            </select>
+            @if (form.source().touched() && form.source().errors().length) {
+              <small class="field__error">{{ form.source().errors()[0].message }}</small>
+            }
+          </label>
+        } @else {
+          <dl class="detail__meta">
+            <div class="detail__meta-item">
+              <dt class="text-muted">From</dt>
+              <dd>{{ options.value()[0].customerName }}</dd>
+            </div>
+          </dl>
+        }
+
+        <label class="field">
+          <span>To</span>
+          <select [formField]="form.target">
+            <option value="">Select the recipient…</option>
+            @for (target of targets(); track target.id) {
+              <option [value]="target.id">{{ target.name }}</option>
+            }
+          </select>
+          @if (form.target().touched() && form.target().errors().length) {
+            <small class="field__error">{{ form.target().errors()[0].message }}</small>
+          }
+        </label>
+
+        <p class="text-muted panel__hint">
+          The ticket and its first message are shared with every member of both customers.
+        </p>
+
+        <div class="compose__actions">
+          <a class="btn btn--ghost" routerLink="/tickets">Cancel</a>
+          <button class="btn" type="submit" [disabled]="saving()">
+            <i class="fas fa-paper-plane"></i> {{ saving() ? 'Sending…' : 'Send ticket' }}
+          </button>
+        </div>
+      </aside>
+    </form>
+  }
+</div>
