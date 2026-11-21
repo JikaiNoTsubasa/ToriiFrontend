@@ -1,103 +1,118 @@
 # ⛩️ ToriiFrontend
 
-Frontend de Torii, outil web de gestion de projet. « Torii » comme les portails
-japonais : la porte d'entrée de vos projets.
+Frontend of Torii, a web-based project management tool. "Torii" as in the
+Japanese gates: the entrance to your projects.
 
-L'API .NET vit dans le repo séparé **ToriiBackend**.
+The .NET API lives in the separate **ToriiBackend** repository.
 
 ## Stack
 
-- **Angular 22** (standalone, zoneless, `OnPush` par défaut), SCSS, TypeScript 6
-- **Signals partout** : état (`signal`/`computed`), `input()`/`output()`/`model()`,
-  `viewChild()`, formulaires signals (`@angular/forms/signals`). Pas de décorateurs
-  `@Input`/`@Output`/`@ViewChild`/`@HostListener` (utiliser `host: {}`).
-- Éditeur rich-text **Tiptap** (`@tiptap/core`)
-- Tests : **Vitest** (`ng test`)
-- Icônes : Font Awesome (kit chargé dans `src/index.html`)
+- **Angular 22** (standalone, zoneless, `OnPush` by default), SCSS, TypeScript 6
+- **Signals everywhere**: state (`signal`/`computed`), `input()`/`output()`/`model()`,
+  `viewChild()`, signal forms (`@angular/forms/signals`), `httpResource` for reads.
+  No `@Input`/`@Output`/`@ViewChild`/`@HostListener` decorators (use `host: {}`).
+- **Tiptap** rich text editor (`@tiptap/core`)
+- Tests: **Vitest** (`ng test`)
+- Icons: Font Awesome (kit loaded in `src/index.html`)
 
-## Prérequis
+## Prerequisites
 
 - **Node.js** + **npm**
-- **Angular CLI 22** (`npm i -g @angular/cli` ou via `npx`)
-- L'API ToriiBackend lancée sur `http://localhost:5080`
+- **Angular CLI 22** (`npm i -g @angular/cli` or through `npx`)
+- The ToriiBackend API running on `http://localhost:5080`
 
-## Démarrage
+## Getting started
 
 ```bash
 npm install
 npm start          # http://localhost:4200
 ```
 
-L'URL de l'API se configure dans `src/environments/environment.ts`
-(`apiUrl`, par défaut `http://localhost:5080/api`). En production,
-`environment.production.ts` est utilisé (`/api`).
+The API URL is configured in `src/environments/environment.ts`
+(`apiUrl`, `http://localhost:5080/api` by default). In production,
+`environment.production.ts` is used (`/api`).
 
-VS Code : **Run and Debug → « ng serve »**.
+VS Code: **Run and Debug → "ng serve"**.
 
-## Authentification
+## Authentication
 
-Côté `src/app/core/` :
+In `src/app/core/`:
 
-- `auth/auth.service.ts` — login / register / refresh / logout, état `user` (signal).
-- `auth/token-storage.service.ts` — stockage des tokens (localStorage).
-- `interceptors/auth.interceptor.ts` — ajoute `Authorization: Bearer`, tente un
-  refresh automatique sur 401 (dédupliqué), sinon redirige vers `/login`.
-- `interceptors/error.interceptor.ts` — normalise les erreurs au format
-  ProblemDetails et affiche un toast (désactivable via `skipErrorNotification()`).
-- `guards/auth.guard.ts` — protège les routes authentifiées.
+- `auth/auth.service.ts` — login / register / refresh / logout, `user` and `isAdmin` signals.
+- `auth/token-storage.service.ts` — token storage (localStorage).
+- `interceptors/auth.interceptor.ts` — adds `Authorization: Bearer`, tries an
+  automatic refresh on 401 (deduplicated), otherwise redirects to `/login`.
+- `interceptors/error.interceptor.ts` — normalizes errors to the ProblemDetails
+  format and shows a toast (can be disabled with `skipErrorNotification()`).
+- `guards/auth.guard.ts` — protects authenticated routes; `guards/admin.guard.ts`
+  restricts the administration section to ADMINs.
 
-Au démarrage (`app.config.ts`), l'utilisateur est réhydraté via `/api/auth/me`
-si un token est présent.
+At startup (`app.config.ts`), the user is rehydrated through `/api/auth/me`
+when a token is present.
 
 ## Enums
 
-L'API échange les enums en **chaîne MAJUSCULE** (`"ON_GOING"`), comme en base ;
-les entiers sont refusés. Côté front, un enum est une union de chaînes, déclarée
-avec `core/http/api-enum.ts` en miroir de l'enum C# :
+The API exchanges enums as **UPPERCASE strings** (`"ON_GOING"`), as in the
+database; integers are rejected. On the frontend, an enum is a string union,
+declared with `core/http/api-enum.ts` as a mirror of the C# enum:
 
 ```ts
 export const TASK_STATUSES = apiEnum('NEW', 'ON_GOING', 'COMPLETED');
 export type TaskStatus = ApiEnumValue<typeof TASK_STATUSES>;
 
-const LABELS: ApiEnumMap<TaskStatus, string> = { NEW: 'Nouvelle', ON_GOING: 'En cours', COMPLETED: 'Terminée' };
+const LABELS: ApiEnumMap<TaskStatus, string> = { NEW: 'New', ON_GOING: 'In progress', COMPLETED: 'Completed' };
 parseApiEnum(TASK_STATUSES, route.queryParamMap.get('status')); // 'ON_GOING' | … | null
 ```
 
 ## Design
 
-Tous les styles sont centralisés dans `src/styles.scss` (variables en tête de
-fichier : couleur primaire `#bc002d`, panneaux carrés, police Inter). Classes
-disponibles : `.panel`, `.btn` / `.btn--ghost`, `.field`, `.alert`, `.badge--*`,
-`.tabs`, `.table`, `.link`, plus la coquille `.layout` / `.sidebar` / `.content` /
-`.page` / `.topbar`.
+Every style is centralized in `src/styles.scss` (variables at the top of the
+file: primary color `#bc002d`, square panels, Inter font). Available classes:
+`.panel` / `.panel__head`, `.btn` / `.btn--ghost` / `.btn--danger` / `.btn--sm`,
+`.field`, `.inline-form`, `.alert`, `.badge--*`, `.tabs`, `.table`, `.detail__meta`,
+`.user-chip`, `.link`, plus the `.layout` / `.sidebar` / `.content` / `.page` /
+`.topbar` shell.
+
+All user-facing text is written in English (dates formatted as `MMM d, y`), and so
+are code comments.
 
 ## Structure
 
 ```
 src/app/
-├── core/          # auth, interceptors, guard, notifications, clipboard, problem-details
-├── features/      # auth/login, home
-├── layout/        # shell (sidebar + contenu), topbar
-└── shared/        # notifications (toasts), radial-menu (clic droit),
+├── core/          # auth, interceptors, guards, notifications, clipboard, problem-details,
+│                  # api-enum, services/ (httpResource-based API services)
+├── features/      # auth/login, home, tickets, admin/ (customers, customer-details)
+├── layout/        # shell (sidebar with submenus + content), topbar
+└── shared/        # notifications (toasts), radial-menu (right-click),
                    # editable-input-text, rich-text-editor (Tiptap + slash commands)
 ```
 
-## Ajouter une fonctionnalité
+## Adding a feature
 
-1. Créer la feature sous `src/app/features/<nom>/`.
-2. L'ajouter en lazy route enfant du `Shell` dans `app.routes.ts` (protégée par `authGuard`).
-3. Ajouter l'entrée de menu dans `layout/shell/shell.ts` (`nav`).
+1. Create the feature under `src/app/features/<name>/`.
+2. Add it as a lazy child route of the `Shell` in `app.routes.ts` (protected by `authGuard`).
+3. Add the menu entry in `layout/shell/shell.ts` (`NAV`).
+
+### Menu, submenus and administration
+
+A `NAV` entry can have `children` (a submenu, expanded while the URL is under its
+`path`) and `adminOnly` (hidden from non-admins). The **Administration** section
+(`/admin`, `features/admin/`) is guarded by `adminGuard` (`canMatch`); for a new
+admin screen: a child route of `admin` in `app.routes.ts` + a `children` entry in
+the Administration item of `NAV`. Route parameters arrive in component `input()`s
+(`withComponentInputBinding`).
 
 ## Build
 
 ```bash
-npm run build      # sortie dans dist/torii-web
+npm run build      # output in dist/torii-web
 npm test
 ```
 
-## À faire
+## To do
 
-- [ ] Fonctionnalités métier
-- [ ] Page d'inscription (l'endpoint `register` existe déjà)
-- [ ] Page profil (le lien du menu utilisateur pointe vers `/profile`)
-- [ ] Durcir le stockage des tokens (cookie httpOnly) avant prod
+- [ ] Business features
+- [ ] Sign-up page (the `register` endpoint already exists)
+- [ ] Profile page (the user menu link points to `/profile`)
+- [ ] Harden token storage (httpOnly cookie) before production

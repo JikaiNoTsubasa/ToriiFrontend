@@ -21,8 +21,8 @@
   font-size: 0.95rem;
   line-height: 1.55;
 
-  // ProseMirror génère son propre DOM (classe .ProseMirror) qui échappe
-  // à l'encapsulation Angular standard -> on utilise ::ng-deep pour l'atteindre.
+  // ProseMirror generates its own DOM (.ProseMirror class) that escapes
+  // standard Angular encapsulation -> we use ::ng-deep to reach it.
   ::ng-deep .ProseMirror {
     outline: none;
   }

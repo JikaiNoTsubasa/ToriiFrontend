@@ -4,9 +4,9 @@ import { AuthService } from '../auth/auth.service';
 import { TokenStorageService } from '../auth/token-storage.service';
 
 /**
- * Protège les routes authentifiées. Autorise si un utilisateur est chargé,
- * ou si un token est présent (le rechargement de l'utilisateur / refresh est
- * géré par l'intercepteur au premier appel API).
+ * Protects authenticated routes. Allows access if a user is loaded,
+ * or if a token is present (reloading the user / refreshing is handled
+ * by the interceptor on the first API call).
  */
 export const authGuard: CanActivateFn = () => {
   const auth = inject(AuthService);

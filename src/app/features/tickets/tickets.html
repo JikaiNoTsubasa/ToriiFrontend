@@ -1,0 +1,44 @@
+<!-- Page with a pinned topbar + the list of visible tickets scrolling below. -->
+<app-topbar heading="Tickets">
+  <span class="text-muted">{{ count() }} ticket{{ count() > 1 ? 's' : '' }}</span>
+  <button class="btn btn--ghost" type="button" [disabled]="tickets.isLoading()" (click)="tickets.reload()">
+    <i class="fas fa-rotate"></i> Refresh
+  </button>
+</app-topbar>
+
+<div class="page">
+  <div class="panel">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Number</th>
+          <th>Title</th>
+          <th>Customers</th>
+          <th class="table__num">Channels</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.number) {
+          <tr (contextmenu)="onContextMenu($event, row)">
+            <td class="table__code">{{ row.number }}</td>
+            <td>{{ row.title }}</td>
+            <td class="text-muted">{{ row.customers || '—' }}</td>
+            <td class="table__num">{{ row.channelCount }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td class="table__empty" colspan="3">
+              @if (tickets.isLoading()) {
+                Loading tickets…
+              } @else if (tickets.error()) {
+                Unable to load tickets.
+              } @else {
+                No visible tickets yet.
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

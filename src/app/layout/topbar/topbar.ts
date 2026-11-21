@@ -1,12 +1,12 @@
 import { Component, input } from '@angular/core';
 
 /**
- * Barre supérieure optionnelle, à inclure par les pages qui en ont besoin.
- * Elle est « sticky » : elle reste épinglée en haut de la zone de contenu
- * pendant que le reste de la page défile.
+ * Optional top bar, to include in the pages that need it.
+ * It is "sticky": it stays pinned at the top of the content area
+ * while the rest of the page scrolls.
  *
- * Le titre est fourni via l'input `title`, et un espace d'actions à droite
- * est projeté via `<ng-content>`.
+ * The title is provided through the `heading` input, and an actions area on
+ * the right is projected through `<ng-content>`.
  */
 @Component({
   selector: 'app-topbar',

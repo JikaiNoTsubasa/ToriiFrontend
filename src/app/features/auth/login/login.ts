@@ -22,8 +22,8 @@ export class Login {
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
 
-  // Formulaire signal : le modèle est la source de vérité, les validateurs
-  // sont déclarés dans le schéma.
+  // Signal form: the model is the source of truth, validators
+  // are declared in the schema.
   private readonly model = signal<LoginModel>({ email: '', password: '' });
   protected readonly form = form(this.model, (path) => {
     required(path.email);
@@ -37,8 +37,8 @@ export class Login {
       return;
     }
 
-    // submit() marque tous les champs comme touchés et n'exécute l'action
-    // que si le formulaire est valide.
+    // submit() marks every field as touched and only runs the action
+    // if the form is valid.
     await submit(this.form, async () => {
       this.loading.set(true);
       this.error.set(null);
@@ -46,8 +46,8 @@ export class Login {
         await firstValueFrom(this.auth.login(this.model()));
         this.router.navigate(['/']);
       } catch (err) {
-        // errorInterceptor a normalisé l'erreur au format AppError (ProblemDetails).
-        this.error.set((err as AppError)?.detail ?? 'Échec de la connexion.');
+        // errorInterceptor normalized the error into an AppError (ProblemDetails).
+        this.error.set((err as AppError)?.detail ?? 'Sign-in failed.');
       } finally {
         this.loading.set(false);
       }

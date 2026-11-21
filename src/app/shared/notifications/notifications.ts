@@ -2,8 +2,8 @@ import { Component, inject } from '@angular/core';
 import { NotificationService } from '../../core/notifications/notification.service';
 
 /**
- * Conteneur global de toasts. À monter une seule fois (dans app.html) : il
- * affiche les notifications empilées par le NotificationService.
+ * Global toast container. Mount it only once (in app.html): it shows
+ * the notifications queued by the NotificationService.
  */
 @Component({
   selector: 'app-notifications',

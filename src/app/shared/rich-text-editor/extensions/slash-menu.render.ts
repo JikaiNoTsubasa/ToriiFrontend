@@ -3,10 +3,10 @@ import type { SuggestionKeyDownProps, SuggestionProps } from '@tiptap/suggestion
 import { CommandItem } from './suggestion-items';
 
 /**
- * Classe DOM "vanilla" pour la liste de commandes.
- * On reste en DOM natif ici (plutôt que de monter un vrai composant Angular)
- * car le popup est rendu par tippy en dehors de l'arbre de vues Angular
- * (appendTo: document.body) — c'est l'approche recommandée par Tiptap.
+ * "Vanilla" DOM class for the command list.
+ * We stick to the native DOM here (rather than mounting a real Angular component)
+ * because the popup is rendered by tippy outside the Angular view tree
+ * (appendTo: document.body) — this is the approach recommended by Tiptap.
  */
 class CommandList {
   readonly dom: HTMLDivElement;
@@ -49,7 +49,7 @@ class CommandList {
     if (this.items.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'slash-menu__empty';
-      empty.textContent = 'Aucun résultat';
+      empty.textContent = 'No results';
       this.dom.appendChild(empty);
       return;
     }
@@ -65,7 +65,7 @@ class CommandList {
           <span class="slash-menu__desc">${item.description}</span>
         </span>
       `;
-      // mousedown (pas click) pour éviter que l'éditeur perde le focus avant le clic
+      // mousedown (not click) so the editor does not lose focus before the click
       button.addEventListener('mousedown', (event) => {
         event.preventDefault();
         this.onSelect(item);
@@ -76,10 +76,10 @@ class CommandList {
 }
 
 /**
- * Fonction "render" attendue par l'extension Suggestion de Tiptap.
- * Typée avec SuggestionProps<CommandItem> / SuggestionKeyDownProps (types
- * réels exportés par @tiptap/suggestion en v3) plutôt que des types maison,
- * pour rester compatible avec la signature attendue par SuggestionOptions.render.
+ * "render" function expected by Tiptap's Suggestion extension.
+ * Typed with SuggestionProps<CommandItem> / SuggestionKeyDownProps (the actual
+ * types exported by @tiptap/suggestion in v3) rather than custom types,
+ * to stay compatible with the signature expected by SuggestionOptions.render.
  */
 export function renderSlashMenu() {
   let popup: TippyInstance[];

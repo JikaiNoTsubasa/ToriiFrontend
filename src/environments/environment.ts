@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  /** URL de base de l'API Torii (voir launchSettings.json côté back). */
+  /** Base URL of the Torii API (see the backend's launchSettings.json). */
   apiUrl: 'http://localhost:5080/api',
 };

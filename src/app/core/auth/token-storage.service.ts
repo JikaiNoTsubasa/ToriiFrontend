@@ -4,9 +4,9 @@ const ACCESS_TOKEN_KEY = 'torii.accessToken';
 const REFRESH_TOKEN_KEY = 'torii.refreshToken';
 
 /**
- * Stockage des tokens. Le refresh token est persisté (localStorage) pour
- * survivre à un rechargement de page ; l'access token l'est aussi ici par
- * simplicité (à durcir plus tard : mémoire seule + cookie httpOnly).
+ * Token storage. The refresh token is persisted (localStorage) to survive
+ * a page reload; the access token is too, for simplicity (to harden later:
+ * memory only + httpOnly cookie).
  */
 @Injectable({ providedIn: 'root' })
 export class TokenStorageService {

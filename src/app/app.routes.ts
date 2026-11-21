@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from './core/guards/admin.guard';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -8,7 +9,7 @@ export const routes: Routes = [
       import('./features/auth/login/login').then((m) => m.Login),
   },
   {
-    // Coquille applicative : menu fixe à gauche + contenu à droite.
+    // Application shell: fixed menu on the left + content on the right.
     path: '',
     canActivate: [authGuard],
     loadComponent: () => import('./layout/shell/shell').then((m) => m.Shell),
@@ -16,6 +17,31 @@ export const routes: Routes = [
       {
         path: '',
         loadComponent: () => import('./features/home/home').then((m) => m.Home),
+      },
+      {
+        path: 'tickets',
+        loadComponent: () =>
+          import('./features/tickets/tickets').then((m) => m.Tickets),
+      },
+      {
+        // ADMIN-only section; each child = one submenu entry (shell.ts).
+        path: 'admin',
+        canMatch: [adminGuard],
+        children: [
+          { path: '', pathMatch: 'full', redirectTo: 'customers' },
+          {
+            path: 'customers',
+            loadComponent: () =>
+              import('./features/admin/customers/customers').then((m) => m.AdminCustomers),
+          },
+          {
+            path: 'customers/:id',
+            loadComponent: () =>
+              import('./features/admin/customer-details/customer-details').then(
+                (m) => m.AdminCustomerDetails,
+              ),
+          },
+        ],
       },
     ],
   },

@@ -1,167 +1,132 @@
-# RichTextEditorComponent (Tiptap) — pour Torii
+# RichTextEditorComponent (Tiptap)
 
-Éditeur de texte riche réutilisable façon Notion : commandes `/`, code avec
-coloration syntaxique, listes de tâches, citations, etc. Prévu pour être
-branché sur `project.description`, `task.description`, ou tout autre champ
-"contenu riche" de Torii.
+Reusable Notion-style rich text editor: `/` commands, code with syntax
+highlighting, task lists, quotes, etc. Meant to be plugged into any "rich
+content" field of Torii (descriptions, comments…).
 
-## 1. Installation
+## 1. Dependencies
 
-⚠️ **Tiptap v3** (version installée par défaut aujourd'hui) a réorganisé ses
-packages : `Placeholder` vit maintenant dans `@tiptap/extensions` (pas
-`@tiptap/extension-placeholder`, devenu un package interne "deprecated"),
-et `Link` est inclus nativement dans `StarterKit`. Utilise cette commande,
-testée avec Tiptap 3.27.3 :
+Already declared in `package.json` (Tiptap v3):
 
 ```bash
 npm install @tiptap/core @tiptap/starter-kit @tiptap/suggestion @tiptap/extensions @tiptap/extension-task-list @tiptap/extension-task-item @tiptap/extension-code-block-lowlight lowlight tippy.js
 ```
 
-Si tu obtiens quand même `Cannot find module` après cette commande :
-1. Vérifie que l'install s'est bien terminée sans erreur (`npm install`
-   affiche parfois une erreur de résolution de peer dependency au milieu
-   des logs, facile à rater).
-2. Vérifie le contenu réel de `node_modules/@tiptap/` :
-   ```bash
-   ls node_modules/@tiptap/
-   ```
-   Le nom du package doit apparaître exactement (ex: `extensions`, pas
+⚠️ **Tiptap v3** reorganized its packages: `Placeholder` now lives in
+`@tiptap/extensions` (not `@tiptap/extension-placeholder`, now an internal
+deprecated package), and `Link` ships with `StarterKit`.
+
+If you still get `Cannot find module`:
+1. Check that the install finished without errors (`npm install` sometimes
+   prints a peer dependency resolution error in the middle of the logs).
+2. Check what is actually in `node_modules/@tiptap/` (`ls node_modules/@tiptap/`):
+   the package name must appear exactly (e.g. `extensions`, not
    `extension-placeholder`).
-3. Si un seul module manque après une install propre, réinstalle-le seul :
+3. If a single module is missing after a clean install, reinstall it alone:
    `npm install @tiptap/extensions`.
 
-## 2. Fichiers à copier dans le projet
+## 2. Files
 
 ```
 shared/rich-text-editor/
-├── rich-text-editor.component.ts
-├── rich-text-editor.component.html
-├── rich-text-editor.component.scss
-├── slash-menu.global.scss        <-- à importer globalement, voir étape 3
+├── rich-text-editor.ts           # RichTextEditorComponent (signals + ControlValueAccessor)
+├── rich-text-editor.html
+├── rich-text-editor.scss
+├── slash-menu.global.scss        # imported globally, see step 3
 └── extensions/
     ├── slash-command.ts
-    ├── suggestion-items.ts        <-- personnalise ici la liste des commandes
+    ├── suggestion-items.ts       # customize the command list here
     └── slash-menu.render.ts
 ```
 
-## 3. Import du style global du menu (étape importante)
+## 3. Global menu styles
 
-Le popup de commandes est positionné par `tippy.js` **en dehors** de
-l'arbre Angular (`appendTo: document.body`), donc l'encapsulation de style
-du composant (`ViewEncapsulation.Emulated`) ne l'atteint pas.
-
-Ajoute dans `styles.scss` (racine du projet, généralement `src/styles.scss`).
-
-⚠️ Deux pièges fréquents :
-- **Le chemin est relatif à `src/`**, pas à la racine du projet. Si le
-  fichier est dans `src/app/shared/rich-text-editor/`, il faut écrire
-  `app/shared/rich-text-editor/...` (le segment `app/` est facile à
-  oublier).
-- **`@import` est déprécié en Sass** (sera supprimé de Dart Sass), on
-  utilise `@use` à la place :
+The command popup is positioned by `tippy.js` **outside** the Angular tree
+(`appendTo: document.body`), so the component's style encapsulation
+(`ViewEncapsulation.Emulated`) does not reach it. That is why
+`slash-menu.global.scss` is loaded from `src/styles.scss`:
 
 ```scss
 @use 'app/shared/rich-text-editor/slash-menu.global' as *;
 ```
 
-**Alternative plus robuste** (évite de recalculer le chemin relatif à
-chaque déplacement de fichier) : ajoute le dossier dans les
-`includePaths` de `angular.json`, puis importe sans chemin relatif :
-
-```json
-"stylePreprocessorOptions": {
-  "includePaths": ["src"]
-}
-```
-
-(dans `architect.build.options` de `angular.json`), ce qui permet ensuite
-d'écrire simplement, où que soit `styles.scss` :
-
-```scss
-@use 'app/shared/rich-text-editor/slash-menu.global' as *;
-```
-
-Ou encore plus simple : copie tout le contenu de
-`slash-menu.global.scss` directement dans `styles.scss` si tu ne veux pas
-te embêter avec les chemins d'import pour un seul petit fichier.
+- The path is **relative to `src/`**, not to the project root.
+- `@import` is deprecated in Sass: use `@use`.
 
 ## 4. Usage
 
-### Avec Reactive Forms
+### With a form control (`formControlName` / `ngModel`)
+
+The component implements `ControlValueAccessor`:
 
 ```html
-<form [formGroup]="projectForm">
-  <label>Description du projet</label>
-  <app-rich-text-editor
-    formControlName="description"
-    placeholder="Décrivez le projet, ses objectifs, son périmètre..."
-  />
-</form>
+<app-rich-text-editor
+  formControlName="description"
+  placeholder="Describe the project, its goals, its scope..."
+/>
 ```
-
-```typescript
-import { RichTextEditorComponent } from 'shared/rich-text-editor/rich-text-editor.component';
-
-@Component({
-  standalone: true,
-  imports: [ReactiveFormsModule, RichTextEditorComponent],
-  // ...
-})
-export class ProjectFormComponent {
-  projectForm = this.fb.group({
-    name: [''],
-    description: [''], // stocké en HTML
-  });
-}
-```
-
-### Avec ngModel (ex: description de tâche dans une modale)
 
 ```html
 <app-rich-text-editor
   [(ngModel)]="task.description"
-  placeholder="Détaillez la tâche..."
+  placeholder="Detail the task..."
   (contentChange)="onDescriptionChange($event)"
 />
 ```
 
-### En lecture seule (ex: vue détail, audit log, commentaire archivé)
+```ts
+import { RichTextEditorComponent } from '../../shared/rich-text-editor/rich-text-editor';
+
+@Component({
+  imports: [RichTextEditorComponent /* , ReactiveFormsModule or FormsModule */],
+  // ...
+})
+```
+
+### Read-only (details view, audit log, archived comment)
 
 ```html
 <app-rich-text-editor [editable]="false" [ngModel]="task.description" />
 ```
 
-## 5. Stockage
+### Inputs / outputs
 
-Le composant émet et reçoit du **HTML** (`editor.getHTML()`). Pour Torii,
-stocke ce HTML tel quel dans PostgreSQL (colonne `text` ou `jsonb` si tu
-préfères garder aussi le format JSON de Tiptap via `editor.getJSON()` —
-utile si tu veux un jour faire de la recherche full-text plus fine que sur
-du HTML brut).
+| Name            | Kind   | Description                                         |
+|-----------------|--------|-----------------------------------------------------|
+| `placeholder`   | input  | Shown when the document is empty (read at creation) |
+| `editable`      | input  | `false` switches to read-only (tracked live)        |
+| `contentChange` | output | Current HTML on every change                        |
+| `editorBlur`    | output | Current HTML on blur (handy for saving)             |
 
-Si tu affiches ce contenu ailleurs qu'via ce composant (export PDF, email de
-notification, etc.), pense à sanitizer le HTML côté backend avant tout envoi
-externe — Tiptap ne fait pas cette sanitization pour toi côté stockage.
+## 5. Storage
 
-## 6. Personnaliser les commandes du menu "/"
+The component emits and receives **HTML** (`editor.getHTML()`). Store it as is
+in PostgreSQL (`text` column, or `jsonb` if you also want to keep Tiptap's JSON
+format through `editor.getJSON()` — useful for finer full-text search than on
+raw HTML).
 
-Tout se passe dans `extensions/suggestion-items.ts` — le tableau
-`allCommandItems`. Chaque entrée a un `title`, une `description`, une petite
-icône SVG inline, et une fonction `command` qui utilise l'API chainable de
-Tiptap (`editor.chain().focus()...run()`).
+If you display this content anywhere other than through this component (PDF
+export, notification email, etc.), sanitize the HTML on the backend before any
+external use — Tiptap does not sanitize stored content for you.
 
-Exemples d'ajouts possibles pour Torii :
-- une commande "Mention" pour `@membre` (nécessite `@tiptap/extension-mention`)
-- une commande "Lien vers tâche" qui insère un lien interne `/tasks/:id`
-- une commande "Tableau" via `@tiptap/extension-table`
+## 6. Customizing the "/" commands
 
-## 7. Notes techniques
+Everything happens in `extensions/suggestion-items.ts` — the `allCommandItems`
+array. Each entry has a `title`, a `description`, a small inline SVG icon, and a
+`command` function using Tiptap's chainable API (`editor.chain().focus()...run()`).
 
-- `StarterKit` inclut déjà : paragraphe, titres, gras/italique, listes,
-  citation, code inline, undo/redo. On désactive juste son `codeBlock` pour
-  le remplacer par `CodeBlockLowlight` (coloration syntaxique).
-- `lowlight` avec `common` charge un jeu de langages courants (JS, TS,
-  bash, JSON, CSS, HTML, Python, C#, etc.). Si le bundle final est trop
-  lourd, tu peux importer seulement les langages dont tu as besoin — voir
-  la doc lowlight pour l'import sélectif.
-- Le composant est 100% standalone (pas besoin de NgModule).
+Possible additions:
+- a "Mention" command for `@member` (requires `@tiptap/extension-mention`)
+- a "Link to ticket" command inserting an internal `/tickets/:number` link
+- a "Table" command through `@tiptap/extension-table`
+
+## 7. Technical notes
+
+- `StarterKit` already includes: paragraph, headings, bold/italic, lists,
+  quote, inline code, undo/redo. Only its `codeBlock` is disabled, replaced by
+  `CodeBlockLowlight` (syntax highlighting).
+- `lowlight` with `common` loads a set of common languages (JS, TS, bash, JSON,
+  CSS, HTML, Python, C#, etc.). If the final bundle gets too heavy, import only
+  the languages you need — see the lowlight docs for selective imports.
+- The Tiptap instance is created in `afterNextRender` (its host element only
+  exists after the first render).

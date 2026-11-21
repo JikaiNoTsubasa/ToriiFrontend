@@ -1,37 +1,37 @@
 /**
- * Une action affichée sous forme de bouton rond dans le menu radial.
- * Chaque action est entièrement personnalisable (icône, couleur, libellé)
- * selon l'endroit de l'app où le menu est ouvert.
+ * An action shown as a round button in the radial menu.
+ * Each action is fully customizable (icon, color, label)
+ * depending on where in the app the menu is opened.
  */
 export interface RadialMenuAction {
-  /** Libellé affiché dans le tooltip au survol. */
+  /** Label shown in the tooltip on hover. */
   label: string;
 
-  /** Classe(s) d'icône FontAwesome, ex. `'fas fa-plus'`. */
+  /** FontAwesome icon class(es), e.g. `'fas fa-plus'`. */
   icon: string;
 
-  /** Callback déclenché au clic. Le menu se ferme juste après. */
+  /** Callback fired on click. The menu closes right after. */
   run: () => void;
 
   /**
-   * Couleur d'accent (fond du bouton). Toute valeur CSS valide.
-   * Défaut : la couleur primaire de l'app.
+   * Accent color (button background). Any valid CSS value.
+   * Default: the app's primary color.
    */
   color?: string;
   bg?: string;
 
-  /** Désactive le bouton (grisé, non cliquable) si vrai. */
+  /** Disables the button (greyed out, not clickable) when true. */
   disabled?: boolean;
 }
 
-/** État interne du menu radial : sa position à l'écran et ses actions. */
+/** Internal state of the radial menu: its screen position and its actions. */
 export interface RadialMenuState {
-  /** Position horizontale du centre du menu (px, repère viewport). */
+  /** Horizontal position of the menu center (px, viewport coordinates). */
   x: number;
 
-  /** Position verticale du centre du menu (px, repère viewport). */
+  /** Vertical position of the menu center (px, viewport coordinates). */
   y: number;
 
-  /** Boutons à disposer en cercle autour du centre. */
+  /** Buttons to lay out in a circle around the center. */
   actions: RadialMenuAction[];
 }

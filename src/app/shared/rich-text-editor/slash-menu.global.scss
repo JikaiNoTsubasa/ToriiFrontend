@@ -1,11 +1,11 @@
 /**
- * Styles du menu de commandes "/".
- * IMPORTANT : ce fichier doit être importé dans les styles GLOBAUX du projet
- * (styles.scss / angular.json > styles), pas dans le composant.
- * Raison : tippy.js monte le popup directement dans <body>, en dehors de
- * l'arbre du composant Angular, donc l'encapsulation de vue ne l'atteint pas.
+ * Styles of the "/" command menu.
+ * IMPORTANT: this file must be imported into the project's GLOBAL styles
+ * (styles.scss / angular.json > styles), not into the component.
+ * Reason: tippy.js mounts the popup directly in <body>, outside the
+ * Angular component tree, so view encapsulation does not reach it.
  *
- * Exemple d'import dans styles.scss :
+ * Import example in styles.scss:
  *   @import 'app/shared/rich-text-editor/slash-menu.global.scss';
  */
 
@@ -72,7 +72,7 @@
   color: #8a8a92;
 }
 
-/* tippy: pas de thème par défaut, on neutralise le padding/box qu'il ajoute */
+/* tippy: no default theme, neutralize the padding/box it adds */
 .tippy-box[data-theme~=''] {
   background: transparent;
 }

@@ -1,21 +1,21 @@
 @use 'app/shared/rich-text-editor/slash-menu.global' as *;
 /* =========================================================================
-   Torii — styles globaux
-   Tous les styles de l'app sont centralisés ici.
+   Torii — global styles
+   Every style of the app is centralized here.
    ========================================================================= */
 
-/* ----- Variables globales ----- */
-$color-primary: #bc002d; // couleur primaire (accent)
-$color-primary-soft: rgba($color-primary, 0.1); // fond au survol
-$color-background: #e3e3e3; // fond de l'application
-$color-panel: #f6f6f6; // panneaux
-$color-text: #101010; // texte
-$color-muted: #6f6f6f; // texte secondaire
-$color-border: #d4d4d4; // bordures / séparateurs
-$color-input: #ffffff; // champs de saisie
-$color-error: #b00020; // messages d'erreur
+/* ----- Global variables ----- */
+$color-primary: #bc002d; // primary color (accent)
+$color-primary-soft: rgba($color-primary, 0.1); // hover background
+$color-background: #e3e3e3; // application background
+$color-panel: #f6f6f6; // panels
+$color-text: #101010; // text
+$color-muted: #6f6f6f; // secondary text
+$color-border: #d4d4d4; // borders / separators
+$color-input: #ffffff; // input fields
+$color-error: #b00020; // error messages
 
-$radius: 0; // panneaux carrés
+$radius: 0; // square panels
 $spacing: 1rem;
 $content-max-width: 1100px;
 
@@ -52,14 +52,14 @@ p {
   margin: 0;
 }
 
-/* ----- Panneau (carré, #F6F6F6) ----- */
+/* ----- Panel (square, #F6F6F6) ----- */
 .panel {
   background: $color-panel;
   border-radius: $radius;
   padding: 1.5rem;
 }
 
-/* ----- Boutons ----- */
+/* ----- Buttons ----- */
 .btn {
   padding: 0.7rem 1rem;
   border: 0;
@@ -87,7 +87,28 @@ p {
   }
 }
 
-/* ----- Champs de formulaire ----- */
+.btn--danger {
+  background: $color-error;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.1);
+  }
+}
+
+.btn--sm {
+  padding: 0.4rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+// Icon + label in a button / button link.
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+/* ----- Form fields ----- */
 .field {
   display: flex;
   flex-direction: column;
@@ -103,6 +124,88 @@ p {
     color: $color-text;
     font-size: 1rem;
   }
+}
+
+.field__error {
+  color: $color-error;
+  font-size: 0.8rem;
+}
+
+/* Single-line form: growing field + button aligned at the bottom. */
+.inline-form {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+
+  .btn {
+    margin-top: 1.35rem; // aligns the button with the field (label height)
+  }
+}
+
+.inline-form__grow {
+  flex: 1 1 auto;
+}
+
+/* ----- Panel header (title + actions) ----- */
+.panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.panel__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.05rem;
+}
+
+/* ----- Generic details card (metadata dl) ----- */
+.detail__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 0;
+}
+
+.detail__meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  dt {
+    font-size: 0.78rem;
+  }
+
+  dd {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+}
+
+.detail__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+/* ----- User chip (avatar + name) ----- */
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.user-chip__avatar {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 /* ----- Messages ----- */
@@ -123,7 +226,7 @@ p {
   color: $color-muted;
 }
 
-/* ----- Écran de connexion ----- */
+/* ----- Sign-in screen ----- */
 .login {
   display: flex;
   align-items: center;
@@ -151,7 +254,7 @@ p {
 }
 
 /* =========================================================================
-   Coquille applicative : menu fixe à gauche + contenu modulable à droite
+   Application shell: fixed menu on the left + flexible content on the right
    ========================================================================= */
 
 $sidebar-width: 260px;
@@ -159,10 +262,10 @@ $sidebar-width: 260px;
 .layout {
   display: flex;
   height: 100vh;
-  overflow: hidden; // seul le contenu défile
+  overflow: hidden; // only the content scrolls
 }
 
-/* ----- Menu latéral fixe ----- */
+/* ----- Fixed side menu ----- */
 .sidebar {
   flex: 0 0 $sidebar-width;
   width: $sidebar-width;
@@ -188,7 +291,7 @@ $sidebar-width: 260px;
 }
 
 .sidebar__nav {
-  flex: 1 1 auto; // pousse le bloc utilisateur vers le bas
+  flex: 1 1 auto; // pushes the user block to the bottom
   overflow-y: auto;
   padding: 0.75rem;
   display: flex;
@@ -215,6 +318,33 @@ $sidebar-width: 260px;
     background: $color-primary;
     color: #fff;
   }
+
+  // Section header whose submenu is expanded.
+  &--open {
+    color: $color-primary;
+    font-weight: 600;
+  }
+
+  &--child {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.9rem;
+  }
+}
+
+.sidebar__caret {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: $color-muted;
+}
+
+/* Section submenu: indented, joined by a vertical rule. */
+.sidebar__children {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0.1rem 0 0.35rem 1.35rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid $color-border;
 }
 
 .sidebar__icon {
@@ -222,9 +352,9 @@ $sidebar-width: 260px;
   text-align: center;
 }
 
-/* ----- Utilisateur connecté, épinglé en bas du menu ----- */
+/* ----- Signed-in user, pinned at the bottom of the menu ----- */
 .sidebar__user {
-  position: relative; // ancre le sous-menu
+  position: relative; // anchors the submenu
   flex: 0 0 auto;
   border-top: 1px solid $color-border;
 }
@@ -247,12 +377,12 @@ $sidebar-width: 260px;
   font-size: 0.9rem;
 }
 
-/* Sous-menu affiché au survol du bloc utilisateur. */
+/* Submenu shown when hovering the user block. */
 .sidebar__submenu {
   position: absolute;
   left: 0.5rem;
   right: 0.5rem;
-  bottom: calc(100% - 0.25rem); // remonte au-dessus du bloc user
+  bottom: calc(100% - 0.25rem); // rises above the user block
   display: flex;
   flex-direction: column;
   padding: 0.25rem;
@@ -261,7 +391,7 @@ $sidebar-width: 260px;
   border-radius: $radius;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 
-  // masqué par défaut, révélé au survol / focus clavier
+  // hidden by default, revealed on hover / keyboard focus
   opacity: 0;
   visibility: hidden;
   transform: translateY(4px);
@@ -313,7 +443,7 @@ $sidebar-width: 260px;
 
 .sidebar__user-info {
   flex: 1 1 auto;
-  min-width: 0; // permet l'ellipsis
+  min-width: 0; // allows the ellipsis
   display: flex;
   flex-direction: column;
 }
@@ -334,7 +464,7 @@ $sidebar-width: 260px;
   white-space: nowrap;
 }
 
-/* ----- Zone de contenu (droite) : scroll complet ----- */
+/* ----- Content area (right): full scroll ----- */
 .content {
   flex: 1 1 auto;
   height: 100vh;
@@ -342,7 +472,7 @@ $sidebar-width: 260px;
   position: relative;
 }
 
-/* Conteneur de page standard (marge + largeur max). */
+/* Standard page container (margin + max width). */
 .page {
   // max-width: $content-max-width;
   margin: 0 auto;
@@ -352,7 +482,7 @@ $sidebar-width: 260px;
   gap: 1rem;
 }
 
-/* ----- Topbar optionnelle (épinglée en haut de la zone de contenu) ----- */
+/* ----- Optional topbar (pinned at the top of the content area) ----- */
 .topbar {
   position: sticky;
   top: 0;
@@ -376,7 +506,7 @@ $sidebar-width: 260px;
   gap: 0.75rem;
 }
 
-/* ----- Badge de statut ----- */
+/* ----- Status badge ----- */
 .badge {
   flex: 0 0 auto;
   padding: 0.2rem 0.55rem;
@@ -413,7 +543,7 @@ $sidebar-width: 260px;
   text-decoration: line-through;
 }
 
-/* ----- Onglets ----- */
+/* ----- Tabs ----- */
 .tabs {
   display: flex;
   gap: 0.25rem;
@@ -427,7 +557,7 @@ $sidebar-width: 260px;
   padding: 0.7rem 1rem;
   border: 0;
   border-bottom: 2px solid transparent;
-  margin-bottom: -1px; // chevauche la bordure du conteneur
+  margin-bottom: -1px; // overlaps the container border
   background: transparent;
   color: $color-muted;
   font-size: 0.95rem;
@@ -458,14 +588,14 @@ $sidebar-width: 260px;
 }
 
 /* =========================================================================
-   Texte éditable inline (app-editable-input-text)
+   Inline editable text (app-editable-input-text)
    ========================================================================= */
 
-/* Affichage : ressemble à du texte normal, indice d'édition au survol. */
+/* Display: looks like normal text, with an edit hint on hover. */
 .editable-text {
   display: inline-block;
   padding: 0.15rem 0.35rem;
-  margin: -0.15rem -0.35rem; // compense le padding pour ne pas décaler le texte
+  margin: -0.15rem -0.35rem; // offsets the padding so the text does not shift
   border: 1px solid transparent;
   border-radius: $radius;
   cursor: text;
@@ -486,7 +616,7 @@ $sidebar-width: 260px;
   font-style: italic;
 }
 
-/* Édition : champ aligné pixel-perfect sur le texte affiché. */
+/* Editing: field aligned pixel-perfect with the displayed text. */
 .editable-text__input {
   width: 100%;
   padding: 0.15rem 0.35rem;
@@ -504,7 +634,7 @@ $sidebar-width: 260px;
 }
 
 /* =========================================================================
-   Tableau (liste de tâches, etc.) — carré, aligné sur les panneaux
+   Table (lists, etc.) — square, aligned with the panels
    ========================================================================= */
 
 .table {
@@ -522,7 +652,7 @@ $sidebar-width: 260px;
     vertical-align: middle;
   }
 
-  /* En-tête : discret, en retrait comme le texte secondaire. */
+  /* Header: subtle, toned down like secondary text. */
   thead th {
     font-size: 0.75rem;
     font-weight: 600;
@@ -545,20 +675,27 @@ $sidebar-width: 260px;
     }
   }
 
-  /* Colonne numérique (estimations, durées…). */
+  /* Numeric column (estimates, durations…). */
   .table__num {
     text-align: right;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
+
+  /* Actions column (buttons), pinned to the right and as narrow as possible. */
+  .table__actions {
+    width: 1%;
+    text-align: right;
+    white-space: nowrap;
+  }
 }
 
-/* Ligne entièrement cliquable (navigation vers le détail). */
+/* Fully clickable row (navigation to the details). */
 .table--clickable tbody tr {
   cursor: pointer;
 }
 
-/* Cellule de lien : reset du style d'ancre pour laisser la ligne piloter. */
+/* Link cell: resets the anchor style to let the row drive. */
 .table__link {
   color: inherit;
   text-decoration: none;
@@ -569,7 +706,15 @@ $sidebar-width: 260px;
   }
 }
 
-/* État vide / chargement, aligné au centre sur toute la largeur. */
+/* Identifier cell (ticket number…): aligned digits, emphasized. */
+.table__code {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Empty / loading state, centered across the full width. */
 .table__empty {
   padding: 1.5rem 0.85rem;
   text-align: center;
@@ -578,7 +723,7 @@ $sidebar-width: 260px;
 }
 
 /* =========================================================================
-   Notifications globales (toasts)
+   Global notifications (toasts)
    ========================================================================= */
 
 .toasts {
@@ -665,24 +810,24 @@ $sidebar-width: 260px;
 }
 
 /* =========================================================================
-   Radial Menu (menu circulaire pour les actions rapides)
+   Radial menu (circular menu for quick actions)
    ========================================================================= */
 
-$radial-btn-size: 3.25rem; // diamètre des boutons ronds
-$radial-close-size: 2.5rem; // diamètre du bouton central (croix)
-$radial-stagger: 45ms; // décalage d'apparition entre 2 boutons
+$radial-btn-size: 3.25rem; // round button diameter
+$radial-close-size: 2.5rem; // center (close) button diameter
+$radial-stagger: 45ms; // appearance delay between 2 buttons
 
 .radial-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 1100; // au-dessus des toasts (1000)
+  z-index: 1100; // above the toasts (1000)
 }
 
 .radial-menu {
   position: fixed;
   width: 0;
   height: 0;
-  // Les enfants (boutons) se positionnent par rapport à ce point.
+  // The children (buttons) are positioned relative to this point.
 }
 
 .radial-menu__item {
@@ -704,11 +849,11 @@ $radial-stagger: 45ms; // décalage d'apparition entre 2 boutons
   font-size: 1.1rem;
   cursor: pointer;
   // box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-  // Disposition en cercle : on tourne, on s'éloigne du centre, puis on
-  // « dé-tourne » pour garder l'icône bien droite.
+  // Circular layout: rotate, move away from the center, then
+  // "un-rotate" to keep the icon upright.
   transform: translate(-50%, -50%) rotate(var(--angle))
     translateY(calc(-1 * var(--radius))) rotate(calc(-1 * var(--angle)));
-  // Apparition l'un après l'autre, en spiralant autour du centre.
+  // Appear one after the other, spiraling around the center.
   animation: radial-item-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
   animation-delay: calc(var(--i) * #{$radial-stagger});
   transition:
@@ -728,7 +873,7 @@ $radial-stagger: 45ms; // décalage d'apparition entre 2 boutons
     cursor: not-allowed;
   }
 
-  // Tooltip du nom de l'action, affiché au survol au-dessus du bouton.
+  // Tooltip with the action name, shown above the button on hover.
   .radial-menu__tooltip {
     position: absolute;
     bottom: calc(100% + 0.5rem);
@@ -778,8 +923,8 @@ $radial-stagger: 45ms; // décalage d'apparition entre 2 boutons
 @keyframes radial-item-in {
   from {
     opacity: 0;
-    // Rayon nul + angle en retrait → les boutons « jaillissent » du centre
-    // en tournant jusqu'à leur position finale.
+    // Zero radius + offset angle → the buttons "burst" out of the center,
+    // spinning to their final position.
     transform: translate(-50%, -50%) rotate(calc(var(--angle) - 140deg))
       translateY(0) rotate(calc(-1 * (var(--angle) - 140deg)));
   }

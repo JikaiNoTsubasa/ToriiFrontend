@@ -1,5 +1,5 @@
 <div class="layout">
-  <!-- Menu fixe à gauche -->
+  <!-- Fixed menu on the left -->
   <aside class="sidebar">
     <div class="sidebar__brand">
       <span class="sidebar__logo"><img src="/Torii_logo.png" alt="Torii Logo" width="32" height="32" /></span>
@@ -7,20 +7,47 @@
     </div>
 
     <nav class="sidebar__nav">
-      @for (item of nav; track item.path) {
-        <a
-          class="sidebar__link"
-          [routerLink]="item.path"
-          routerLinkActive="sidebar__link--active"
-          [routerLinkActiveOptions]="{ exact: item.path === '/' }"
-        >
-          <span class="sidebar__icon"><i [class]="item.icon"></i></span>
-          <span class="sidebar__label">{{ item.label }}</span>
-        </a>
+      @for (item of nav(); track item.path) {
+        @if (item.children; as children) {
+          <!-- Section: header link + submenu expanded while the section is active -->
+          <a
+            class="sidebar__link"
+            [class.sidebar__link--open]="isOpen(item)"
+            [routerLink]="item.path"
+          >
+            <span class="sidebar__icon"><i [class]="item.icon"></i></span>
+            <span class="sidebar__label">{{ item.label }}</span>
+            <span class="sidebar__caret"><i class="fa" [class.fa-chevron-down]="isOpen(item)" [class.fa-chevron-right]="!isOpen(item)"></i></span>
+          </a>
+          @if (isOpen(item)) {
+            <div class="sidebar__children">
+              @for (child of children; track child.path) {
+                <a
+                  class="sidebar__link sidebar__link--child"
+                  [routerLink]="child.path"
+                  routerLinkActive="sidebar__link--active"
+                >
+                  <span class="sidebar__icon"><i [class]="child.icon"></i></span>
+                  <span class="sidebar__label">{{ child.label }}</span>
+                </a>
+              }
+            </div>
+          }
+        } @else {
+          <a
+            class="sidebar__link"
+            [routerLink]="item.path"
+            routerLinkActive="sidebar__link--active"
+            [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+          >
+            <span class="sidebar__icon"><i [class]="item.icon"></i></span>
+            <span class="sidebar__label">{{ item.label }}</span>
+          </a>
+        }
       }
     </nav>
 
-    <!-- User connecté, en bas du menu : sous-menu au survol -->
+    <!-- Signed-in user, at the bottom of the menu: submenu on hover -->
     @if (user(); as u) {
       <div class="sidebar__user">
         <div class="sidebar__user-trigger">
@@ -42,18 +69,18 @@
         <div class="sidebar__submenu">
           <button class="sidebar__submenu-item" type="button" (click)="goToProfile()">
             <span class="sidebar__icon">👤</span>
-            <span>Profil</span>
+            <span>Profile</span>
           </button>
           <button class="sidebar__submenu-item" type="button" (click)="logout()">
             <span class="sidebar__icon">⏻</span>
-            <span>Déconnexion</span>
+            <span>Sign out</span>
           </button>
         </div>
       </div>
     }
   </aside>
 
-  <!-- Contenu à droite : scroll complet, la page ajoute une topbar si besoin -->
+  <!-- Content on the right: full scroll, the page adds a topbar if needed -->
   <main class="content">
     <router-outlet />
   </main>

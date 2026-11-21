@@ -12,8 +12,8 @@ import {
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
-// Tiptap v3 : Placeholder (et History, Focus, etc.) vivent maintenant dans
-// le package groupé @tiptap/extensions, en export nommé (pas de default export).
+// Tiptap v3: Placeholder (and History, Focus, etc.) now live in
+// the bundled @tiptap/extensions package, as named exports (no default export).
 import { Placeholder } from '@tiptap/extensions';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
@@ -27,13 +27,13 @@ import { renderSlashMenu } from './extensions/slash-menu.render';
 const lowlight = createLowlight(common);
 
 /**
- * Éditeur de texte riche réutilisable, façon Notion.
+ * Reusable Notion-style rich text editor.
  *
- * Usage avec formControlName / ngModel :
- *   <app-rich-text-editor formControlName="description" placeholder="Décrivez le projet..." />
+ * Usage with formControlName / ngModel:
+ *   <app-rich-text-editor formControlName="description" placeholder="Describe the project..." />
  *   <app-rich-text-editor [(ngModel)]="task.description" />
  *
- * Le contenu est stocké/restitué en HTML (editor.getHTML()).
+ * The content is stored/restored as HTML (editor.getHTML()).
  */
 @Component({
   selector: 'app-rich-text-editor',
@@ -50,16 +50,16 @@ const lowlight = createLowlight(common);
 export class RichTextEditorComponent implements OnDestroy, ControlValueAccessor {
   private readonly editorRef = viewChild.required<ElementRef<HTMLDivElement>>('editorRef');
 
-  /** Placeholder affiché quand le document est vide (lu à la création). */
-  readonly placeholder = input("Écrivez '/' pour insérer un bloc...");
+  /** Placeholder shown when the document is empty (read at creation). */
+  readonly placeholder = input("Type '/' to insert a block...");
 
-  /** Passe l'éditeur en lecture seule (ex: vue historique / audit log). */
+  /** Switches the editor to read-only (e.g. history view / audit log). */
   readonly editable = input(true);
 
-  /** Émis à chaque changement de contenu, avec le HTML courant. */
+  /** Emitted on every content change, with the current HTML. */
   readonly contentChange = output<string>();
 
-  /** Émis à la perte de focus, avec le HTML courant (pratique pour sauver). */
+  /** Emitted on blur, with the current HTML (handy for saving). */
   readonly editorBlur = output<string>();
 
   editor?: Editor;
@@ -70,10 +70,10 @@ export class RichTextEditorComponent implements OnDestroy, ControlValueAccessor 
   private disabled = false;
 
   constructor() {
-    // L'élément hôte de Tiptap n'existe qu'après le premier rendu.
+    // Tiptap's host element only exists after the first render.
     afterNextRender(() => this.createEditor());
 
-    // Suit l'input `editable` (et l'état disabled du formulaire) une fois l'éditeur créé.
+    // Tracks the `editable` input (and the form's disabled state) once the editor exists.
     effect(() => {
       const editable = this.editable();
       this.editor?.setEditable(editable && !this.disabled);
@@ -86,11 +86,11 @@ export class RichTextEditorComponent implements OnDestroy, ControlValueAccessor 
       editable: this.editable() && !this.disabled,
       extensions: [
         StarterKit.configure({
-          // on désactive le codeBlock du StarterKit pour le remplacer
-          // par la version avec coloration syntaxique (lowlight)
+          // disable StarterKit's codeBlock to replace it
+          // with the syntax-highlighted version (lowlight)
           codeBlock: false,
-          // Link est inclus nativement dans StarterKit v3, on le configure ici
-          // plutôt que d'importer un package séparé
+          // Link ships with StarterKit v3, so configure it here
+          // rather than importing a separate package
           link: { openOnClick: false, autolink: true },
         }),
         CodeBlockLowlight.configure({ lowlight }),

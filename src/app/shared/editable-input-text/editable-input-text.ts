@@ -10,12 +10,12 @@ import {
 } from '@angular/core';
 
 /**
- * Texte éditable « inline » : affiché normalement, il devient un champ de
- * saisie au clic, puis redevient un simple texte une fois validé.
+ * "Inline" editable text: displayed normally, it becomes an input field
+ * on click, then turns back into plain text once confirmed.
  *
- * Validation : Entrée ou perte de focus. Annulation : Échap.
+ * Confirm: Enter or blur. Cancel: Escape.
  *
- * Usage standalone (two-way binding + événement de sauvegarde) :
+ * Standalone usage (two-way binding + save event):
  *   <app-editable-input-text [(value)]="task.title" (save)="rename($event)" />
  */
 @Component({
@@ -23,26 +23,26 @@ import {
   templateUrl: './editable-input-text.html',
 })
 export class EditableInputText {
-  /** Valeur courante, liable en two-way : [(value)]. */
+  /** Current value, two-way bindable: [(value)]. */
   readonly value = model.required<string>();
 
-  /** Texte grisé affiché quand la valeur est vide. */
+  /** Greyed-out text shown when the value is empty. */
   readonly placeholder = input('');
 
-  /** Émis avec le texte modifié à chaque validation. */
+  /** Emitted with the edited text on every confirmation. */
   readonly save = output<string>();
 
-  /** Vrai tant que l'utilisateur édite le champ. */
+  /** True while the user is editing the field. */
   protected readonly editing = signal(false);
 
-  /** Brouillon en cours d'édition, isolé de la valeur tant que non validé. */
+  /** Draft being edited, isolated from the value until confirmed. */
   protected readonly draft = signal('');
 
   private readonly inputRef = viewChild<ElementRef<HTMLInputElement>>('input');
 
   constructor() {
-    // Dès que le champ apparaît, on lui donne le focus et on sélectionne
-    // le texte pour permettre un remplacement immédiat.
+    // As soon as the field appears, focus it and select
+    // the text to allow immediate replacement.
     effect(() => {
       if (this.editing()) {
         this.inputRef()?.nativeElement.select();
@@ -50,13 +50,13 @@ export class EditableInputText {
     });
   }
 
-  /** Passe en mode édition en amorçant le brouillon avec la valeur courante. */
+  /** Enters edit mode, seeding the draft with the current value. */
   protected startEdit(): void {
     this.draft.set(this.value());
     this.editing.set(true);
   }
 
-  /** Valide le brouillon : met à jour la valeur, émet `save`, quitte l'édition. */
+  /** Confirms the draft: updates the value, emits `save`, leaves edit mode. */
   protected commit(): void {
     if (!this.editing()) {
       return;
@@ -69,7 +69,7 @@ export class EditableInputText {
     }
   }
 
-  /** Annule l'édition sans modifier la valeur. */
+  /** Cancels editing without changing the value. */
   protected cancel(): void {
     this.editing.set(false);
   }

@@ -1,8 +1,15 @@
+import { apiEnum, ApiEnumValue } from '../http/api-enum';
+
+/** Application role — mirror of the backend `UserRole` enum. */
+export const USER_ROLES = apiEnum('USER', 'ADMIN');
+export type UserRole = ApiEnumValue<typeof USER_ROLES>;
+
 export interface UserDto {
   id: number;
   email: string;
   displayName: string;
   avatarUrl: string;
+  role: UserRole;
 }
 
 export interface AuthResponse {

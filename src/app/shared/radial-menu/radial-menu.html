@@ -1,11 +1,11 @@
 @if (state(); as menu) {
-  <!-- Voile plein écran : capte le clic extérieur (et le clic droit) pour fermer. -->
+  <!-- Full-screen backdrop: catches outside clicks (and right-clicks) to close. -->
   <div
     class="radial-backdrop"
     (click)="close()"
     (contextmenu)="$event.preventDefault(); close()"
   >
-    <!-- Point d'ancrage centré sur le clic ; les boutons se placent autour. -->
+    <!-- Anchor point centered on the click; the buttons are laid out around it. -->
     <div
       class="radial-menu"
       [style.left.px]="menu.x"
@@ -29,12 +29,12 @@
         </button>
       }
 
-      <!-- Bouton central : ferme le menu. -->
+      <!-- Center button: closes the menu. -->
       <button
         type="button"
         class="radial-menu__close"
         (click)="close()"
-        aria-label="Fermer le menu"
+        aria-label="Close menu"
       >
         <i class="fas fa-times" aria-hidden="true"></i>
       </button>

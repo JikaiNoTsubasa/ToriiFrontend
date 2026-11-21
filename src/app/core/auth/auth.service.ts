@@ -20,9 +20,10 @@ export class AuthService {
   private readonly _user = signal<UserDto | null>(null);
   readonly user = this._user.asReadonly();
   readonly isAuthenticated = computed(() => this._user() !== null);
+  readonly isAdmin = computed(() => this._user()?.role === 'ADMIN');
 
-  // Les flux d'auth gèrent leurs erreurs en ligne / en arrière-plan :
-  // ils désactivent la notification globale via skipErrorNotification().
+  // Auth flows handle their errors inline / in the background:
+  // they disable the global notification through skipErrorNotification().
   login(request: LoginRequest): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${this.baseUrl}/login`, request, skipErrorNotification())
@@ -35,7 +36,7 @@ export class AuthService {
       .pipe(tap((res) => this.handleAuth(res)));
   }
 
-  /** Renouvelle l'access token à partir du refresh token stocké. */
+  /** Renews the access token from the stored refresh token. */
   refresh(): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(
@@ -46,7 +47,7 @@ export class AuthService {
       .pipe(tap((res) => this.handleAuth(res)));
   }
 
-  /** Recharge l'utilisateur courant depuis un token existant (au démarrage). */
+  /** Reloads the current user from an existing token (at startup). */
   loadCurrentUser(): Observable<UserDto> {
     return this.http
       .get<UserDto>(`${this.baseUrl}/me`, skipErrorNotification())
@@ -56,7 +57,7 @@ export class AuthService {
   logout(): void {
     const refreshToken = this.storage.refreshToken;
     if (refreshToken) {
-      // "fire and forget" : on révoque côté serveur sans bloquer l'UI.
+      // "fire and forget": revoke on the server without blocking the UI.
       this.http
         .post(`${this.baseUrl}/logout`, { refreshToken }, skipErrorNotification())
         .subscribe({ error: () => {} });

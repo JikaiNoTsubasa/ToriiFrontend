@@ -2,40 +2,40 @@ import { Injectable, signal } from '@angular/core';
 import { RadialMenuAction, RadialMenuState } from './radial-menu.models';
 
 /**
- * Pilote l'unique menu radial de l'app (monté une seule fois dans `app.html`).
- * Permet d'ouvrir un menu circulaire d'actions n'importe où : il suffit
- * d'appeler `open()` depuis un gestionnaire d'événement (souvent `contextmenu`).
+ * Drives the app's single radial menu (mounted only once in `app.html`).
+ * Opens a circular action menu anywhere: just call `open()` from an
+ * event handler (usually `contextmenu`).
  *
- * Exemple — clic droit sur une ligne de table pour proposer des actions :
+ * Example — right-click on a table row to offer actions:
  *   private readonly radial = inject(RadialMenuService);
  *
  *   onContextMenu(event: MouseEvent, task: Task): void {
  *     this.radial.open(event, [
- *       { label: 'Nouvelle tâche', icon: 'fas fa-plus', color: '#1f7a3d',
+ *       { label: 'New task', icon: 'fas fa-plus', color: '#1f7a3d',
  *         run: () => this.create() },
- *       { label: 'Dupliquer', icon: 'fas fa-copy',
+ *       { label: 'Duplicate', icon: 'fas fa-copy',
  *         run: () => this.duplicate(task) },
- *       { label: 'Supprimer', icon: 'fas fa-trash', color: '#b00020',
+ *       { label: 'Delete', icon: 'fas fa-trash', color: '#b00020',
  *         run: () => this.remove(task) },
  *     ]);
  *   }
  *
- * Dans le template :
+ * In the template:
  *   <tr (contextmenu)="onContextMenu($event, task)"> … </tr>
  */
 @Injectable({ providedIn: 'root' })
 export class RadialMenuService {
   private readonly _state = signal<RadialMenuState | null>(null);
 
-  /** État courant du menu (`null` quand il est fermé). */
+  /** Current menu state (`null` when closed). */
   readonly state = this._state.asReadonly();
 
-  /** Marge minimale (px) entre le centre du menu et le bord de l'écran. */
+  /** Minimum margin (px) between the menu center and the screen edge. */
   private readonly edgeMargin = 130;
 
   /**
-   * Ouvre le menu à l'emplacement du clic avec les actions fournies.
-   * Empêche le menu contextuel natif du navigateur.
+   * Opens the menu at the click location with the given actions.
+   * Prevents the browser's native context menu.
    */
   open(event: MouseEvent, actions: RadialMenuAction[]): void {
     event.preventDefault();
@@ -45,14 +45,14 @@ export class RadialMenuService {
       return;
     }
 
-    // On garde le centre du menu à l'écran même si le clic est près d'un bord.
+    // Keep the menu center on screen even when the click is near an edge.
     const x = this.clamp(event.clientX, window.innerWidth);
     const y = this.clamp(event.clientY, window.innerHeight);
 
     this._state.set({ x, y, actions });
   }
 
-  /** Ferme le menu. */
+  /** Closes the menu. */
   close(): void {
     this._state.set(null);
   }

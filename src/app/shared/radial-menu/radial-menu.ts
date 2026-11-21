@@ -3,13 +3,13 @@ import { RadialMenuAction } from './radial-menu.models';
 import { RadialMenuService } from './radial-menu.service';
 
 /**
- * Menu radial global : à monter une seule fois (dans `app.html`). Il affiche,
- * quand le {@link RadialMenuService} le demande, une couronne de boutons ronds
- * autour du point cliqué. Les boutons apparaissent l'un après l'autre en
- * tournant autour du centre.
+ * Global radial menu: mount it only once (in `app.html`). When the
+ * {@link RadialMenuService} asks for it, it shows a ring of round buttons
+ * around the clicked point. The buttons appear one after the other,
+ * spinning around the center.
  *
- * Fermeture : clic à l'extérieur, bouton croix central, ou touche Échap.
- * L'ouverture se pilote via `RadialMenuService.open(event, actions)`.
+ * Closing: outside click, central close button, or the Escape key.
+ * Opening is driven by `RadialMenuService.open(event, actions)`.
  */
 @Component({
   selector: 'app-radial-menu',
@@ -21,18 +21,18 @@ import { RadialMenuService } from './radial-menu.service';
 export class RadialMenu {
   private readonly service = inject(RadialMenuService);
 
-  /** État courant (position + actions), `null` quand le menu est fermé. */
+  /** Current state (position + actions), `null` when the menu is closed. */
   protected readonly state = this.service.state;
 
-  /** Rayon (px) du cercle sur lequel sont disposés les boutons. */
+  /** Radius (px) of the circle the buttons are laid out on. */
   protected readonly radius = 70; // 92;
 
-  /** Angle (deg) du bouton d'index `index` parmi `count` boutons. */
+  /** Angle (deg) of the button at `index` among `count` buttons. */
   protected angle(index: number, count: number): number {
     return (360 / count) * index;
   }
 
-  /** Exécute l'action puis ferme le menu. */
+  /** Runs the action, then closes the menu. */
   protected trigger(action: RadialMenuAction): void {
     if (action.disabled) {
       return;
@@ -41,7 +41,7 @@ export class RadialMenu {
     action.run();
   }
 
-  /** Ferme le menu sans rien exécuter. */
+  /** Closes the menu without running anything. */
   protected close(): void {
     this.service.close();
   }

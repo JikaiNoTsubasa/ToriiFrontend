@@ -1,33 +1,33 @@
 /**
- * Enums échangés avec l'API. Côté back, tout enum est sérialisé en chaîne
- * MAJUSCULE (ex. `"ON_GOING"`), identique à sa valeur en base ; les valeurs
- * numériques sont refusées. Côté front, un enum est donc une union de chaînes.
+ * Enums exchanged with the API. On the backend, every enum is serialized as an
+ * UPPERCASE string (e.g. `"ON_GOING"`), identical to its database value; numeric
+ * values are rejected. On the frontend, an enum is therefore a string union.
  *
- * Déclaration (miroir de l'enum C#, mêmes noms en UPPER_SNAKE) :
+ * Declaration (mirror of the C# enum, same UPPER_SNAKE names):
  *   export const TASK_STATUSES = apiEnum('NEW', 'ON_GOING', 'COMPLETED');
  *   export type TaskStatus = ApiEnumValue<typeof TASK_STATUSES>;
  *
- * Libellés / styles exhaustifs (le compilateur signale toute valeur oubliée) :
+ * Exhaustive labels / styles (the compiler flags any missing value):
  *   const STATUS_LABELS: ApiEnumMap<TaskStatus, string> = {
- *     NEW: 'Nouvelle', ON_GOING: 'En cours', COMPLETED: 'Terminée',
+ *     NEW: 'New', ON_GOING: 'In progress', COMPLETED: 'Completed',
  *   };
  */
 
-/** Liste figée des valeurs d'un enum API, utilisable pour les selects ou les filtres. */
+/** Frozen list of an API enum's values, usable for selects or filters. */
 export function apiEnum<const T extends readonly string[]>(...values: T): T {
   return Object.freeze(values) as T;
 }
 
-/** Union des valeurs d'un enum déclaré via {@link apiEnum}. */
+/** Union of the values of an enum declared with {@link apiEnum}. */
 export type ApiEnumValue<T extends readonly string[]> = T[number];
 
-/** Association exhaustive valeur d'enum → donnée d'affichage (libellé, classe CSS…). */
+/** Exhaustive mapping enum value → display data (label, CSS class…). */
 export type ApiEnumMap<E extends string, V> = Readonly<Record<E, V>>;
 
 /**
- * Garde de type : vérifie qu'une chaîne quelconque (query param, stockage local…)
- * est une valeur de l'enum. Insensible à la casse comme l'API ; renvoie la valeur
- * normalisée en MAJUSCULES, ou `null` si elle est inconnue.
+ * Type guard: checks that an arbitrary string (query param, local storage…)
+ * is a value of the enum. Case-insensitive like the API; returns the value
+ * normalized to UPPERCASE, or `null` if it is unknown.
  */
 export function parseApiEnum<T extends readonly string[]>(
   values: T,

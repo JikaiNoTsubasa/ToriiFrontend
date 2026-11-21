@@ -10,9 +10,9 @@ export interface Notification {
 }
 
 /**
- * File de notifications globales (toasts), pilotée par signal. Alimentée par
- * l'intercepteur d'erreurs pour les erreurs HTTP, mais utilisable partout
- * (`success`, `info`) pour un retour utilisateur cohérent.
+ * Signal-driven queue of global notifications (toasts). Fed by the error
+ * interceptor for HTTP errors, but usable anywhere (`success`, `info`)
+ * for consistent user feedback.
  */
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
@@ -21,7 +21,7 @@ export class NotificationService {
 
   private nextId = 1;
 
-  /** Durée d'affichage (ms) avant disparition automatique. */
+  /** Display duration (ms) before automatic dismissal. */
   private readonly autoDismissMs = 6000;
 
   error(title: string, detail?: string): void {

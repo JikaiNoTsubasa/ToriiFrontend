@@ -6,9 +6,9 @@ export interface SlashCommandOptions {
 }
 
 /**
- * Extension "/" façon Notion.
- * La logique d'affichage (items + render) est injectée via .configure()
- * depuis le composant qui monte l'éditeur — voir rich-text-editor.component.ts
+ * Notion-style "/" extension.
+ * The display logic (items + render) is injected through .configure()
+ * by the component that mounts the editor — see rich-text-editor.ts
  */
 export const SlashCommand = Extension.create<SlashCommandOptions>({
   name: 'slashCommand',

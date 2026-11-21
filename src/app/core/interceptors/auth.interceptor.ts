@@ -19,10 +19,10 @@ import {
 import { AuthService } from '../auth/auth.service';
 import { TokenStorageService } from '../auth/token-storage.service';
 
-/** Endpoints d'auth qui ne doivent PAS porter d'access token / ne pas déclencher de refresh. */
+/** Auth endpoints that must NOT carry an access token / must not trigger a refresh. */
 const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh'];
 
-// État partagé pour dédupliquer les refresh concurrents.
+// Shared state to deduplicate concurrent refreshes.
 let isRefreshing = false;
 const refreshDone$ = new BehaviorSubject<string | null>(null);
 
@@ -65,7 +65,7 @@ function handle401(
   router: Router,
 ): Observable<HttpEvent<unknown>> {
   if (isRefreshing) {
-    // Un refresh est déjà en cours : on attend son résultat puis on rejoue.
+    // A refresh is already in progress: wait for its result, then replay.
     return refreshDone$.pipe(
       filter((t): t is string => t !== null),
       take(1),

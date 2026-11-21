@@ -1,0 +1,124 @@
+<app-topbar [heading]="customer.value()?.name ?? 'Customer'">
+  <a class="btn btn--ghost" routerLink="/admin/customers"><i class="fa fa-arrow-left"></i> Customers</a>
+  @if (customer.value()) {
+    <button class="btn btn--danger" type="button" [disabled]="busy()" (click)="remove()">
+      <i class="fa fa-trash"></i> Delete
+    </button>
+  }
+</app-topbar>
+
+<div class="page">
+  @if (customer.value(); as c) {
+    <!-- Information -->
+    <div class="panel detail">
+      <dl class="detail__meta">
+        <div class="detail__meta-item">
+          <dt class="text-muted">Name</dt>
+          <dd>
+            <app-editable-input-text [(value)]="name" placeholder="Customer name" (save)="rename($event)" />
+          </dd>
+        </div>
+        <div class="detail__meta-item">
+          <dt class="text-muted">Created</dt>
+          <dd>{{ c.createdAt | date: 'MMM d, y, HH:mm' }}</dd>
+        </div>
+        <div class="detail__meta-item">
+          <dt class="text-muted">Updated</dt>
+          <dd>{{ c.updatedAt ? (c.updatedAt | date: 'MMM d, y, HH:mm') : '—' }}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <!-- Members -->
+    <div class="panel">
+      <div class="panel__head">
+        <h2 class="panel__title">Members <span class="tabs__count">{{ c.members.length }}</span></h2>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (member of c.members; track member.id) {
+            <tr>
+              <td>
+                <span class="user-chip">
+                  <img class="user-chip__avatar" [src]="member.avatarUrl" alt="" />
+                  {{ member.displayName }}
+                </span>
+              </td>
+              <td class="text-muted">{{ member.email }}</td>
+              <td><span class="badge" [class.badge--new]="member.role === 'ADMIN'">{{ member.role }}</span></td>
+              <td class="table__actions">
+                <button class="btn btn--ghost btn--sm" type="button" [disabled]="busy()" (click)="removeMember(member)">
+                  Remove
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td class="table__empty" colspan="4">No members yet.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Add members -->
+    <div class="panel">
+      <div class="panel__head">
+        <h2 class="panel__title">Add users</h2>
+      </div>
+
+      <label class="field">
+        <span>Search (name or email)</span>
+        <input
+          type="search"
+          placeholder="e.g. alice or alice@torii.dev"
+          [value]="search()"
+          (input)="search.set($any($event.target).value)"
+        />
+      </label>
+
+      @if (search().trim()) {
+        <table class="table">
+          <tbody>
+            @for (user of candidates(); track user.id) {
+              <tr>
+                <td>
+                  <span class="user-chip">
+                    <img class="user-chip__avatar" [src]="user.avatarUrl" alt="" />
+                    {{ user.displayName }}
+                  </span>
+                </td>
+                <td class="text-muted">{{ user.email }}</td>
+                <td class="table__actions">
+                  <button class="btn btn--sm" type="button" [disabled]="busy()" (click)="addMember(user)">
+                    + Add
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td class="table__empty" colspan="3">
+                  {{ searchResults.isLoading() ? 'Searching…' : 'No users to add.' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  } @else if (customer.isLoading()) {
+    <div class="panel"><p class="text-muted">Loading customer…</p></div>
+  } @else {
+    <div class="panel detail__empty">
+      <p>This customer could not be found.</p>
+      <a class="btn btn--ghost" routerLink="/admin/customers">Back to list</a>
+    </div>
+  }
+</div>

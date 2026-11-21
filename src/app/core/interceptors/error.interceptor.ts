@@ -5,16 +5,16 @@ import { NotificationService } from '../notifications/notification.service';
 import { SKIP_ERROR_NOTIFICATION, toAppError } from '../http/problem-details';
 
 /**
- * Intercepteur global d'erreurs. Normalise toute {@link HttpErrorResponse} au
- * format ProblemDetails ({@link AppError}), affiche une notification globale,
- * puis propage l'AppError aux abonnés.
+ * Global error interceptor. Normalizes any {@link HttpErrorResponse} to the
+ * ProblemDetails format ({@link AppError}), shows a global notification,
+ * then propagates the AppError to subscribers.
  *
- * Deux exceptions ne déclenchent pas de notification :
- *  - les requêtes portant {@link SKIP_ERROR_NOTIFICATION} (gérées en ligne) ;
- *  - les 401, prises en charge par le flux d'authentification (refresh / logout).
+ * Two exceptions do not trigger a notification:
+ *  - requests carrying {@link SKIP_ERROR_NOTIFICATION} (handled inline);
+ *  - 401s, handled by the authentication flow (refresh / logout).
  *
- * Doit être placé AVANT `authInterceptor` dans la chaîne, afin que ce dernier
- * voie encore la HttpErrorResponse brute pour déclencher le refresh sur 401.
+ * Must be placed BEFORE `authInterceptor` in the chain, so that the latter
+ * still sees the raw HttpErrorResponse to trigger the refresh on 401.
  */
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const notifications = inject(NotificationService);

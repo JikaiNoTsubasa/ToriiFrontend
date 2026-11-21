@@ -1,35 +1,35 @@
 import { inject, Injectable } from '@angular/core';
 import { NotificationService } from '../notifications/notification.service';
 
-/** Options de copie. */
+/** Copy options. */
 interface CopyOptions {
-  /** Affiche un toast de confirmation (succès / échec). Défaut : true. */
+  /** Shows a confirmation toast (success / failure). Default: true. */
   notify?: boolean;
-  /** Titre du toast de succès. Défaut : « Copié ». */
+  /** Success toast title. Default: "Copied". */
   successTitle?: string;
-  /** Détail optionnel affiché sous le titre du toast de succès. */
+  /** Optional detail shown under the success toast title. */
   successDetail?: string;
 }
 
 /**
- * Copie de texte dans le presse-papiers, utilisable partout dans l'app.
+ * Copies text to the clipboard, usable anywhere in the app.
  *
- * S'appuie sur l'API Clipboard moderne (`navigator.clipboard`) avec un repli
- * `document.execCommand('copy')` pour les contextes non sécurisés (http) ou
- * les navigateurs anciens. Émet par défaut un toast de confirmation.
+ * Relies on the modern Clipboard API (`navigator.clipboard`) with a
+ * `document.execCommand('copy')` fallback for insecure contexts (http) or
+ * old browsers. Shows a confirmation toast by default.
  *
- * Usage :
+ * Usage:
  *   private readonly clipboard = inject(ClipboardService);
  *   this.clipboard.copy(task.id.toString());
- *   this.clipboard.copy(url, { successTitle: 'Lien copié', notify: true });
+ *   this.clipboard.copy(url, { successTitle: 'Link copied', notify: true });
  */
 @Injectable({ providedIn: 'root' })
 export class ClipboardService {
   private readonly notifications = inject(NotificationService);
 
   /**
-   * Copie `text` dans le presse-papiers. Renvoie `true` en cas de succès.
-   * L'appel est asynchrone : `await` possible mais non requis.
+   * Copies `text` to the clipboard. Returns `true` on success.
+   * The call is asynchronous: `await` is possible but not required.
    */
   async copy(text: string, options?: CopyOptions): Promise<boolean> {
     const notify = options?.notify ?? true;
@@ -38,37 +38,37 @@ export class ClipboardService {
     if (notify) {
       if (ok) {
         this.notifications.success(
-          options?.successTitle ?? 'Copié',
+          options?.successTitle ?? 'Copied',
           options?.successDetail,
         );
       } else {
-        this.notifications.error('Copie impossible', 'Le presse-papiers est inaccessible.');
+        this.notifications.error('Copy failed', 'The clipboard is not accessible.');
       }
     }
 
     return ok;
   }
 
-  /** Écriture bas niveau avec repli execCommand. */
+  /** Low-level write with an execCommand fallback. */
   private async write(text: string): Promise<boolean> {
-    // Chemin standard : disponible en contexte sécurisé (https / localhost).
+    // Standard path: available in secure contexts (https / localhost).
     if (navigator.clipboard?.writeText) {
       try {
         await navigator.clipboard.writeText(text);
         return true;
       } catch {
-        // On tente le repli ci-dessous plutôt que d'échouer directement.
+        // Try the fallback below rather than failing right away.
       }
     }
 
     return this.writeFallback(text);
   }
 
-  /** Repli historique via un <textarea> hors écran et execCommand('copy'). */
+  /** Legacy fallback through an off-screen <textarea> and execCommand('copy'). */
   private writeFallback(text: string): boolean {
     const textarea = document.createElement('textarea');
     textarea.value = text;
-    // Hors flux et invisible, mais focusable pour que la sélection fonctionne.
+    // Out of the flow and invisible, but focusable so that selection works.
     textarea.style.position = 'fixed';
     textarea.style.top = '-9999px';
     textarea.setAttribute('readonly', '');

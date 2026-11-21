@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  /** À adapter selon l'environnement de déploiement. */
+  /** Adjust to the deployment environment. */
   apiUrl: '/api',
 };

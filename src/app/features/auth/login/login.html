@@ -1,24 +1,23 @@
 <div class="login">
   <form class="panel login__panel" novalidate (submit)="submit($event)">
     <h1 class="login__title"><img src="/Torii_logo.png" alt="Torii Logo" width="64" height="64" /><br/>Torii</h1>
-    <!--<p class="login__subtitle text-muted">Connexion à votre espace</p>-->
 
     @if (error(); as message) {
       <div class="alert alert--error">{{ message }}</div>
     }
 
     <label class="field">
-      <span>E-mail</span>
+      <span>Email</span>
       <input type="email" [formField]="form.email" autocomplete="email" />
     </label>
 
     <label class="field">
-      <span>Mot de passe</span>
+      <span>Password</span>
       <input type="password" [formField]="form.password" autocomplete="current-password" />
     </label>
 
     <button class="btn" type="submit" [disabled]="loading()">
-      {{ loading() ? 'Connexion…' : 'Se connecter' }}
+      {{ loading() ? 'Signing in…' : 'Sign in' }}
     </button>
   </form>
 </div>
