@@ -1,0 +1,78 @@
+/**
+ * Styles du menu de commandes "/".
+ * IMPORTANT : ce fichier doit être importé dans les styles GLOBAUX du projet
+ * (styles.scss / angular.json > styles), pas dans le composant.
+ * Raison : tippy.js monte le popup directement dans <body>, en dehors de
+ * l'arbre du composant Angular, donc l'encapsulation de vue ne l'atteint pas.
+ *
+ * Exemple d'import dans styles.scss :
+ *   @import 'app/shared/rich-text-editor/slash-menu.global.scss';
+ */
+
+.slash-menu {
+  min-width: 220px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #e2e2e5;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(20, 20, 30, 0.12);
+  padding: 4px;
+  font-size: 0.88rem;
+}
+
+.slash-menu__empty {
+  padding: 10px 12px;
+  color: #8a8a92;
+}
+
+.slash-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  color: #1f1f24;
+}
+
+.slash-menu__item:hover,
+.slash-menu__item.is-selected {
+  background: #f1f2fb;
+}
+
+.slash-menu__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: #f4f4f7;
+  color: #bc002d;
+}
+
+.slash-menu__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.slash-menu__title {
+  font-weight: 500;
+}
+
+.slash-menu__desc {
+  font-size: 0.78rem;
+  color: #8a8a92;
+}
+
+/* tippy: pas de thème par défaut, on neutralise le padding/box qu'il ajoute */
+.tippy-box[data-theme~=''] {
+  background: transparent;
+}

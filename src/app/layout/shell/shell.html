@@ -1,0 +1,60 @@
+<div class="layout">
+  <!-- Menu fixe à gauche -->
+  <aside class="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo"><img src="/Torii_logo.png" alt="Torii Logo" width="32" height="32" /></span>
+      <span class="sidebar__name">Torii</span>
+    </div>
+
+    <nav class="sidebar__nav">
+      @for (item of nav; track item.path) {
+        <a
+          class="sidebar__link"
+          [routerLink]="item.path"
+          routerLinkActive="sidebar__link--active"
+          [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+        >
+          <span class="sidebar__icon"><i [class]="item.icon"></i></span>
+          <span class="sidebar__label">{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <!-- User connecté, en bas du menu : sous-menu au survol -->
+    @if (user(); as u) {
+      <div class="sidebar__user">
+        <div class="sidebar__user-trigger">
+          <div class="sidebar__avatar">
+            @if (u.avatarUrl) {
+              <img src="{{ u.avatarUrl }}" alt="Avatar" />
+            } 
+            @else {
+              {{ u.displayName.charAt(0).toUpperCase() }}
+            }
+          </div>
+          <div class="sidebar__user-info">
+            <span class="sidebar__user-name">{{ u.displayName }}</span>
+            <span class="sidebar__user-email">{{ u.email }}</span>
+          </div>
+          <span class="sidebar__user-caret">⌄</span>
+        </div>
+
+        <div class="sidebar__submenu">
+          <button class="sidebar__submenu-item" type="button" (click)="goToProfile()">
+            <span class="sidebar__icon">👤</span>
+            <span>Profil</span>
+          </button>
+          <button class="sidebar__submenu-item" type="button" (click)="logout()">
+            <span class="sidebar__icon">⏻</span>
+            <span>Déconnexion</span>
+          </button>
+        </div>
+      </div>
+    }
+  </aside>
+
+  <!-- Contenu à droite : scroll complet, la page ajoute une topbar si besoin -->
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>

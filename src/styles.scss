@@ -1,0 +1,803 @@
+@use 'app/shared/rich-text-editor/slash-menu.global' as *;
+/* =========================================================================
+   Torii — styles globaux
+   Tous les styles de l'app sont centralisés ici.
+   ========================================================================= */
+
+/* ----- Variables globales ----- */
+$color-primary: #bc002d; // couleur primaire (accent)
+$color-primary-soft: rgba($color-primary, 0.1); // fond au survol
+$color-background: #e3e3e3; // fond de l'application
+$color-panel: #f6f6f6; // panneaux
+$color-text: #101010; // texte
+$color-muted: #6f6f6f; // texte secondaire
+$color-border: #d4d4d4; // bordures / séparateurs
+$color-input: #ffffff; // champs de saisie
+$color-error: #b00020; // messages d'erreur
+
+$radius: 0; // panneaux carrés
+$spacing: 1rem;
+$content-max-width: 1100px;
+
+$font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+  Helvetica, Arial, sans-serif;
+
+/* ----- Reset / base ----- */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: $color-background;
+  color: $color-text;
+  font-family: $font-family;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 600;
+}
+
+p {
+  margin: 0;
+}
+
+/* ----- Panneau (carré, #F6F6F6) ----- */
+.panel {
+  background: $color-panel;
+  border-radius: $radius;
+  padding: 1.5rem;
+}
+
+/* ----- Boutons ----- */
+.btn {
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: $radius;
+  background: $color-text;
+  color: $color-panel;
+  font-size: 1rem;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn--ghost {
+  text-decoration: none;
+  background: transparent;
+  color: $color-text;
+  border: 1px solid $color-border;
+
+  &:hover {
+    background: $color-primary-soft;
+    color: $color-primary;
+  }
+}
+
+/* ----- Champs de formulaire ----- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: $color-text;
+
+  input {
+    padding: 0.6rem 0.75rem;
+    border: 1px solid $color-border;
+    border-radius: $radius;
+    background: $color-input;
+    color: $color-text;
+    font-size: 1rem;
+  }
+}
+
+/* ----- Messages ----- */
+.alert {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid $color-border;
+  border-radius: $radius;
+  background: $color-input;
+  font-size: 0.9rem;
+}
+
+.alert--error {
+  color: $color-error;
+  border-color: $color-error;
+}
+
+.text-muted {
+  color: $color-muted;
+}
+
+/* ----- Écran de connexion ----- */
+.login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: $spacing;
+}
+
+.login__panel {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing;
+  width: 100%;
+  max-width: 360px;
+}
+
+.login__title {
+  text-align: center;
+  font-size: 1.75rem;
+}
+
+.login__subtitle {
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+/* =========================================================================
+   Coquille applicative : menu fixe à gauche + contenu modulable à droite
+   ========================================================================= */
+
+$sidebar-width: 260px;
+
+.layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden; // seul le contenu défile
+}
+
+/* ----- Menu latéral fixe ----- */
+.sidebar {
+  flex: 0 0 $sidebar-width;
+  width: $sidebar-width;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: $color-panel;
+  border-right: 1px solid $color-border;
+}
+
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.25rem 1.25rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  border-bottom: 1px solid $color-border;
+}
+
+.sidebar__logo {
+  font-size: 1.6rem;
+}
+
+.sidebar__nav {
+  flex: 1 1 auto; // pousse le bloc utilisateur vers le bas
+  overflow-y: auto;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: $radius;
+  color: $color-text;
+  text-decoration: none;
+  font-size: 0.95rem;
+
+  &:hover {
+    background: $color-primary-soft;
+    color: $color-primary;
+  }
+
+  &--active {
+    background: $color-primary;
+    color: #fff;
+  }
+}
+
+.sidebar__icon {
+  width: 1.25rem;
+  text-align: center;
+}
+
+/* ----- Utilisateur connecté, épinglé en bas du menu ----- */
+.sidebar__user {
+  position: relative; // ancre le sous-menu
+  flex: 0 0 auto;
+  border-top: 1px solid $color-border;
+}
+
+.sidebar__user-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+
+  &:hover {
+    background: $color-primary-soft;
+  }
+}
+
+.sidebar__user-caret {
+  flex: 0 0 auto;
+  color: $color-muted;
+  font-size: 0.9rem;
+}
+
+/* Sous-menu affiché au survol du bloc utilisateur. */
+.sidebar__submenu {
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  bottom: calc(100% - 0.25rem); // remonte au-dessus du bloc user
+  display: flex;
+  flex-direction: column;
+  padding: 0.25rem;
+  background: $color-panel;
+  border: 1px solid $color-border;
+  border-radius: $radius;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+  // masqué par défaut, révélé au survol / focus clavier
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease,
+    visibility 0.12s;
+
+  .sidebar__user:hover &,
+  .sidebar__user:focus-within & {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+.sidebar__submenu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.55rem 0.6rem;
+  border: 0;
+  border-radius: $radius;
+  background: transparent;
+  color: $color-text;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: $color-primary-soft;
+    color: $color-primary;
+  }
+}
+
+.sidebar__avatar {
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $color-text;
+  color: $color-panel;
+  border-radius: 50%;
+  font-weight: 600;
+}
+
+.sidebar__user-info {
+  flex: 1 1 auto;
+  min-width: 0; // permet l'ellipsis
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar__user-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar__user-email {
+  font-size: 0.75rem;
+  color: $color-muted;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ----- Zone de contenu (droite) : scroll complet ----- */
+.content {
+  flex: 1 1 auto;
+  height: 100vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Conteneur de page standard (marge + largeur max). */
+.page {
+  // max-width: $content-max-width;
+  margin: 0 auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ----- Topbar optionnelle (épinglée en haut de la zone de contenu) ----- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  // background: $color-panel;
+  // border-bottom: 1px solid $color-border;
+}
+
+.topbar__title {
+  font-size: 1.25rem;
+}
+
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* ----- Badge de statut ----- */
+.badge {
+  flex: 0 0 auto;
+  padding: 0.2rem 0.55rem;
+  border-radius: $radius;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid $color-border;
+  color: $color-muted;
+}
+
+.badge--new {
+  color: $color-primary;
+  border-color: $color-primary;
+  background: $color-primary-soft;
+}
+
+.badge--ongoing {
+  color: #0b62c4;
+  border-color: #0b62c4;
+  background: rgba(#0b62c4, 0.1);
+}
+
+.badge--done {
+  color: #1f7a3d;
+  border-color: #1f7a3d;
+  background: rgba(#1f7a3d, 0.1);
+}
+
+.badge--cancelled {
+  color: $color-muted;
+  border-color: $color-border;
+  background: transparent;
+  text-decoration: line-through;
+}
+
+/* ----- Onglets ----- */
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid $color-border;
+}
+
+.tabs__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px; // chevauche la bordure du conteneur
+  background: transparent;
+  color: $color-muted;
+  font-size: 0.95rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+
+  &:hover {
+    color: $color-text;
+  }
+
+  &--active {
+    color: $color-primary;
+    border-bottom-color: $color-primary;
+    font-weight: 600;
+  }
+}
+
+.tabs__count {
+  padding: 0.05rem 0.45rem;
+  background: $color-primary-soft;
+  color: $color-primary;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* =========================================================================
+   Texte éditable inline (app-editable-input-text)
+   ========================================================================= */
+
+/* Affichage : ressemble à du texte normal, indice d'édition au survol. */
+.editable-text {
+  display: inline-block;
+  padding: 0.15rem 0.35rem;
+  margin: -0.15rem -0.35rem; // compense le padding pour ne pas décaler le texte
+  border: 1px solid transparent;
+  border-radius: $radius;
+  cursor: text;
+  transition: background 0.12s ease, border-color 0.12s ease;
+
+  &:hover {
+    background: $color-primary-soft;
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: $color-border;
+  }
+}
+
+.editable-text--empty {
+  color: $color-muted;
+  font-style: italic;
+}
+
+/* Édition : champ aligné pixel-perfect sur le texte affiché. */
+.editable-text__input {
+  width: 100%;
+  padding: 0.15rem 0.35rem;
+  margin: -0.15rem -0.35rem;
+  border: 0;
+  border-bottom: 1px solid $color-primary;
+  border-radius: $radius;
+  background: none; //$color-input;
+  color: $color-text;
+  font: inherit;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+/* =========================================================================
+   Tableau (liste de tâches, etc.) — carré, aligné sur les panneaux
+   ========================================================================= */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: $radius;
+  font-size: 0.9rem;
+  color: $color-text;
+
+  th,
+  td {
+    padding: 0.7rem 0.85rem;
+    text-align: left;
+    border-bottom: 1px solid $color-border;
+    vertical-align: middle;
+  }
+
+  /* En-tête : discret, en retrait comme le texte secondaire. */
+  thead th {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: $color-muted;
+    border-bottom: 1px solid $color-border;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    transition: background 0.12s ease;
+
+    &:hover {
+      background: $color-primary-soft;
+    }
+
+    &:last-child td {
+      border-bottom: 0;
+    }
+  }
+
+  /* Colonne numérique (estimations, durées…). */
+  .table__num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+}
+
+/* Ligne entièrement cliquable (navigation vers le détail). */
+.table--clickable tbody tr {
+  cursor: pointer;
+}
+
+/* Cellule de lien : reset du style d'ancre pour laisser la ligne piloter. */
+.table__link {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 500;
+
+  &:hover {
+    color: $color-primary;
+  }
+}
+
+/* État vide / chargement, aligné au centre sur toute la largeur. */
+.table__empty {
+  padding: 1.5rem 0.85rem;
+  text-align: center;
+  color: $color-muted;
+  font-size: 0.9rem;
+}
+
+/* =========================================================================
+   Notifications globales (toasts)
+   ========================================================================= */
+
+.toasts {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: min(360px, calc(100vw - 3rem));
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: $color-panel;
+  border: 1px solid $color-border;
+  border-left: 4px solid $color-muted;
+  border-radius: $radius;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+}
+
+.toast--error {
+  border-left-color: $color-error;
+}
+
+.toast--success {
+  border-left-color: #1f7a3d;
+}
+
+.toast--info {
+  border-left-color: #0b62c4;
+}
+
+.toast--warning {
+  border-left-color: #c47a0b;
+}
+
+.toast__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.toast__title {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.toast__detail {
+  font-size: 0.82rem;
+  color: $color-muted;
+  word-break: break-word;
+}
+
+.toast__close {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: $color-muted;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    color: $color-text;
+  }
+}
+
+.link {
+  color: $color-text;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+
+  &:hover {
+    color: $color-primary;
+  }
+}
+
+/* =========================================================================
+   Radial Menu (menu circulaire pour les actions rapides)
+   ========================================================================= */
+
+$radial-btn-size: 3.25rem; // diamètre des boutons ronds
+$radial-close-size: 2.5rem; // diamètre du bouton central (croix)
+$radial-stagger: 45ms; // décalage d'apparition entre 2 boutons
+
+.radial-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100; // au-dessus des toasts (1000)
+}
+
+.radial-menu {
+  position: fixed;
+  width: 0;
+  height: 0;
+  // Les enfants (boutons) se positionnent par rapport à ce point.
+}
+
+.radial-menu__item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: $radial-btn-size;
+  height: $radial-btn-size;
+  //border: 0;
+  border-radius: 50%;
+  //background: var(--color, #{$color-primary});
+  //color: #fff;
+  color: var(--color, #{$color-primary});
+  border: 1px dashed var(--bg, #{$color-primary});
+  background: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  // box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  // Disposition en cercle : on tourne, on s'éloigne du centre, puis on
+  // « dé-tourne » pour garder l'icône bien droite.
+  transform: translate(-50%, -50%) rotate(var(--angle))
+    translateY(calc(-1 * var(--radius))) rotate(calc(-1 * var(--angle)));
+  // Apparition l'un après l'autre, en spiralant autour du centre.
+  animation: radial-item-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  animation-delay: calc(var(--i) * #{$radial-stagger});
+  transition:
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
+
+  &:hover:not(:disabled) {
+    color: #fff;
+    background: var(--bg, #{$color-primary});
+    border: 0;
+    //filter: brightness(1.1);
+    //box-shadow: 0 0 10px var(--bg, #{$color-primary}) 0 0 30px var(--bg, #{$color-primary}) 0 0 50px var(--bg, #{$color-primary});
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  // Tooltip du nom de l'action, affiché au survol au-dessus du bouton.
+  .radial-menu__tooltip {
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.25rem 0.55rem;
+    background: $color-text;
+    color: #fff;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    border-radius: 3px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+  }
+
+  &:hover .radial-menu__tooltip {
+    opacity: 1;
+  }
+}
+
+.radial-menu__close {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: $radial-close-size;
+  height: $radial-close-size;
+  border: 0;
+  border-radius: 50%;
+  background: $color-text;
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  animation: radial-center-in 0.25s ease backwards;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: $color-primary;
+  }
+}
+
+@keyframes radial-item-in {
+  from {
+    opacity: 0;
+    // Rayon nul + angle en retrait → les boutons « jaillissent » du centre
+    // en tournant jusqu'à leur position finale.
+    transform: translate(-50%, -50%) rotate(calc(var(--angle) - 140deg))
+      translateY(0) rotate(calc(-1 * (var(--angle) - 140deg)));
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--angle))
+      translateY(calc(-1 * var(--radius))) rotate(calc(-1 * var(--angle)));
+  }
+}
+
+@keyframes radial-center-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+

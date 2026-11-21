@@ -1,0 +1,21 @@
+@if (editing()) {
+  <input
+    #input
+    class="editable-text__input"
+    [value]="draft()"
+    [attr.placeholder]="placeholder()"
+    (input)="draft.set($any($event.target).value)"
+    (keydown.enter)="commit()"
+    (keydown.escape)="cancel()"
+    (blur)="commit()"
+  />
+} @else {
+  <span
+    class="editable-text"
+    [class.editable-text--empty]="!value()"
+    tabindex="0"
+    role="button"
+    (click)="startEdit()"
+    (keydown.enter)="startEdit()"
+  >{{ value() || placeholder() }}</span>
+}

@@ -1,0 +1,117 @@
+.rich-text-editor {
+  --rte-border: #d4d4d4;
+  --rte-text: #101010;
+  --rte-muted: #8a8a92;
+  --rte-accent: #bc002d;
+  --rte-code-bg: #101010;
+  --rte-code-text: #d6d6e2;
+  --rte-surface: #ffffff;
+
+  border: 1px solid var(--rte-border);
+  // border-radius: 8px;
+  // background: var(--rte-surface);
+}
+
+.rich-text-editor__content {
+  padding: 14px 16px;
+  min-height: 120px;
+  max-height: 1000px;
+  overflow-y: auto;
+  color: var(--rte-text);
+  font-size: 0.95rem;
+  line-height: 1.55;
+
+  // ProseMirror génère son propre DOM (classe .ProseMirror) qui échappe
+  // à l'encapsulation Angular standard -> on utilise ::ng-deep pour l'atteindre.
+  ::ng-deep .ProseMirror {
+    outline: none;
+  }
+
+  ::ng-deep .ProseMirror p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    color: var(--rte-muted);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+
+  ::ng-deep .ProseMirror h1,
+  ::ng-deep .ProseMirror h2,
+  ::ng-deep .ProseMirror h3 {
+    font-weight: 600;
+    line-height: 1.25;
+    margin: 1.1em 0 0.4em;
+  }
+
+  ::ng-deep .ProseMirror h1 { font-size: 1.5rem; }
+  ::ng-deep .ProseMirror h2 { font-size: 1.25rem; }
+  ::ng-deep .ProseMirror h3 { font-size: 1.05rem; }
+
+  ::ng-deep .ProseMirror ul,
+  ::ng-deep .ProseMirror ol {
+    padding-left: 1.4em;
+    margin: 0.4em 0;
+  }
+
+  ::ng-deep .ProseMirror ul[data-type='taskList'] {
+    list-style: none;
+    padding-left: 0.2em;
+  }
+
+  ::ng-deep .ProseMirror ul[data-type='taskList'] li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5em;
+  }
+
+  ::ng-deep .ProseMirror ul[data-type='taskList'] li > label {
+    margin-top: 0.2em;
+  }
+
+  ::ng-deep .ProseMirror ul[data-type='taskList'] li[data-checked='true'] > div {
+    color: var(--rte-muted);
+    text-decoration: line-through;
+  }
+
+  ::ng-deep .ProseMirror blockquote {
+    border-left: 3px solid var(--rte-accent);
+    margin: 0.6em 0;
+    padding: 0.1em 0 0.1em 0.9em;
+    color: var(--rte-muted);
+  }
+
+  ::ng-deep .ProseMirror pre {
+    background: var(--rte-code-bg);
+    color: var(--rte-code-text);
+    border-radius: 6px;
+    padding: 0.75em 1em;
+    margin: 0.6em 0;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    font-size: 0.85rem;
+  }
+
+  ::ng-deep .ProseMirror pre code {
+    background: none;
+    padding: 0;
+  }
+
+  ::ng-deep .ProseMirror code {
+    background: rgba(79, 109, 245, 0.1);
+    border-radius: 4px;
+    padding: 0.1em 0.35em;
+    font-size: 0.85em;
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  }
+
+  ::ng-deep .ProseMirror hr {
+    border: none;
+    border-top: 1px solid var(--rte-border);
+    margin: 1.2em 0;
+  }
+
+  ::ng-deep .ProseMirror a {
+    color: var(--rte-accent);
+    text-decoration: underline;
+  }
+}

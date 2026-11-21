@@ -1,0 +1,20 @@
+<div class="toasts" role="status" aria-live="polite">
+  @for (n of items(); track n.id) {
+    <div class="toast toast--{{ n.kind }}">
+      <div class="toast__body">
+        <span class="toast__title">{{ n.title }}</span>
+        @if (n.detail) {
+          <span class="toast__detail">{{ n.detail }}</span>
+        }
+      </div>
+      <button
+        class="toast__close"
+        type="button"
+        (click)="dismiss(n.id)"
+        aria-label="Fermer la notification"
+      >
+        ×
+      </button>
+    </div>
+  }
+</div>

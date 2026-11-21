@@ -1,0 +1,43 @@
+@if (state(); as menu) {
+  <!-- Voile plein écran : capte le clic extérieur (et le clic droit) pour fermer. -->
+  <div
+    class="radial-backdrop"
+    (click)="close()"
+    (contextmenu)="$event.preventDefault(); close()"
+  >
+    <!-- Point d'ancrage centré sur le clic ; les boutons se placent autour. -->
+    <div
+      class="radial-menu"
+      [style.left.px]="menu.x"
+      [style.top.px]="menu.y"
+      (click)="$event.stopPropagation()"
+    >
+      @for (action of menu.actions; track $index; let i = $index) {
+        <button
+          type="button"
+          class="radial-menu__item"
+          [style.--i]="i"
+          [style.--angle.deg]="angle(i, menu.actions.length)"
+          [style.--radius.px]="radius"
+          [style.--bg]="action.bg || null"
+          [style.--color]="action.color || null"
+          [disabled]="action.disabled"
+          (click)="trigger(action)"
+        >
+          <i [class]="action.icon" aria-hidden="true"></i>
+          <span class="radial-menu__tooltip">{{ action.label }}</span>
+        </button>
+      }
+
+      <!-- Bouton central : ferme le menu. -->
+      <button
+        type="button"
+        class="radial-menu__close"
+        (click)="close()"
+        aria-label="Fermer le menu"
+      >
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+}
