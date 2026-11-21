@@ -27,6 +27,9 @@
         </div>
 
         <h2 class="profile-card__name">{{ p.displayName }}</h2>
+        @if (p.position) {
+          <p class="profile-card__position">{{ p.position }}</p>
+        }
         <p class="profile-card__email text-muted">{{ p.email }}</p>
 
         <div class="profile-card__badges">
@@ -86,6 +89,18 @@
               <input type="text" autocomplete="name" [formField]="infoForm.displayName" />
               @if (infoForm.displayName().touched() && infoForm.displayName().errors().length) {
                 <small class="field__error">{{ infoForm.displayName().errors()[0].message }}</small>
+              }
+            </label>
+            <label class="field">
+              <span>Position <small class="text-muted">(optional)</small></span>
+              <input
+                type="text"
+                autocomplete="organization-title"
+                placeholder="Your role in the company, e.g. Project manager"
+                [formField]="infoForm.position"
+              />
+              @if (infoForm.position().touched() && infoForm.position().errors().length) {
+                <small class="field__error">{{ infoForm.position().errors()[0].message }}</small>
               }
             </label>
             <div class="profile-section__actions">

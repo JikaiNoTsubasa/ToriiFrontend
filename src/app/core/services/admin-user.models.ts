@@ -5,6 +5,8 @@ export interface AdminUser {
   id: number;
   email: string;
   displayName: string;
+  /** Free-text position in the company (`null` = none). */
+  position: string | null;
   avatarUrl: string;
   role: UserRole;
   isActive: boolean;
@@ -17,6 +19,7 @@ export interface AdminUser {
 export interface AdminUserCreate {
   email: string;
   displayName: string;
+  position: string | null;
   password: string;
   role: UserRole;
 }
@@ -25,6 +28,7 @@ export interface AdminUserCreate {
 export interface AdminUserUpdate {
   email: string;
   displayName: string;
+  position: string | null;
   role: UserRole;
   isActive: boolean;
   newPassword: string | null;

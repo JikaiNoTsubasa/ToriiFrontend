@@ -17,6 +17,14 @@
     </label>
 
     <label class="field">
+      <span>Position <small class="text-muted">(optional)</small></span>
+      <input type="text" placeholder="e.g. Project manager, CTO, Support agent" [formField]="form.position" />
+      @if (form.position().touched() && form.position().errors().length) {
+        <small class="field__error">{{ form.position().errors()[0].message }}</small>
+      }
+    </label>
+
+    <label class="field">
       <span>Role</span>
       <select [formField]="form.role">
         <option value="USER">User</option>

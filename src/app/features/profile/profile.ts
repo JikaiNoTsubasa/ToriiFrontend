@@ -94,14 +94,20 @@ export class ProfilePage {
 
   // --- Personal information ---
   protected readonly savingInfo = signal(false);
-  private readonly infoModel = linkedSignal(() => ({ displayName: this.profile.value()?.displayName ?? '' }));
+  private readonly infoModel = linkedSignal(() => ({
+    displayName: this.profile.value()?.displayName ?? '',
+    position: this.profile.value()?.position ?? '',
+  }));
   protected readonly infoForm = form(this.infoModel, (path) => {
     required(path.displayName, { message: 'Display name is required.' });
     maxLength(path.displayName, 128, { message: '128 characters maximum.' });
+    maxLength(path.position, 128, { message: '128 characters maximum.' });
   });
-  protected readonly infoChanged = computed(
-    () => this.infoModel().displayName.trim() !== (this.profile.value()?.displayName ?? ''),
-  );
+  protected readonly infoChanged = computed(() => {
+    const { displayName, position } = this.infoModel();
+    const profile = this.profile.value();
+    return displayName.trim() !== (profile?.displayName ?? '') || position.trim() !== (profile?.position ?? '');
+  });
 
   protected async saveInfo(event: Event): Promise<void> {
     event.preventDefault();
@@ -111,7 +117,8 @@ export class ProfilePage {
     await submit(this.infoForm, async () => {
       this.savingInfo.set(true);
       try {
-        this.applyProfile(await firstValueFrom(this.service.update(this.infoModel().displayName.trim())));
+        const { displayName, position } = this.infoModel();
+        this.applyProfile(await firstValueFrom(this.service.update(displayName.trim(), position.trim() || null)));
         this.notifications.success('Profile updated');
       } catch {
         // Already notified by errorInterceptor.
@@ -214,6 +221,7 @@ export class ProfilePage {
     this.profile.set(profile);
     this.auth.updateUser({
       displayName: profile.displayName,
+      position: profile.position,
       email: profile.email,
       avatarUrl: profile.avatarUrl,
     });

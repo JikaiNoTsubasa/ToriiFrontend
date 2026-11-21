@@ -36,10 +36,17 @@
             <td>
               <span class="user-chip">
                 <img class="user-chip__avatar" [src]="user.avatarUrl" alt="" />
-                {{ user.displayName }}
-                @if (isSelf(user)) {
-                  <span class="badge">You</span>
-                }
+                <span class="user-chip__text">
+                  <span>
+                    {{ user.displayName }}
+                    @if (isSelf(user)) {
+                      <span class="badge">You</span>
+                    }
+                  </span>
+                  @if (user.position) {
+                    <small class="text-muted">{{ user.position }}</small>
+                  }
+                </span>
               </span>
             </td>
             <td class="text-muted">{{ user.email }}</td>

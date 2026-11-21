@@ -8,6 +8,8 @@ export interface UserDto {
   id: number;
   email: string;
   displayName: string;
+  /** Free-text position in the company (`null` = none). */
+  position: string | null;
   avatarUrl: string;
   role: UserRole;
 }

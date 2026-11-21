@@ -19,8 +19,9 @@ export class ProfileService {
     return httpResource<Profile>(() => this.baseUrl);
   }
 
-  update(displayName: string): Observable<Profile> {
-    return this.http.put<Profile>(this.baseUrl, { displayName });
+  /** `position: null` clears it. */
+  update(displayName: string, position: string | null): Observable<Profile> {
+    return this.http.put<Profile>(this.baseUrl, { displayName, position });
   }
 
   changeEmail(newEmail: string, currentPassword: string): Observable<Profile> {

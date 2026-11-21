@@ -1951,6 +1951,15 @@ label.btn {
   font-size: 1.3rem;
 }
 
+/* Position (job title), between the name and the email. */
+.profile-card__position {
+  margin-top: -0.3rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: $color-primary;
+  overflow-wrap: anywhere;
+}
+
 .profile-card__email {
   margin-top: -0.3rem;
   font-size: 0.9rem;

@@ -77,6 +77,7 @@ export class AdminUsers {
       this.service.update(user.id, {
         email: user.email,
         displayName: user.displayName,
+        position: user.position,
         role: user.role,
         isActive,
         newPassword: null,

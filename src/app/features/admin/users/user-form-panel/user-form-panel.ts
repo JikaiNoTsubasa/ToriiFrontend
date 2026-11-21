@@ -12,6 +12,8 @@ const MIN_PASSWORD_LENGTH = 8;
 interface UserForm {
   email: string;
   displayName: string;
+  /** Free text ('' = none). */
+  position: string;
   role: UserRole;
   isActive: boolean;
   /** Initial password on creation; optional new password on edit ('' = unchanged). */
@@ -46,6 +48,7 @@ export class UserFormPanel {
     return {
       email: user?.email ?? '',
       displayName: user?.displayName ?? '',
+      position: user?.position ?? '',
       role: user?.role ?? 'USER',
       isActive: user?.isActive ?? true,
       password: '',
@@ -57,6 +60,7 @@ export class UserFormPanel {
     maxLength(path.email, 256, { message: '256 characters maximum.' });
     required(path.displayName, { message: 'Display name is required.' });
     maxLength(path.displayName, 128, { message: '128 characters maximum.' });
+    maxLength(path.position, 128, { message: '128 characters maximum.' });
     required(path.password, { message: 'An initial password is required.', when: () => !this.isEdit() });
     validate(path.password, ({ value }) =>
       value() && value().length < MIN_PASSWORD_LENGTH
@@ -74,13 +78,14 @@ export class UserFormPanel {
     }
     await submit(this.form, async () => {
       const { email, displayName, role, isActive, password } = this.model();
+      const position = this.model().position.trim() || null;
       const user = this.user();
       this.saving.set(true);
       try {
         const saved = await firstValueFrom(
           user
-            ? this.service.update(user.id, { email, displayName, role, isActive, newPassword: password || null })
-            : this.service.create({ email, displayName, role, password }),
+            ? this.service.update(user.id, { email, displayName, position, role, isActive, newPassword: password || null })
+            : this.service.create({ email, displayName, position, role, password }),
         );
         this.ref.close(saved);
       } catch {
