@@ -475,6 +475,15 @@ $sidebar-width: 260px;
   color: $color-panel;
   border-radius: 50%;
   font-weight: 600;
+  overflow: hidden;
+
+  // The image fills the circle whatever its real size (64 px default, 256 px uploaded).
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
 }
 
 .sidebar__user-info {
@@ -1826,4 +1835,309 @@ label.btn {
 
 .activity__time {
   font-size: 0.75rem;
+}
+
+/* =========================================================================
+   Profile page: identity card (left, sticky) + section cards (right)
+   ========================================================================= */
+
+.profile {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+  max-width: 1080px;
+  margin: 0 auto;
+  width: 100%;
+
+  @media (max-width: 960px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ----- Identity card ----- */
+.profile-card {
+  position: sticky;
+  top: 5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 1.5rem 1.5rem;
+  overflow: hidden;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+
+  @media (max-width: 960px) {
+    position: static;
+  }
+}
+
+/* Torii-red gradient banner with a soft pattern of light. */
+.profile-card__cover {
+  align-self: stretch;
+  height: 96px;
+  margin: 0 -1.5rem;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(#fff, 0.35), transparent 55%),
+    radial-gradient(circle at 90% 120%, rgba(#fff, 0.2), transparent 50%),
+    linear-gradient(135deg, $color-primary, color-mix(in srgb, #{$color-primary} 80%, #000));
+}
+
+.profile-card__avatar {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  margin-top: -56px;
+  border-radius: 50%;
+  border: 4px solid $color-panel;
+  background: linear-gradient(135deg, #2b2b2b, #575757);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    transition: filter 0.2s ease;
+  }
+
+  &--busy img {
+    filter: grayscale(0.6) brightness(0.8);
+  }
+}
+
+.profile-card__initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #fff;
+  font-size: 2.2rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Round camera button over the avatar. */
+.profile-card__avatar-edit {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 3px solid $color-panel;
+  border-radius: 50%;
+  background: $color-text;
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+
+  &:hover,
+  &:focus-within {
+    background: $color-primary;
+    transform: scale(1.08);
+  }
+}
+
+.profile-card__name {
+  margin-top: 0.4rem;
+  font-size: 1.3rem;
+}
+
+.profile-card__email {
+  margin-top: -0.3rem;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.profile-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+}
+
+.profile-card__block {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid $color-border;
+  text-align: left;
+}
+
+.profile-card__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: $color-muted;
+}
+
+.profile-card__chips {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.profile-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid $color-border;
+  background: $color-input;
+  font-size: 0.85rem;
+
+  .fas {
+    color: $color-muted;
+  }
+}
+
+.profile-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.profile-card__hint {
+  font-size: 0.75rem;
+}
+
+/* ----- Section cards ----- */
+.profile__sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.profile-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+
+  &--danger .profile-section__icon {
+    background: rgba($color-error, 0.1);
+    color: $color-error;
+  }
+}
+
+.profile-section__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+
+  p {
+    margin-top: 0.15rem;
+    font-size: 0.88rem;
+  }
+}
+
+/* Icon tile next to the section title. */
+.profile-section__icon {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: $color-primary-soft;
+  color: $color-primary;
+  font-size: 1rem;
+}
+
+.profile-section__title {
+  font-size: 1.05rem;
+}
+
+.profile-section__toggle {
+  margin-left: auto;
+}
+
+.profile-section__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.profile-section__form--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.profile-section__full {
+  grid-column: 1 / -1;
+}
+
+.profile-section__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* ----- Password strength meter ----- */
+.strength {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+
+  --strength-color: #{$color-border};
+
+  &[data-score='1'] { --strength-color: #{$color-error}; }
+  &[data-score='2'] { --strength-color: #c47a0b; }
+  &[data-score='3'] { --strength-color: #0b62c4; }
+  &[data-score='4'] { --strength-color: #1f7a3d; }
+}
+
+.strength__bars {
+  display: grid;
+  grid-template-columns: repeat(4, 2.5rem);
+  gap: 0.3rem;
+}
+
+.strength__bar {
+  height: 0.35rem;
+  background: $color-border;
+  transition: background 0.2s ease;
+
+  &--on {
+    background: var(--strength-color);
+  }
+}
+
+.strength__label {
+  font-weight: 600;
+  color: var(--strength-color);
+
+  .strength[data-score='0'] & {
+    color: $color-muted;
+  }
+}
+
+.strength__hint {
+  font-size: 0.8rem;
 }

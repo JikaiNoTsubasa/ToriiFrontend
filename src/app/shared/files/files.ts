@@ -52,6 +52,50 @@ export function namePastedImage(image: File, index: number): File {
   return new File([image], `image_${index}.${extension}`, { type: image.type || 'image/png' });
 }
 
+/**
+ * Center-crops an image to a square and resizes it to `size` px (e.g. for avatars), as
+ * WebP when the browser supports it, PNG otherwise. Rejects when the file is not a decodable image.
+ */
+export async function cropSquareImage(file: Blob, size = 256): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  try {
+    const side = Math.min(bitmap.width, bitmap.height);
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const context = canvas.getContext('2d');
+    if (!context) {
+      throw new Error('Canvas is not supported.');
+    }
+    context.imageSmoothingQuality = 'high';
+    context.drawImage(
+      bitmap,
+      (bitmap.width - side) / 2,
+      (bitmap.height - side) / 2,
+      side,
+      side,
+      0,
+      0,
+      size,
+      size,
+    );
+    const toBlob = (type: string) =>
+      new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, 0.9));
+    const webp = await toBlob('image/webp');
+    // Browsers without WebP encoding silently produce PNG instead.
+    if (webp?.type === 'image/webp') {
+      return webp;
+    }
+    const png = await toBlob('image/png');
+    if (!png) {
+      throw new Error('Encoding failed.');
+    }
+    return png;
+  } finally {
+    bitmap.close();
+  }
+}
+
 /** Triggers a browser download of `blob` under `fileName`. */
 export function saveBlob(blob: Blob, fileName: string): void {
   const url = URL.createObjectURL(blob);

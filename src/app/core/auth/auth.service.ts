@@ -66,6 +66,16 @@ export class AuthService {
     this._user.set(null);
   }
 
+  /** Updates the signed-in user after a profile change (sidebar, guards…). */
+  updateUser(changes: Partial<UserDto>): void {
+    this._user.update((user) => (user ? { ...user, ...changes } : user));
+  }
+
+  /** Applies a session issued outside the login flow (e.g. after a password change). */
+  applySession(res: AuthResponse): void {
+    this.handleAuth(res);
+  }
+
   private handleAuth(res: AuthResponse): void {
     this.storage.setTokens(res.accessToken, res.refreshToken);
     this._user.set(res.user);

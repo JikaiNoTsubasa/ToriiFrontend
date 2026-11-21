@@ -1,0 +1,234 @@
+<app-topbar heading="Profile" />
+
+<div class="page">
+  @if (profile.value(); as p) {
+    <div class="profile">
+      <!-- Identity card -->
+      <aside class="panel profile-card">
+        <div class="profile-card__cover" aria-hidden="true"></div>
+
+        <div class="profile-card__avatar" [class.profile-card__avatar--busy]="avatarBusy()">
+          @if (p.hasCustomAvatar || initials() === '') {
+            <img [src]="p.avatarUrl" alt="Your profile photo" />
+          } @else {
+            <span class="profile-card__initials" aria-hidden="true">{{ initials() }}</span>
+          }
+          <label class="profile-card__avatar-edit" title="Change photo">
+            <i class="fas" [class.fa-camera]="!avatarBusy()" [class.fa-spinner]="avatarBusy()" [class.fa-spin]="avatarBusy()"></i>
+            <span class="visually-hidden">Change photo</span>
+            <input
+              class="visually-hidden"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              [disabled]="avatarBusy()"
+              (change)="pickAvatar($any($event.target))"
+            />
+          </label>
+        </div>
+
+        <h2 class="profile-card__name">{{ p.displayName }}</h2>
+        <p class="profile-card__email text-muted">{{ p.email }}</p>
+
+        <div class="profile-card__badges">
+          <span class="badge" [class.badge--new]="p.role === 'ADMIN'">
+            <i class="fas" [class.fa-shield-halved]="p.role === 'ADMIN'" [class.fa-user]="p.role !== 'ADMIN'"></i>
+            {{ p.role === 'ADMIN' ? 'Administrator' : 'User' }}
+          </span>
+          <span class="badge"><i class="fas fa-calendar"></i> Since {{ p.createdAt | date: 'MMM y' }}</span>
+        </div>
+
+        <div class="profile-card__block">
+          <span class="profile-card__label">Customers</span>
+          @if (p.customers.length) {
+            <ul class="profile-card__chips">
+              @for (customer of p.customers; track customer.id) {
+                <li class="profile-chip"><i class="fas fa-building"></i> {{ customer.name }}</li>
+              }
+            </ul>
+          } @else {
+            <p class="text-muted">Not a member of any customer yet.</p>
+          }
+        </div>
+
+        <div class="profile-card__actions">
+          <label class="btn btn--ghost btn--sm" [class.is-disabled]="avatarBusy()">
+            <i class="fas fa-upload"></i> Upload photo
+            <input
+              class="visually-hidden"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              [disabled]="avatarBusy()"
+              (change)="pickAvatar($any($event.target))"
+            />
+          </label>
+          @if (p.hasCustomAvatar) {
+            <button class="btn btn--ghost btn--sm" type="button" [disabled]="avatarBusy()" (click)="removeAvatar()">
+              <i class="fas fa-trash"></i> Remove
+            </button>
+          }
+        </div>
+        <small class="text-muted profile-card__hint">Square crop, 256 × 256. PNG, JPEG, WebP or GIF (animated GIFs kept as is) up to 5 MB.</small>
+      </aside>
+
+      <div class="profile__sections">
+        <!-- Personal information -->
+        <section class="panel profile-section">
+          <header class="profile-section__head">
+            <span class="profile-section__icon"><i class="fas fa-id-card"></i></span>
+            <div>
+              <h2 class="profile-section__title">Personal information</h2>
+              <p class="text-muted">How other people see you in Torii.</p>
+            </div>
+          </header>
+          <form class="profile-section__form" novalidate (submit)="saveInfo($event)">
+            <label class="field">
+              <span>Display name</span>
+              <input type="text" autocomplete="name" [formField]="infoForm.displayName" />
+              @if (infoForm.displayName().touched() && infoForm.displayName().errors().length) {
+                <small class="field__error">{{ infoForm.displayName().errors()[0].message }}</small>
+              }
+            </label>
+            <div class="profile-section__actions">
+              <button class="btn" type="submit" [disabled]="savingInfo() || !infoChanged()">
+                {{ savingInfo() ? 'Saving…' : 'Save changes' }}
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Email -->
+        <section class="panel profile-section">
+          <header class="profile-section__head">
+            <span class="profile-section__icon"><i class="fas fa-envelope"></i></span>
+            <div>
+              <h2 class="profile-section__title">Email address</h2>
+              <p class="text-muted">You sign in with <strong>{{ p.email }}</strong>.</p>
+            </div>
+          </header>
+          <form class="profile-section__form profile-section__form--grid" novalidate (submit)="saveEmail($event)">
+            <label class="field">
+              <span>New email</span>
+              <input type="email" autocomplete="email" placeholder="name@company.com" [formField]="emailForm.newEmail" />
+              @if (emailForm.newEmail().touched() && emailForm.newEmail().errors().length) {
+                <small class="field__error">{{ emailForm.newEmail().errors()[0].message }}</small>
+              }
+            </label>
+            <label class="field">
+              <span>Current password</span>
+              <input type="password" autocomplete="current-password" [formField]="emailForm.currentPassword" />
+              @if (emailForm.currentPassword().touched() && emailForm.currentPassword().errors().length) {
+                <small class="field__error">{{ emailForm.currentPassword().errors()[0].message }}</small>
+              }
+            </label>
+            @if (emailError(); as error) {
+              <div class="alert alert--error profile-section__full">{{ error }}</div>
+            }
+            <div class="profile-section__actions profile-section__full">
+              <button class="btn" type="submit" [disabled]="savingEmail()">
+                {{ savingEmail() ? 'Updating…' : 'Update email' }}
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Password -->
+        <section class="panel profile-section">
+          <header class="profile-section__head">
+            <span class="profile-section__icon"><i class="fas fa-lock"></i></span>
+            <div>
+              <h2 class="profile-section__title">Password</h2>
+              <p class="text-muted">Changing it signs you out of your other devices.</p>
+            </div>
+            <button class="btn btn--ghost btn--sm profile-section__toggle" type="button" (click)="showPasswords.set(!showPasswords())">
+              <i class="fas" [class.fa-eye]="!showPasswords()" [class.fa-eye-slash]="showPasswords()"></i>
+              {{ showPasswords() ? 'Hide' : 'Show' }}
+            </button>
+          </header>
+          <form class="profile-section__form" novalidate (submit)="savePassword($event)">
+            <label class="field">
+              <span>Current password</span>
+              <input
+                [attr.type]="showPasswords() ? 'text' : 'password'"
+                autocomplete="current-password"
+                [formField]="passwordForm.currentPassword"
+              />
+              @if (passwordForm.currentPassword().touched() && passwordForm.currentPassword().errors().length) {
+                <small class="field__error">{{ passwordForm.currentPassword().errors()[0].message }}</small>
+              }
+            </label>
+
+            <div class="profile-section__form--grid">
+              <label class="field">
+                <span>New password</span>
+                <input
+                  [attr.type]="showPasswords() ? 'text' : 'password'"
+                  autocomplete="new-password"
+                  [formField]="passwordForm.newPassword"
+                />
+                @if (passwordForm.newPassword().touched() && passwordForm.newPassword().errors().length) {
+                  <small class="field__error">{{ passwordForm.newPassword().errors()[0].message }}</small>
+                }
+              </label>
+              <label class="field">
+                <span>Confirm new password</span>
+                <input
+                  [attr.type]="showPasswords() ? 'text' : 'password'"
+                  autocomplete="new-password"
+                  [formField]="passwordForm.confirmPassword"
+                />
+                @if (passwordForm.confirmPassword().touched() && passwordForm.confirmPassword().errors().length) {
+                  <small class="field__error">{{ passwordForm.confirmPassword().errors()[0].message }}</small>
+                }
+              </label>
+            </div>
+
+            <!-- Strength meter (guidance only). -->
+            <div class="strength" [attr.data-score]="strength().score" aria-live="polite">
+              <div class="strength__bars" aria-hidden="true">
+                @for (bar of [1, 2, 3, 4]; track bar) {
+                  <span class="strength__bar" [class.strength__bar--on]="strength().score >= bar"></span>
+                }
+              </div>
+              <span class="strength__label">{{ strength().label }}</span>
+              @if (strength().hints.length) {
+                <span class="text-muted strength__hint">{{ strength().hints[0] }}</span>
+              }
+            </div>
+
+            @if (passwordError(); as error) {
+              <div class="alert alert--error">{{ error }}</div>
+            }
+            <div class="profile-section__actions">
+              <button class="btn" type="submit" [disabled]="savingPassword()">
+                {{ savingPassword() ? 'Updating…' : 'Update password' }}
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Sessions -->
+        <section class="panel profile-section profile-section--danger">
+          <header class="profile-section__head">
+            <span class="profile-section__icon"><i class="fas fa-right-from-bracket"></i></span>
+            <div>
+              <h2 class="profile-section__title">Sessions</h2>
+              <p class="text-muted">Lost a device or signed in somewhere public? End every session at once.</p>
+            </div>
+          </header>
+          <div class="profile-section__actions">
+            <button class="btn btn--danger" type="button" [disabled]="signingOut()" (click)="signOutEverywhere()">
+              <i class="fas fa-power-off"></i> {{ signingOut() ? 'Signing out…' : 'Sign out of all devices' }}
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
+  } @else if (profile.isLoading()) {
+    <div class="panel"><p class="text-muted">Loading your profile…</p></div>
+  } @else {
+    <div class="panel detail__empty">
+      <p>Your profile could not be loaded.</p>
+      <button class="btn btn--ghost" type="button" (click)="profile.reload()">Try again</button>
+    </div>
+  }
+</div>

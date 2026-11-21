@@ -32,6 +32,10 @@ The API URL is configured in `src/environments/environment.ts`
 (`apiUrl`, `http://localhost:5080/api` by default). In production,
 `environment.production.ts` is used (`/api`).
 
+`ng serve` also proxies `/api` to `http://localhost:5080` (`proxy.conf.json`), so URLs the
+API returns as relative paths — such as uploaded avatars (`/api/users/{id}/avatar`) — load
+in dev like in production (same origin).
+
 VS Code: **Run and Debug → "ng serve"**.
 
 ## Authentication
@@ -82,7 +86,8 @@ are code comments.
 src/app/
 ├── core/          # auth, interceptors, guards, notifications, clipboard, problem-details,
 │                  # api-enum, services/ (httpResource-based API services)
-├── features/      # auth/login, home, tickets (list, `/tickets/new`, details `/tickets/:number`
+├── features/      # auth/login, home, profile (avatar, email, password, sessions),
+│                  # tickets (list, `/tickets/new`, details `/tickets/:number`
 │                  #   with one channel-thread per channel), 
 │                  # admin/ (users, customers, customer-details, ticket-config: ticket edges)
 ├── layout/        # shell (sidebar with submenus + content), topbar
@@ -145,5 +150,4 @@ npm test
 
 - [ ] Business features
 - [ ] Sign-up page (the `register` endpoint already exists)
-- [ ] Profile page (the user menu link points to `/profile`)
 - [ ] Harden token storage (httpOnly cookie) before production
