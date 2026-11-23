@@ -1,0 +1,96 @@
+<app-topbar heading="Account requests">
+  <span class="text-muted">
+    {{ requests.value().length }} pending request{{ requests.value().length > 1 ? 's' : '' }}
+  </span>
+</app-topbar>
+
+<div class="page">
+  <div class="panel">
+    <div class="panel__head">
+      <label class="field inline-form__grow">
+        <input
+          type="search"
+          placeholder="Filter by name or email"
+          [value]="search()"
+          (input)="search.set($any($event.target).value)"
+        />
+      </label>
+    </div>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Requester</th>
+          <th>Email</th>
+          <th>Sign-in</th>
+          <th>Requested</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (request of filtered(); track request.id) {
+          <tr (contextmenu)="onContextMenu($event, request)">
+            <td>
+              <span class="user-chip">
+                <img class="user-chip__avatar" [src]="request.avatarUrl" alt="" />
+                <span class="user-chip__text">
+                  <span>{{ request.displayName }}</span>
+                  @if (request.position) {
+                    <small class="text-muted">{{ request.position }}</small>
+                  }
+                </span>
+              </span>
+            </td>
+            <td class="text-muted">{{ request.email }}</td>
+            <td>
+              @if (request.accountType === 'SINGPASS') {
+                <span class="badge badge--singpass" title="Signs in with Singpass (identity verified by Singpass)">
+                  <i class="fas fa-id-card"></i> Singpass
+                </span>
+              } @else {
+                <span class="badge" title="Signs in with email and password"><i class="fas fa-envelope"></i> Email</span>
+              }
+            </td>
+            <td class="text-muted">
+              <time [attr.datetime]="request.requestedAt" [title]="request.requestedAt | date: 'medium'">
+                {{ timeAgo(request.requestedAt) }}
+              </time>
+            </td>
+            <td class="table__actions">
+              <button
+                class="btn btn--sm"
+                type="button"
+                [disabled]="busyId() !== null"
+                (click)="approve(request)"
+              >
+                <i class="fas fa-check"></i> Approve
+              </button>
+              <button
+                class="btn btn--ghost btn--sm"
+                type="button"
+                [disabled]="busyId() !== null"
+                (click)="reject(request)"
+              >
+                <i class="fas fa-xmark"></i> Decline
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td class="table__empty" colspan="5">
+              @if (requests.isLoading()) {
+                Loading requests…
+              } @else if (requests.error()) {
+                Unable to load the account requests.
+              } @else if (search()) {
+                No request matches "{{ search() }}".
+              } @else {
+                No pending request. New sign-ups will show up here.
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

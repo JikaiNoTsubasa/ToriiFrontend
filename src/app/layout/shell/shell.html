@@ -20,6 +20,9 @@
           >
             <span class="sidebar__icon"><i [class]="item.icon"></i></span>
             <span class="sidebar__label">{{ item.label }}</span>
+            @if (!isOpen(item) && badge(item); as count) {
+              <span class="sidebar__badge" [attr.aria-label]="count + ' pending'">{{ count }}</span>
+            }
             <span class="sidebar__caret"><i class="fa" [class.fa-chevron-down]="isOpen(item)" [class.fa-chevron-right]="!isOpen(item)"></i></span>
           </a>
           @if (isOpen(item)) {
@@ -32,6 +35,9 @@
                 >
                   <span class="sidebar__icon"><i [class]="child.icon"></i></span>
                   <span class="sidebar__label">{{ child.label }}</span>
+                  @if (badge(child); as count) {
+                    <span class="sidebar__badge" [attr.aria-label]="count + ' pending'">{{ count }}</span>
+                  }
                 </a>
               }
             </div>

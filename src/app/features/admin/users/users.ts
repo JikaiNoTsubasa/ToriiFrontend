@@ -3,7 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { NotificationService } from '../../../core/notifications/notification.service';
-import { AdminUser } from '../../../core/services/admin-user.models';
+import { AdminUser, originalEmail } from '../../../core/services/admin-user.models';
 import { AdminUserService } from '../../../core/services/admin-user.service';
 import { Topbar } from '../../../layout/topbar/topbar';
 import { RadialMenuService } from '../../../shared/radial-menu/radial-menu.service';
@@ -22,7 +22,10 @@ export class AdminUsers {
   private readonly panel = inject(SidePanelService);
   private readonly auth = inject(AuthService);
 
-  protected readonly users = this.service.users();
+  /** Shows the deleted accounts too (read-only rows). */
+  protected readonly showDeleted = signal(false);
+  protected readonly users = this.service.users(this.showDeleted);
+  protected readonly originalEmail = originalEmail;
 
   /** Request in progress (toggle, delete). */
   protected readonly busy = signal(false);
@@ -37,7 +40,9 @@ export class AdminUsers {
       : users;
   });
 
+  protected readonly userCount = computed(() => this.users.value().filter((u) => !u.isDeleted).length);
   protected readonly activeCount = computed(() => this.users.value().filter((u) => u.isActive).length);
+  protected readonly deletedCount = computed(() => this.users.value().filter((u) => u.isDeleted).length);
 
   protected isSelf(user: AdminUser): boolean {
     return user.id === this.auth.user()?.id;
@@ -95,6 +100,9 @@ export class AdminUsers {
   }
 
   protected onContextMenu(event: MouseEvent, user: AdminUser): void {
+    if (user.isDeleted) {
+      return; // read-only row: the browser menu stays available
+    }
     const self = this.isSelf(user);
     this.radial.open(event, [
       {

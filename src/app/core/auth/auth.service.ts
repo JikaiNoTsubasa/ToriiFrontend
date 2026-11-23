@@ -8,6 +8,7 @@ import {
   AuthResponse,
   LoginRequest,
   RegisterRequest,
+  RegistrationResponse,
   UserDto,
 } from './auth.models';
 
@@ -30,10 +31,9 @@ export class AuthService {
       .pipe(tap((res) => this.handleAuth(res)));
   }
 
-  register(request: RegisterRequest): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(`${this.baseUrl}/register`, request, skipErrorNotification())
-      .pipe(tap((res) => this.handleAuth(res)));
+  /** Requests an account; no session: it can only sign in once an administrator approves it. */
+  register(request: RegisterRequest): Observable<RegistrationResponse> {
+    return this.http.post<RegistrationResponse>(`${this.baseUrl}/register`, request, skipErrorNotification());
   }
 
   /** Renews the access token from the stored refresh token. */

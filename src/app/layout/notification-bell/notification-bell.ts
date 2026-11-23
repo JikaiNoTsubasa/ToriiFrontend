@@ -1,7 +1,7 @@
 import { Component, ElementRef, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { InboxNotification } from '../../core/services/inbox.models';
+import { InboxNotification, notificationAction, notificationTarget } from '../../core/services/inbox.models';
 import { InboxService } from '../../core/services/inbox.service';
 import { timeAgo } from '../../shared/time-ago/time-ago';
 
@@ -29,6 +29,7 @@ export class NotificationBell {
   protected readonly loading = signal(false);
   protected readonly items = signal<InboxNotification[]>([]);
   protected readonly timeAgo = timeAgo;
+  protected readonly action = notificationAction;
 
   protected async toggle(): Promise<void> {
     if (this.open()) {
@@ -41,7 +42,8 @@ export class NotificationBell {
 
   protected async openNotification(notification: InboxNotification): Promise<void> {
     this.open.set(false);
-    this.router.navigate(['/tickets', notification.ticketNumber], { queryParams: { channel: notification.channelId } });
+    const target = notificationTarget(notification);
+    this.router.navigate(target.commands, { queryParams: target.queryParams });
     try {
       await this.inbox.markRead(notification);
     } catch {

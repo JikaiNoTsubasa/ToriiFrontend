@@ -1,0 +1,77 @@
+<div class="login">
+  @let s = step();
+  @if (s.kind === 'sent') {
+    <app-request-sent [email]="s.email" [singpass]="true" />
+  } @else {
+    <div class="panel login__panel login__panel--wide">
+      <h1 class="login__title"><img src="/Torii_logo.png" alt="Torii Logo" width="64" height="64" /><br/>Torii</h1>
+
+      @if (s.kind === 'working') {
+        <p class="login__subtitle text-muted" role="status">
+          <i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Completing the Singpass sign-in…
+        </p>
+      } @else if (s.kind === 'error') {
+        <div class="alert alert--error" role="alert">
+          <strong class="alert__title">{{ s.title }}</strong>
+          {{ s.detail }}
+        </div>
+        <a class="btn" routerLink="/login">Back to sign in</a>
+      } @else if (s.kind === 'notice') {
+        <div class="alert" [class.alert--info]="s.pending" [class.alert--error]="!s.pending" role="status">
+          <strong class="alert__title">
+            <i class="fas" [class.fa-user-clock]="s.pending" [class.fa-user-slash]="!s.pending" aria-hidden="true"></i>
+            {{ s.title }}
+          </strong>
+          {{ s.detail }}
+        </div>
+        <a class="btn" routerLink="/login">Back to sign in</a>
+      } @else if (s.kind === 'register') {
+        <form class="login__form" novalidate (submit)="complete($event, s.registration)">
+          <div class="alert alert--info">
+            <strong class="alert__title">
+              <i class="fas fa-id-card" aria-hidden="true"></i> Verified with Singpass
+            </strong>
+            No Torii account is linked to this Singpass account yet. Complete your details to
+            request one; an administrator will review it.
+          </div>
+
+          @if (error(); as message) {
+            <div class="alert alert--error">{{ message }}</div>
+          }
+
+          <label class="field">
+            <span>Email</span>
+            <input type="email" [formField]="form.email" autocomplete="email" />
+            @if (form.email().touched() && form.email().errors().length) {
+              <small class="field__error">{{ form.email().errors()[0].message }}</small>
+            }
+          </label>
+
+          <label class="field">
+            <span>Display name</span>
+            <input type="text" [formField]="form.displayName" autocomplete="name" />
+            @if (form.displayName().touched() && form.displayName().errors().length) {
+              <small class="field__error">{{ form.displayName().errors()[0].message }}</small>
+            }
+          </label>
+
+          <label class="field">
+            <span>Position <span class="text-muted">(optional)</span></span>
+            <input type="text" [formField]="form.position" autocomplete="organization-title" placeholder="e.g. Project manager" />
+            @if (form.position().touched() && form.position().errors().length) {
+              <small class="field__error">{{ form.position().errors()[0].message }}</small>
+            }
+          </label>
+
+          <button class="btn" type="submit" [disabled]="sending()">
+            {{ sending() ? 'Sending…' : 'Request a Singpass account' }}
+          </button>
+
+          <p class="login__footer text-muted">
+            <a routerLink="/login">Cancel</a>
+          </p>
+        </form>
+      }
+    </div>
+  }
+</div>

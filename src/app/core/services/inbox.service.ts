@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 import { AuthService } from '../auth/auth.service';
 import { skipErrorNotification } from '../http/problem-details';
 import { NotificationService } from '../notifications/notification.service';
-import { InboxList, InboxNotification, UnreadSummary } from './inbox.models';
+import { InboxList, InboxNotification, notificationAction, notificationTarget, UnreadSummary } from './inbox.models';
 
 /** Polling period of the unread summary (ms). */
 const POLL_MS = 30_000;
@@ -132,11 +132,12 @@ export class InboxService {
     }
     this._arrivals.set(fresh);
     for (const n of fresh.slice(0, MAX_TOASTS)) {
-      const action = n.isForward ? 'forwarded a message' : 'replied';
-      this.toasts.info(`${n.actor.displayName} ${action} — ${n.ticketNumber}`, n.preview || n.ticketTitle, {
-        label: 'Open',
-        commands: ['/tickets', n.ticketNumber],
-        queryParams: { channel: n.channelId },
+      const title = n.type === 'ACCOUNT_REQUESTED'
+        ? `${n.actor.displayName} ${notificationAction(n)}`
+        : `${n.actor.displayName} ${notificationAction(n)} — ${n.ticketNumber}`;
+      this.toasts.info(title, n.preview || n.ticketTitle || undefined, {
+        label: n.type === 'ACCOUNT_REQUESTED' ? 'Review' : 'Open',
+        ...notificationTarget(n),
       });
     }
     if (fresh.length > MAX_TOASTS) {

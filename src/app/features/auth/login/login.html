@@ -5,6 +5,15 @@
     @if (error(); as message) {
       <div class="alert alert--error">{{ message }}</div>
     }
+    @if (notice(); as n) {
+      <div class="alert" [class.alert--info]="n.kind === 'pending'" [class.alert--error]="n.kind === 'rejected'" role="status">
+        <strong class="alert__title">
+          <i class="fas" [class.fa-user-clock]="n.kind === 'pending'" [class.fa-user-slash]="n.kind === 'rejected'" aria-hidden="true"></i>
+          {{ n.title }}
+        </strong>
+        {{ n.detail }}
+      </div>
+    }
 
     <label class="field">
       <span>Email</span>
@@ -19,5 +28,25 @@
     <button class="btn" type="submit" [disabled]="loading()">
       {{ loading() ? 'Signing in…' : 'Sign in' }}
     </button>
+
+    <div class="login__divider"><span>or</span></div>
+
+    @if (singpassError(); as message) {
+      <div class="alert alert--error">{{ message }}</div>
+    }
+    <button
+      class="btn btn--singpass"
+      type="button"
+      [disabled]="!singpass.value().enabled || redirecting()"
+      [title]="singpass.value().enabled ? '' : 'Singpass is not available'"
+      (click)="withSingpass()"
+    >
+      <i class="fas fa-id-card" aria-hidden="true"></i>
+      {{ redirecting() ? 'Redirecting to Singpass…' : 'Sign in with Singpass' }}
+    </button>
+
+    <p class="login__footer text-muted">
+      No account yet? <a routerLink="/register">Create an account</a>
+    </p>
   </form>
 </div>

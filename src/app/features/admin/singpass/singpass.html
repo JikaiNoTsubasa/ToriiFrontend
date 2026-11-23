@@ -1,0 +1,175 @@
+<app-topbar heading="Singpass">
+  @if (config(); as c) {
+    @if (c.enabled) {
+      <span class="badge badge--done"><i class="fas fa-circle-check"></i> Enabled</span>
+    } @else if (c.isConfigured) {
+      <span class="badge"><i class="fas fa-circle-pause"></i> Disabled</span>
+    } @else {
+      <span class="badge badge--waiting"><i class="fas fa-triangle-exclamation"></i> Not configured</span>
+    }
+  }
+</app-topbar>
+
+<div class="page">
+  @if (config(); as c) {
+    <div class="singpass-admin">
+      <!-- Settings -->
+      <section class="panel profile-section">
+        <header class="profile-section__head">
+          <span class="profile-section__icon"><i class="fas fa-id-card"></i></span>
+          <div>
+            <h2 class="profile-section__title">Sign-in with Singpass</h2>
+            <p class="text-muted">
+              Lets people sign in and request an account with Singpass. Singpass account requests
+              are reviewed in <strong>Account requests</strong>, like the others.
+            </p>
+          </div>
+        </header>
+
+        <form class="profile-section__form profile-section__form--grid" novalidate (submit)="save($event)">
+          <label class="field field--checkbox profile-section__full">
+            <input type="checkbox" [formField]="form.enabled" />
+            <span>
+              Enable Singpass sign-in and sign-up
+              <small class="text-muted">(when off, the Singpass buttons are greyed out)</small>
+            </span>
+          </label>
+          @if (fieldError('keys'); as message) {
+            <small class="field__error profile-section__full">{{ message }}</small>
+          }
+
+          <label class="field">
+            <span>Environment</span>
+            <select [formField]="form.environment">
+              @for (env of environments; track env) {
+                <option [value]="env">{{ environmentLabels[env] }}</option>
+              }
+            </select>
+            <small class="text-muted">Issuer: <code>{{ c.issuer }}</code></small>
+          </label>
+
+          <label class="field">
+            <span>Client ID</span>
+            <input type="text" spellcheck="false" autocomplete="off" placeholder="App ID from the Singpass Developer Portal" [formField]="form.clientId" />
+            @if (fieldError('clientId') ?? (form.clientId().errors()[0]?.message); as message) {
+              <small class="field__error">{{ message }}</small>
+            }
+          </label>
+
+          <label class="field profile-section__full">
+            <span class="login__label-row">
+              Redirect URI
+              <button class="link" type="button" (click)="useSiteRedirectUri()">Use this site</button>
+            </span>
+            <input type="url" spellcheck="false" autocomplete="off" [placeholder]="siteRedirectUri" [formField]="form.redirectUri" />
+            @if (fieldError('redirectUri') ?? (form.redirectUri().errors()[0]?.message); as message) {
+              <small class="field__error">{{ message }}</small>
+            } @else {
+              <small class="text-muted">Must be registered as-is in the Singpass Developer Portal.</small>
+            }
+          </label>
+
+          <label class="field profile-section__full">
+            <span>Scopes</span>
+            <input type="text" spellcheck="false" autocomplete="off" [formField]="form.scopes" />
+            @if (fieldError('scopes') ?? (form.scopes().errors()[0]?.message); as message) {
+              <small class="field__error">{{ message }}</small>
+            } @else {
+              <small class="text-muted">
+                Space-separated, must include <code>openid</code>. <code>name</code> and <code>email</code>
+                prefill the account request.
+              </small>
+            }
+          </label>
+
+          <div class="profile-section__actions profile-section__full">
+            <button class="btn" type="submit" [disabled]="saving() || !dirty()">
+              {{ saving() ? 'Saving…' : 'Save settings' }}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Keys -->
+      <section class="panel profile-section">
+        <header class="profile-section__head">
+          <span class="profile-section__icon"><i class="fas fa-key"></i></span>
+          <div>
+            <h2 class="profile-section__title">Keys</h2>
+            <p class="text-muted">
+              A signing key (client assertions) and an encryption key (ID tokens). The private keys
+              never leave the server; Singpass reads the public ones from the JWKS URL.
+            </p>
+          </div>
+        </header>
+
+        @if (c.signingKeyId) {
+          <dl class="singpass-admin__keys">
+            <dt class="text-muted">Signing key</dt>
+            <dd><code>{{ c.signingKeyId }}</code> · ES256</dd>
+            <dt class="text-muted">Encryption key</dt>
+            <dd><code>{{ c.encryptionKeyId }}</code> · ECDH-ES+A256KW</dd>
+            <dt class="text-muted">Generated</dt>
+            <dd>{{ c.keysGeneratedAt | date: 'medium' }}</dd>
+          </dl>
+
+          <label class="field">
+            <span>JWKS URL <small class="text-muted">(register it in the Singpass Developer Portal; must be publicly reachable)</small></span>
+            <span class="inline-form">
+              <input class="inline-form__grow" type="text" readonly [value]="jwksUrl" />
+              <button class="btn btn--ghost" type="button" (click)="copy(jwksUrl, 'JWKS URL')">
+                <i class="fas fa-copy"></i> Copy
+              </button>
+            </span>
+          </label>
+        } @else {
+          <p class="text-muted">No key yet: generate them, then register the JWKS URL with Singpass.</p>
+        }
+
+        <div class="profile-section__actions">
+          <button class="btn" [class.btn--ghost]="!!c.signingKeyId" type="button" [disabled]="generating()" (click)="generateKeys()">
+            <i class="fas fa-arrows-rotate"></i>
+            {{ generating() ? 'Generating…' : c.signingKeyId ? 'Regenerate keys' : 'Generate keys' }}
+          </button>
+        </div>
+      </section>
+
+      <!-- Connection test -->
+      <section class="panel profile-section">
+        <header class="profile-section__head">
+          <span class="profile-section__icon"><i class="fas fa-plug"></i></span>
+          <div>
+            <h2 class="profile-section__title">Connection test</h2>
+            <p class="text-muted">Reads the Singpass discovery document of the saved environment.</p>
+          </div>
+        </header>
+
+        @if (testResult(); as r) {
+          <dl class="singpass-admin__keys">
+            <dt class="text-muted">Issuer</dt>
+            <dd><code>{{ r.issuer }}</code></dd>
+            <dt class="text-muted">Authorization</dt>
+            <dd><code>{{ r.authorizationEndpoint }}</code></dd>
+            <dt class="text-muted">PAR</dt>
+            <dd><code>{{ r.pushedAuthorizationRequestEndpoint }}</code></dd>
+            <dt class="text-muted">Token</dt>
+            <dd><code>{{ r.tokenEndpoint }}</code></dd>
+            <dt class="text-muted">JWKS</dt>
+            <dd><code>{{ r.jwksUri }}</code></dd>
+          </dl>
+        }
+
+        <div class="profile-section__actions">
+          <button class="btn btn--ghost" type="button" [disabled]="testing()" (click)="test()">
+            <i class="fas" [class.fa-plug]="!testing()" [class.fa-spinner]="testing()" [class.fa-spin]="testing()"></i>
+            {{ testing() ? 'Testing…' : 'Test connection' }}
+          </button>
+        </div>
+      </section>
+    </div>
+  } @else if (loadError()) {
+    <div class="panel"><p class="text-muted">Unable to load the Singpass settings.</p></div>
+  } @else {
+    <div class="panel"><p class="text-muted">Loading…</p></div>
+  }
+</div>

@@ -1,5 +1,5 @@
 import { HttpClient, httpResource, HttpResourceRef } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Injectable, Signal, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AdminUser, AdminUserCreate, AdminUserUpdate } from './admin-user.models';
@@ -17,10 +17,10 @@ export class AdminUserService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/admin/users`;
 
-  /** Every user, disabled ones included. */
-  users(): HttpResourceRef<AdminUser[]> {
+  /** Every user, disabled ones included; deleted ones too while `includeDeleted()` is true. */
+  users(includeDeleted?: Signal<boolean>): HttpResourceRef<AdminUser[]> {
     return httpResource<AdminUser[]>(
-      () => ({ url: this.baseUrl, params: { take: LIST_TAKE } }),
+      () => ({ url: this.baseUrl, params: { take: LIST_TAKE, includeDeleted: includeDeleted?.() ?? false } }),
       { defaultValue: [] },
     );
   }

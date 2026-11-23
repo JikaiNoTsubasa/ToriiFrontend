@@ -1,0 +1,96 @@
+<div class="login">
+  @if (requested(); as sentTo) {
+    <app-request-sent [email]="sentTo" />
+  } @else {
+    <form class="panel login__panel login__panel--wide" novalidate (submit)="submit($event)">
+      <h1 class="login__title"><img src="/Torii_logo.png" alt="Torii Logo" width="64" height="64" /><br/>Torii</h1>
+      <p class="login__subtitle text-muted">Request an account. An administrator will review it before you can sign in.</p>
+
+      @if (error(); as message) {
+        <div class="alert alert--error">{{ message }}</div>
+      }
+
+      <label class="field">
+        <span>Email</span>
+        <input type="email" [formField]="form.email" autocomplete="email" />
+        @if (form.email().touched() && form.email().errors().length) {
+          <small class="field__error">{{ form.email().errors()[0].message }}</small>
+        }
+      </label>
+
+      <label class="field">
+        <span>Display name</span>
+        <input type="text" [formField]="form.displayName" autocomplete="name" />
+        @if (form.displayName().touched() && form.displayName().errors().length) {
+          <small class="field__error">{{ form.displayName().errors()[0].message }}</small>
+        }
+      </label>
+
+      <label class="field">
+        <span>Position <span class="text-muted">(optional)</span></span>
+        <input type="text" [formField]="form.position" autocomplete="organization-title" placeholder="e.g. Project manager" />
+        @if (form.position().touched() && form.position().errors().length) {
+          <small class="field__error">{{ form.position().errors()[0].message }}</small>
+        }
+      </label>
+
+      <label class="field">
+        <span class="login__label-row">
+          Password
+          <button class="link" type="button" (click)="showPasswords.set(!showPasswords())">
+            {{ showPasswords() ? 'Hide' : 'Show' }}
+          </button>
+        </span>
+        <input [attr.type]="showPasswords() ? 'text' : 'password'" [formField]="form.password" autocomplete="new-password" />
+        @if (form.password().touched() && form.password().errors().length) {
+          <small class="field__error">{{ form.password().errors()[0].message }}</small>
+        }
+      </label>
+
+      <label class="field">
+        <span>Confirm password</span>
+        <input [attr.type]="showPasswords() ? 'text' : 'password'" [formField]="form.confirmPassword" autocomplete="new-password" />
+        @if (form.confirmPassword().touched() && form.confirmPassword().errors().length) {
+          <small class="field__error">{{ form.confirmPassword().errors()[0].message }}</small>
+        }
+      </label>
+
+      <!-- Strength meter (guidance only). -->
+      <div class="strength" [attr.data-score]="strength().score" aria-live="polite">
+        <div class="strength__bars" aria-hidden="true">
+          @for (bar of [1, 2, 3, 4]; track bar) {
+            <span class="strength__bar" [class.strength__bar--on]="strength().score >= bar"></span>
+          }
+        </div>
+        <span class="strength__label">{{ strength().label }}</span>
+        @if (strength().hints.length) {
+          <span class="text-muted strength__hint">{{ strength().hints[0] }}</span>
+        }
+      </div>
+
+      <button class="btn" type="submit" [disabled]="loading()">
+        {{ loading() ? 'Sending…' : 'Request an account' }}
+      </button>
+
+      <div class="login__divider"><span>or</span></div>
+
+      @if (singpassError(); as message) {
+        <div class="alert alert--error">{{ message }}</div>
+      }
+      <button
+        class="btn btn--singpass"
+        type="button"
+        [disabled]="!singpass.value().enabled || redirecting()"
+        [title]="singpass.value().enabled ? '' : 'Singpass is not available'"
+        (click)="withSingpass()"
+      >
+        <i class="fas fa-id-card" aria-hidden="true"></i>
+        {{ redirecting() ? 'Redirecting to Singpass…' : 'Sign up with Singpass' }}
+      </button>
+
+      <p class="login__footer text-muted">
+        Already have an account? <a routerLink="/login">Sign in</a>
+      </p>
+    </form>
+  }
+</div>

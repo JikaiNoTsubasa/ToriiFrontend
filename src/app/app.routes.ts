@@ -9,6 +9,17 @@ export const routes: Routes = [
       import('./features/auth/login/login').then((m) => m.Login),
   },
   {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/auth/register/register').then((m) => m.Register),
+  },
+  {
+    // Singpass returns here (redirect URI registered in the Singpass Developer Portal).
+    path: 'auth/singpass/callback',
+    loadComponent: () =>
+      import('./features/auth/singpass-callback/singpass-callback').then((m) => m.SingpassCallback),
+  },
+  {
     // Application shell: fixed menu on the left + content on the right.
     path: '',
     canActivate: [authGuard],
@@ -50,6 +61,15 @@ export const routes: Routes = [
           {
             path: 'users',
             loadComponent: () => import('./features/admin/users/users').then((m) => m.AdminUsers),
+          },
+          {
+            path: 'account-requests',
+            loadComponent: () =>
+              import('./features/admin/account-requests/account-requests').then((m) => m.AdminAccountRequests),
+          },
+          {
+            path: 'singpass',
+            loadComponent: () => import('./features/admin/singpass/singpass').then((m) => m.AdminSingpass),
           },
           {
             path: 'customers',

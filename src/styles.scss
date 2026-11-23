@@ -258,6 +258,20 @@ p {
   border-color: $color-error;
 }
 
+.alert--info {
+  color: #0b62c4;
+  border-color: #0b62c4;
+  background: rgba(#0b62c4, 0.06);
+}
+
+/* Bold first line of an alert (icon + title), the detail below. */
+.alert__title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.25rem;
+}
+
 .text-muted {
   color: $color-muted;
 }
@@ -287,6 +301,91 @@ p {
 .login__subtitle {
   text-align: center;
   margin-bottom: 0.5rem;
+}
+
+/* Account request form: a little more room than the sign-in. */
+.login__panel--wide {
+  max-width: 420px;
+}
+
+.login__footer {
+  text-align: center;
+  font-size: 0.9rem;
+
+  a {
+    color: $color-primary;
+  }
+}
+
+/* "or" rule between the password form and the Singpass button. */
+.login__divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: $color-muted;
+  font-size: 0.8rem;
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1;
+    border-top: 1px solid $color-border;
+  }
+}
+
+/* Form nested in a sign-in panel (Singpass completion step). */
+.login__form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing;
+}
+
+/* Sign in / sign up with Singpass: outlined, red like the Singpass identity. */
+.btn--singpass {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: $color-input;
+  color: #c8102e;
+  border: 1px solid #c8102e;
+
+  &:hover:not(:disabled) {
+    background: rgba(#c8102e, 0.06);
+  }
+
+  &:disabled {
+    color: $color-muted;
+    border-color: $color-border;
+    background: $color-panel;
+    cursor: not-allowed;
+  }
+}
+
+/* Field label with an inline action on the right (e.g. Show / Hide). */
+.login__label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+/* Confirmation shown once an account request is sent. */
+.login__done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+
+  > i {
+    font-size: 2rem;
+    color: $color-primary;
+  }
+
+  h2,
+  p {
+    margin: 0;
+  }
 }
 
 /* =========================================================================
@@ -371,6 +470,30 @@ $sidebar-width: 260px;
   margin-left: auto;
   font-size: 0.7rem;
   color: $color-muted;
+}
+
+/* Pending count of an entry (e.g. account requests), pushed to the right. */
+.sidebar__badge {
+  margin-left: auto;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: $color-primary;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.2rem;
+  text-align: center;
+
+  + .sidebar__caret {
+    margin-left: 0.5rem;
+  }
+
+  .sidebar__link--active & {
+    background: #fff;
+    color: $color-primary;
+  }
 }
 
 /* Section submenu: indented, joined by a vertical rule. */
@@ -829,6 +952,15 @@ $sidebar-width: 260px;
 /* Disabled / inactive row: content toned down. */
 .table__row--muted td {
   color: $color-muted;
+}
+
+/* Deleted account (read-only, listed on request): faded, name struck through. */
+.table__row--deleted td {
+  opacity: 0.6;
+
+  .user-chip__text > span:first-child {
+    text-decoration: line-through;
+  }
 }
 
 /* Narrow column holding a direction arrow (source → target). */
@@ -2104,6 +2236,35 @@ label.btn {
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
+}
+
+/* ----- Singpass settings (admin) ----- */
+.singpass-admin {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 820px;
+}
+
+/* Label / value pairs (key ids, discovery endpoints). */
+.singpass-admin__keys {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.4rem 1rem;
+  margin: 0;
+  font-size: 0.88rem;
+
+  dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Account type marker (e.g. a Singpass account request). */
+.badge--singpass {
+  color: #c8102e;
+  border-color: #c8102e;
+  background: rgba(#c8102e, 0.06);
 }
 
 /* ----- Password strength meter ----- */

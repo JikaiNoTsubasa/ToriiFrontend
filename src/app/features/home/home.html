@@ -271,8 +271,8 @@
                 <a
                   class="dash-row dash-row--notification"
                   [class.dash-row--unread]="!n.readAt"
-                  [routerLink]="['/tickets', n.ticketNumber]"
-                  [queryParams]="{ channel: n.channelId }"
+                  [routerLink]="target(n).commands"
+                  [queryParams]="target(n).queryParams"
                   (click)="openNotification(n)"
                 >
                   <img
@@ -283,8 +283,10 @@
                   <span class="dash-row__main">
                     <span class="dash-row__line">
                       <strong>{{ n.actor.displayName }}</strong>
-                      {{ n.isForward ? 'forwarded a message' : 'replied' }} on
-                      <span class="table__code">{{ n.ticketNumber }}</span>
+                      {{ action(n) }}
+                      @if (n.ticketNumber) {
+                        on <span class="table__code">{{ n.ticketNumber }}</span>
+                      }
                       @if (n.count > 1) {
                         <span class="notification-item__count">+{{ n.count - 1 }} more</span>
                       }

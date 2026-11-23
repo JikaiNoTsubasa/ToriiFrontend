@@ -86,11 +86,13 @@ are code comments.
 src/app/
 ├── core/          # auth, interceptors, guards, notifications, clipboard, problem-details,
 │                  # api-enum, services/ (httpResource-based API services)
-├── features/      # auth/login, home (dashboard: KPIs, waiting conversations, notifications,
+├── features/      # auth/login, auth/register (account request + confirmation),
+│                  #   auth/singpass-callback (Singpass return page: sign-in or account request), home (dashboard: KPIs, waiting conversations, notifications,
 │                  #   latest tickets, activity / priority / status charts), profile (avatar, email, password, sessions),
 │                  # tickets (list, `/tickets/new`, details `/tickets/:number`
 │                  #   with one channel-thread per channel), 
-│                  # admin/ (users, customers, customer-details, ticket-config: ticket edges)
+│                  # admin/ (users, account-requests, singpass settings, customers, customer-details,
+│                  #   ticket-config: ticket edges)
 ├── layout/        # shell (sidebar with submenus + content), topbar,
 │                  # notification-bell (unread badge + panel; InboxService polls every 30 s,
 │                  #   toasts new replies with an "Open" link, prefixes the tab title "(3)")
@@ -155,5 +157,4 @@ npm test
 ## To do
 
 - [ ] Business features
-- [ ] Sign-up page (the `register` endpoint already exists)
 - [ ] Harden token storage (httpOnly cookie) before production

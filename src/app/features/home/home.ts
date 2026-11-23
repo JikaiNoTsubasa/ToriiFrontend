@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { DashboardService } from '../../core/services/dashboard.service';
-import { InboxNotification } from '../../core/services/inbox.models';
+import { InboxNotification, notificationAction, notificationTarget } from '../../core/services/inbox.models';
 import { InboxService } from '../../core/services/inbox.service';
 import {
   TICKET_PRIORITIES,
@@ -56,6 +56,8 @@ export class Home {
   protected readonly typeMeta = TICKET_TYPE_META;
   protected readonly priorityMeta = TICKET_PRIORITY_META;
   protected readonly timeAgo = timeAgo;
+  protected readonly action = notificationAction;
+  protected readonly target = notificationTarget;
 
   protected readonly user = this.auth.user;
   protected readonly firstName = computed(() => this.auth.user()?.displayName.split(/\s+/)[0] ?? '');
