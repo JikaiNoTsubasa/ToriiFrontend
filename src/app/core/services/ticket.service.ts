@@ -18,11 +18,12 @@ import {
 import { PagedResult } from '../http/paged-result';
 import { TicketPriority, TicketType } from './ticket-classification';
 import { TicketStatus } from './ticket-status';
+import { TicketSort } from './ticket-sort';
 
 /**
  * Ticket list query. `statuses` keeps tickets where at least one of the user's channels has
  * one of them; `types` / `priorities` keep tickets of one of them (`null` = no filter);
- * `page` is 1-based.
+ * `page` is 1-based; `sort` defaults to newest first on the API side.
  */
 export interface TicketListQuery {
   search: string;
@@ -31,6 +32,7 @@ export interface TicketListQuery {
   priorities: readonly TicketPriority[] | null;
   page: number;
   pageSize: number;
+  sort: TicketSort;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -50,7 +52,12 @@ export class TicketService {
       if (!q) {
         return undefined;
       }
-      const params: Record<string, string | number | readonly string[]> = { page: q.page, pageSize: q.pageSize };
+      const params: Record<string, string | number | readonly string[]> = {
+        page: q.page,
+        pageSize: q.pageSize,
+        sort: q.sort.field,
+        dir: q.sort.direction,
+      };
       if (q.search) {
         params['search'] = q.search;
       }

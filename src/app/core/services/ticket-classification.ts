@@ -20,6 +20,21 @@ export interface ClassificationMeta {
   description: string;
 }
 
+/** Short tag of every type, used in copied references: `[Feat] TI000002 - Title`. */
+export const TICKET_TYPE_TAGS: ApiEnumMap<TicketType, string> = {
+  BUG: 'Bug',
+  INCIDENT: 'Inc',
+  FEATURE_REQUEST: 'Feat',
+  IMPROVEMENT: 'Impr',
+  REQUEST: 'Req',
+  QUESTION: 'Quest',
+};
+
+/** One-line reference of a ticket, e.g. `[Feat] TI000002 - Title goes here`. */
+export function ticketReference(ticket: { number: string; title: string; type: TicketType }): string {
+  return `[${TICKET_TYPE_TAGS[ticket.type]}] ${ticket.number} - ${ticket.title}`;
+}
+
 /** Display data of every type (exhaustive: the compiler flags a missing one). */
 export const TICKET_TYPE_META: ApiEnumMap<TicketType, ClassificationMeta> = {
   BUG: { label: 'Bug', icon: 'fas fa-bug', className: 'ticket-type--bug', description: 'Something does not work as expected.' },

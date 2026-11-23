@@ -2878,11 +2878,72 @@ $chart-hue: #0b62c4; // single-series charts (activity, statuses)
   align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.75rem 1.75rem 1.5rem;
-  background:
-    radial-gradient(circle at 100% 0%, rgba($color-primary, 0.12), transparent 55%),
-    $color-panel;
+  padding: 1.5rem 1.75rem;
+  background: $color-panel;
   border-left: 4px solid $color-primary;
+}
+
+.dashboard__identity {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+/* Avatar: photo in a primary ring (panel-colored gap), links to the profile. */
+.dashboard__avatar {
+  position: relative;
+  flex: none;
+  display: block;
+  width: 76px;
+  height: 76px;
+  padding: 3px;
+  border: 2px solid $color-primary;
+  border-radius: 50%;
+  background: $color-panel;
+  transition: transform 0.15s;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  &:hover {
+    transform: scale(1.04);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 3px;
+  }
+}
+
+/* Small status dot: shows unread notifications. */
+.dashboard__avatar-dot {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.3rem;
+  border: 2px solid $color-panel;
+  border-radius: 999px;
+  background: $color-primary;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1.05rem;
+  text-align: center;
+}
+
+.dashboard__position {
+  margin-bottom: 0.15rem;
+  color: $color-primary;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 .dashboard__date {
@@ -3397,4 +3458,63 @@ $chart-hue: #0b62c4; // single-series charts (activity, statuses)
   font-weight: 600;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+/* ----- Sortable table headers (server-side sort) ----- */
+.table__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    color: $color-primary;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.table__sort-icon {
+  font-size: 0.72rem;
+  color: $color-border;
+
+  .table__sort:hover & {
+    color: $color-muted;
+  }
+}
+
+.table__sort--active {
+  color: $color-primary;
+
+  .table__sort-icon,
+  &:hover .table__sort-icon {
+    color: $color-primary;
+  }
+}
+
+.table__sort-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.table__date time {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  white-space: nowrap;
+
+  small {
+    font-size: 0.75rem;
+  }
 }

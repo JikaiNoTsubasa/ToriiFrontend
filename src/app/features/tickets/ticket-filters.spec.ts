@@ -3,7 +3,10 @@ import { TICKET_TYPES } from '../../core/services/ticket-classification';
 import {
   apiStatuses,
   apiValues,
+  nextSort,
   parsePageParam,
+  parseSortParams,
+  sortParams,
   parseSetParam,
   parseStatusParam,
   PRIORITY_FILTER,
@@ -52,5 +55,28 @@ describe('ticket filters', () => {
     expect(parsePageParam(undefined)).toBe(1);
     expect(parsePageParam('0')).toBe(1);
     expect(parsePageParam('abc')).toBe(1);
+  });
+});
+
+describe('ticket sort', () => {
+  it('defaults to newest first, also for unknown values', () => {
+    expect(parseSortParams(null, null)).toEqual({ field: 'CREATED_AT', direction: 'DESC' });
+    expect(parseSortParams('nope', 'ASC')).toEqual({ field: 'CREATED_AT', direction: 'DESC' });
+  });
+
+  it('parses a field with its direction, or the natural one when missing', () => {
+    expect(parseSortParams('priority', 'asc')).toEqual({ field: 'PRIORITY', direction: 'ASC' });
+    expect(parseSortParams('TITLE', null)).toEqual({ field: 'TITLE', direction: 'ASC' });
+  });
+
+  it('leaves the default sort out of the URL', () => {
+    expect(sortParams({ field: 'CREATED_AT', direction: 'DESC' })).toEqual({ sort: null, dir: null });
+    expect(sortParams({ field: 'CREATED_AT', direction: 'ASC' })).toEqual({ sort: 'CREATED_AT', dir: 'ASC' });
+  });
+
+  it('flips the direction on the same column, starts naturally on another one', () => {
+    expect(nextSort({ field: 'PRIORITY', direction: 'DESC' }, 'PRIORITY')).toEqual({ field: 'PRIORITY', direction: 'ASC' });
+    expect(nextSort({ field: 'PRIORITY', direction: 'DESC' }, 'TITLE')).toEqual({ field: 'TITLE', direction: 'ASC' });
+    expect(nextSort({ field: 'TITLE', direction: 'ASC' }, 'CREATED_AT')).toEqual({ field: 'CREATED_AT', direction: 'DESC' });
   });
 });

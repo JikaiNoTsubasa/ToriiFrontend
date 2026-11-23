@@ -66,9 +66,19 @@
     <table class="table table--clickable">
       <thead>
         <tr>
-          <th>Number</th>
-          <th>Title</th>
-          <th>Priority</th>
+          <th [attr.aria-sort]="ariaSort('NUMBER')">
+            <ng-container *ngTemplateOutlet="sortButton; context: { field: 'NUMBER', label: 'Number' }" />
+          </th>
+          <th [attr.aria-sort]="ariaSort(sort().field === 'TYPE' ? 'TYPE' : 'TITLE')">
+            <span class="table__sort-group">
+              <ng-container *ngTemplateOutlet="sortButton; context: { field: 'TITLE', label: 'Title' }" />
+              <span class="text-muted" aria-hidden="true">/</span>
+              <ng-container *ngTemplateOutlet="sortButton; context: { field: 'TYPE', label: 'Type' }" />
+            </span>
+          </th>
+          <th [attr.aria-sort]="ariaSort('PRIORITY')">
+            <ng-container *ngTemplateOutlet="sortButton; context: { field: 'PRIORITY', label: 'Priority' }" />
+          </th>
           <th>
             Status
             <app-info-hint label="About ticket statuses">
@@ -90,7 +100,12 @@
               </p>
             </app-info-hint>
           </th>
-          <th>Created by</th>
+          <th [attr.aria-sort]="ariaSort('CREATED_BY')">
+            <ng-container *ngTemplateOutlet="sortButton; context: { field: 'CREATED_BY', label: 'Created by' }" />
+          </th>
+          <th [attr.aria-sort]="ariaSort('CREATED_AT')">
+            <ng-container *ngTemplateOutlet="sortButton; context: { field: 'CREATED_AT', label: 'Created' }" />
+          </th>
           <th>Customer</th>
         </tr>
       </thead>
@@ -133,20 +148,23 @@
               @if (row.createdBy; as author) {
                 <span class="user-chip">
                   <img class="user-chip__avatar" [src]="author.avatarUrl" alt="" />
-                  <span class="user-chip__text">
-                    {{ author.displayName }}
-                    <small class="text-muted">{{ row.createdAt | date: 'MMM d, y, HH:mm' }}</small>
-                  </span>
+                  {{ author.displayName }}
                 </span>
               } @else {
                 <span class="text-muted">—</span>
               }
             </td>
+            <td class="table__date">
+              <time [attr.datetime]="row.createdAt" [attr.title]="row.createdAt | date: 'EEEE, MMMM d, y, HH:mm'">
+                {{ row.createdAt | date: 'MMM d, y' }}
+                <small class="text-muted">{{ row.createdAt | date: 'HH:mm' }}</small>
+              </time>
+            </td>
             <td class="text-muted">{{ row.customers || '—' }}</td>
           </tr>
         } @empty {
           <tr>
-            <td class="table__empty" colspan="6">
+            <td class="table__empty" colspan="7">
               @if (emptySelection()) {
                 Select at least one value in each filter to see tickets.
                 <button class="link" type="button" (click)="resetFilters()">Reset filters</button>
@@ -177,3 +195,23 @@
     }
   </div>
 </div>
+
+<!-- Sortable column header: label + direction arrow (server-side sort). -->
+<ng-template #sortButton let-field="field" let-label="label">
+  <button
+    class="table__sort"
+    type="button"
+    [class.table__sort--active]="sort().field === field"
+    [attr.title]="'Sort by ' + label.toLowerCase()"
+    (click)="sortBy(field)"
+  >
+    {{ label }}
+    <i
+      class="fas table__sort-icon"
+      [class.fa-sort]="sort().field !== field"
+      [class.fa-sort-up]="sort().field === field && sort().direction === 'ASC'"
+      [class.fa-sort-down]="sort().field === field && sort().direction === 'DESC'"
+      aria-hidden="true"
+    ></i>
+  </button>
+</ng-template>

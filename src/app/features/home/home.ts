@@ -57,6 +57,7 @@ export class Home {
   protected readonly priorityMeta = TICKET_PRIORITY_META;
   protected readonly timeAgo = timeAgo;
 
+  protected readonly user = this.auth.user;
   protected readonly firstName = computed(() => this.auth.user()?.displayName.split(/\s+/)[0] ?? '');
   protected readonly greeting = greetingFor(new Date().getHours());
   protected readonly today = new Date();

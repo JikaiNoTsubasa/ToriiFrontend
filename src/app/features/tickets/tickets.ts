@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { Component, computed, effect, inject, linkedSignal, signal, untracked } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ClipboardService } from '../../core/clipboard/clipboard.service';
@@ -11,6 +11,7 @@ import {
   TICKET_PRIORITY_META,
   TICKET_TYPE_META,
   TICKET_TYPES,
+  ticketReference,
   TicketPriority,
   TicketType,
 } from '../../core/services/ticket-classification';
@@ -22,14 +23,18 @@ import {
 } from '../../core/services/ticket-status';
 import {
   apiValues,
+  nextSort,
   parsePageParam,
   parseSetParam,
+  parseSortParams,
   PRIORITY_FILTER,
   sameValues,
   setParam,
+  sortParams,
   STATUS_FILTER,
   TYPE_FILTER,
 } from './ticket-filters';
+import { TicketSort, TicketSortField } from '../../core/services/ticket-sort';
 import { Topbar } from '../../layout/topbar/topbar';
 import { FilterMenu, FilterOption, FilterPreset } from '../../shared/filter-menu/filter-menu';
 import { InfoHint } from '../../shared/info-hint/info-hint';
@@ -60,7 +65,7 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 @Component({
   selector: 'app-tickets',
-  imports: [Topbar, RouterLink, DatePipe, InfoHint, Pagination, FilterMenu],
+  imports: [Topbar, RouterLink, DatePipe, NgTemplateOutlet, InfoHint, Pagination, FilterMenu],
   templateUrl: './tickets.html',
 })
 export class Tickets {
@@ -80,7 +85,7 @@ export class Tickets {
   protected readonly sendOptions = this.service.sendOptions();
   protected readonly canCreate = computed(() => this.sendOptions.value().length > 0);
 
-  // --- Search, filters & page (server-side; kept in the URL: ?q=…&status=…&type=…&priority=…&page=…) ---
+  // --- Search, filters, sort & page (server-side; kept in the URL: ?q=…&status=…&type=…&priority=…&sort=…&dir=…&page=…) ---
   // Read from the URL once; afterwards the signals are the source of truth and are written
   // back to it (two-way binding would let a late navigation overwrite fast typing).
   private readonly initialParams = inject(ActivatedRoute).snapshot.queryParamMap;
@@ -91,6 +96,9 @@ export class Tickets {
   protected readonly selectedTypes = signal(parseSetParam(TYPE_FILTER, this.initialParams.get('type')));
   protected readonly selectedPriorities = signal(parseSetParam(PRIORITY_FILTER, this.initialParams.get('priority')));
   protected readonly page = signal(parsePageParam(this.initialParams.get('page')));
+  protected readonly sort = signal<TicketSort>(
+    parseSortParams(this.initialParams.get('sort'), this.initialParams.get('dir')),
+  );
   protected readonly pageSize = PAGE_SIZE;
 
   // Filter menu options & presets.
@@ -125,6 +133,7 @@ export class Tickets {
           priorities: apiValues(PRIORITY_FILTER, this.selectedPriorities()),
           page: this.page(),
           pageSize: PAGE_SIZE,
+          sort: this.sort(),
         },
   );
 
@@ -175,6 +184,7 @@ export class Tickets {
           status: setParam(STATUS_FILTER, this.selectedStatuses()),
           type: setParam(TYPE_FILTER, this.selectedTypes()),
           priority: setParam(PRIORITY_FILTER, this.selectedPriorities()),
+          ...sortParams(this.sort()),
           page: page > 1 ? page : null,
         },
         queryParamsHandling: 'merge',
@@ -214,6 +224,18 @@ export class Tickets {
     this.selectedTypes.set(new Set(TYPE_FILTER.defaults));
     this.selectedPriorities.set(new Set(PRIORITY_FILTER.defaults));
     this.page.set(1);
+  }
+
+  /** Column header click: sorts by it (or flips the direction), back to page 1. */
+  protected sortBy(field: TicketSortField): void {
+    this.sort.update((current) => nextSort(current, field));
+    this.page.set(1);
+  }
+
+  /** `aria-sort` of a column header. */
+  protected ariaSort(field: TicketSortField): 'ascending' | 'descending' | 'none' {
+    const sort = this.sort();
+    return sort.field !== field ? 'none' : sort.direction === 'ASC' ? 'ascending' : 'descending';
   }
 
   protected goToPage(page: number): void {
@@ -277,9 +299,12 @@ export class Tickets {
         run: () => this.clipboard.copy(row.number, { successTitle: 'Number copied', successDetail: row.number }),
       },
       {
-        label: 'Copy number + title',
+        label: 'Copy reference',
         icon: 'fas fa-copy',
-        run: () => this.clipboard.copy(row.number + " - " + row.title, { successTitle: 'Number copied', successDetail: row.number + " - " + row.title}),
+        run: () => {
+          const reference = ticketReference(row);
+          this.clipboard.copy(reference, { successTitle: 'Reference copied', successDetail: reference });
+        },
       },
       {
         label: 'Refresh',

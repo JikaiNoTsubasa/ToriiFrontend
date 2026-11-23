@@ -1,20 +1,43 @@
 <div class="page dashboard">
   <!-- Greeting + quick actions -->
   <header class="dashboard__hero">
-    <div>
-      <p class="dashboard__date text-muted">{{ today | date: 'EEEE, MMMM d' }}</p>
-      <h1 class="dashboard__greeting">{{ greeting }}{{ firstName() ? ', ' + firstName() : '' }}</h1>
-      <p class="text-muted">
-        @if (dashboard.value(); as d) {
-          @if (d.kpis.awaitingReply) {
-            {{ d.kpis.awaitingReply }} conversation{{ d.kpis.awaitingReply > 1 ? 's are' : ' is' }} waiting for your answer.
-          } @else {
-            You're all caught up — nothing is waiting for your answer.
+    <div class="dashboard__identity">
+      @if (user(); as u) {
+        <a class="dashboard__avatar" routerLink="/profile" title="Your profile">
+          <img [src]="u.avatarUrl" alt="" />
+          @if (unreadCount()) {
+            <span
+              class="dashboard__avatar-dot"
+              [attr.aria-label]="unreadCount() + ' unread notifications'"
+            >
+              {{ unreadCount() > 99 ? '99+' : unreadCount() }}
+            </span>
           }
-        } @else {
-          Here is what is going on in your tickets.
+        </a>
+      }
+      <div>
+        <p class="dashboard__date text-muted">{{ today | date: 'EEEE, MMMM d' }}</p>
+        <h1 class="dashboard__greeting">
+          {{ greeting }}{{ firstName() ? ', ' + firstName() : '' }}
+        </h1>
+        @if (user()?.position; as position) {
+          <p class="dashboard__position">{{ position }}</p>
         }
-      </p>
+        <p class="text-muted">
+          @if (dashboard.value(); as d) {
+            @if (d.kpis.awaitingReply) {
+              {{ d.kpis.awaitingReply }} conversation{{
+                d.kpis.awaitingReply > 1 ? 's are' : ' is'
+              }}
+              waiting for your answer.
+            } @else {
+              You're all caught up — nothing is waiting for your answer.
+            }
+          } @else {
+            Here is what is going on in your tickets.
+          }
+        </p>
+      </div>
     </div>
     <div class="dashboard__actions">
       <a class="btn btn--ghost" routerLink="/tickets"><i class="fas fa-list"></i> All tickets</a>
@@ -75,12 +98,23 @@
             <ul class="dash-list">
               @for (item of d.needsAttention; track item.channelId) {
                 <li>
-                  <a class="dash-row" [routerLink]="['/tickets', item.ticketNumber]" [queryParams]="{ channel: item.channelId }">
-                    <span class="badge priority" [class]="priorityMeta[item.priority].className" [attr.title]="priorityMeta[item.priority].label + ' priority'">
+                  <a
+                    class="dash-row"
+                    [routerLink]="['/tickets', item.ticketNumber]"
+                    [queryParams]="{ channel: item.channelId }"
+                  >
+                    <span
+                      class="badge priority"
+                      [class]="priorityMeta[item.priority].className"
+                      [attr.title]="priorityMeta[item.priority].label + ' priority'"
+                    >
                       <i [class]="priorityMeta[item.priority].icon" aria-hidden="true"></i>
                     </span>
                     <span class="dash-row__main">
-                      <span class="dash-row__title"><span class="table__code">{{ item.ticketNumber }}</span> {{ item.title }}</span>
+                      <span class="dash-row__title"
+                        ><span class="table__code">{{ item.ticketNumber }}</span>
+                        {{ item.title }}</span
+                      >
                       <span class="dash-row__sub text-muted">
                         <img class="dash-row__avatar" [src]="item.lastAuthor.avatarUrl" alt="" />
                         {{ item.lastAuthor.displayName }}
@@ -90,7 +124,9 @@
                         · {{ timeAgo(item.lastMessageAt) }}
                       </span>
                     </span>
-                    <span class="badge" [class]="statusMeta[item.status].badge">{{ statusMeta[item.status].label }}</span>
+                    <span class="badge" [class]="statusMeta[item.status].badge">{{
+                      statusMeta[item.status].label
+                    }}</span>
                   </a>
                 </li>
               }
@@ -110,7 +146,9 @@
       <section class="panel dash-card">
         <header class="dash-card__head">
           <h2 class="dash-card__title"><i class="fas fa-ticket"></i> Latest tickets</h2>
-          <a class="link dash-card__hint" routerLink="/tickets" [queryParams]="{ status: 'all' }">View all</a>
+          <a class="link dash-card__hint" routerLink="/tickets" [queryParams]="{ status: 'all' }"
+            >View all</a
+          >
         </header>
         @if (dashboard.value(); as d) {
           @if (d.latestTickets.length) {
@@ -118,18 +156,27 @@
               @for (t of d.latestTickets; track t.number) {
                 <li>
                   <a class="dash-row" [routerLink]="['/tickets', t.number]">
-                    <span class="dash-row__type" [class]="typeMeta[t.type].className" [attr.title]="typeMeta[t.type].label">
+                    <span
+                      class="dash-row__type"
+                      [class]="typeMeta[t.type].className"
+                      [attr.title]="typeMeta[t.type].label"
+                    >
                       <i [class]="typeMeta[t.type].icon" aria-hidden="true"></i>
                     </span>
                     <span class="dash-row__main">
-                      <span class="dash-row__title"><span class="table__code">{{ t.number }}</span> {{ t.title }}</span>
+                      <span class="dash-row__title"
+                        ><span class="table__code">{{ t.number }}</span> {{ t.title }}</span
+                      >
                       <span class="dash-row__sub text-muted">
-                        {{ counterpart(t) || '—' }} · {{ t.createdBy?.displayName ?? 'Unknown' }} · {{ timeAgo(t.createdAt) }}
+                        {{ counterpart(t) || '—' }} · {{ t.createdBy?.displayName ?? 'Unknown' }} ·
+                        {{ timeAgo(t.createdAt) }}
                       </span>
                     </span>
                     <span class="dash-row__statuses">
                       @for (ch of t.channels; track ch.id) {
-                        <span class="badge" [class]="statusMeta[ch.status].badge">{{ statusMeta[ch.status].label }}</span>
+                        <span class="badge" [class]="statusMeta[ch.status].badge">{{
+                          statusMeta[ch.status].label
+                        }}</span>
                       }
                     </span>
                   </a>
@@ -153,8 +200,13 @@
       <!-- Activity: messages per day -->
       <section class="panel dash-card">
         <header class="dash-card__head">
-          <h2 class="dash-card__title"><i class="fas fa-chart-column"></i> Messages · last 14 days</h2>
-          <span class="dash-card__figure">{{ dashboard.value()?.kpis?.messagesLast14Days ?? 0 }} <small class="text-muted">total</small></span>
+          <h2 class="dash-card__title">
+            <i class="fas fa-chart-column"></i> Messages · last 14 days
+          </h2>
+          <span class="dash-card__figure"
+            >{{ dashboard.value()?.kpis?.messagesLast14Days ?? 0 }}
+            <small class="text-muted">total</small></span
+          >
         </header>
         <div class="activity-chart" role="list" aria-label="Messages per day">
           <span class="activity-chart__max text-muted" aria-hidden="true">{{ activityMax() }}</span>
@@ -165,14 +217,24 @@
               tabindex="0"
               [class.activity-chart__col--weekend]="bar.weekend"
               [class.activity-chart__col--today]="bar.isToday"
-              [attr.aria-label]="(bar.date | date: 'MMM d' : 'UTC') + ': ' + bar.count + ' message' + (bar.count === 1 ? '' : 's')"
+              [attr.aria-label]="
+                (bar.date | date: 'MMM d' : 'UTC') +
+                ': ' +
+                bar.count +
+                ' message' +
+                (bar.count === 1 ? '' : 's')
+              "
             >
               <span class="activity-chart__tip" aria-hidden="true">
                 <strong>{{ bar.count }}</strong> message{{ bar.count === 1 ? '' : 's' }}
                 <span>{{ bar.date | date: 'EEE, MMM d' : 'UTC' }}</span>
               </span>
               <span class="activity-chart__track">
-                <span class="activity-chart__bar" [style.height.%]="bar.height" [class.activity-chart__bar--zero]="!bar.count"></span>
+                <span
+                  class="activity-chart__bar"
+                  [style.height.%]="bar.height"
+                  [class.activity-chart__bar--zero]="!bar.count"
+                ></span>
               </span>
               <span class="activity-chart__day" aria-hidden="true">{{ bar.day }}</span>
               <span class="activity-chart__month" aria-hidden="true">{{ bar.month ?? '' }}</span>
@@ -193,7 +255,12 @@
               <span class="dash-card__count">{{ unreadCount() }}</span>
             }
           </h2>
-          <button class="btn btn--ghost btn--sm" type="button" [disabled]="!unreadCount()" (click)="markAllRead()">
+          <button
+            class="btn btn--ghost btn--sm"
+            type="button"
+            [disabled]="!unreadCount()"
+            (click)="markAllRead()"
+          >
             Mark all as read
           </button>
         </header>
@@ -208,11 +275,16 @@
                   [queryParams]="{ channel: n.channelId }"
                   (click)="openNotification(n)"
                 >
-                  <img class="dash-row__avatar dash-row__avatar--lg" [src]="n.actor.avatarUrl" alt="" />
+                  <img
+                    class="dash-row__avatar dash-row__avatar--lg"
+                    [src]="n.actor.avatarUrl"
+                    alt=""
+                  />
                   <span class="dash-row__main">
                     <span class="dash-row__line">
-                      <strong>{{ n.actor.displayName }}</strong> {{ n.isForward ? 'forwarded a message' : 'replied' }}
-                      on <span class="table__code">{{ n.ticketNumber }}</span>
+                      <strong>{{ n.actor.displayName }}</strong>
+                      {{ n.isForward ? 'forwarded a message' : 'replied' }} on
+                      <span class="table__code">{{ n.ticketNumber }}</span>
                       @if (n.count > 1) {
                         <span class="notification-item__count">+{{ n.count - 1 }} more</span>
                       }
@@ -258,11 +330,20 @@
           <ul class="priority-legend">
             @for (p of priorities().items; track p.priority) {
               <li>
-                <a class="priority-legend__item" routerLink="/tickets" [queryParams]="{ priority: p.priority }">
-                  <span class="priority-legend__swatch" [class]="'priority-bar__segment--' + p.priority.toLowerCase()"></span>
+                <a
+                  class="priority-legend__item"
+                  routerLink="/tickets"
+                  [queryParams]="{ priority: p.priority }"
+                >
+                  <span
+                    class="priority-legend__swatch"
+                    [class]="'priority-bar__segment--' + p.priority.toLowerCase()"
+                  ></span>
                   <span class="priority-legend__label">{{ priorityMeta[p.priority].label }}</span>
                   <span class="priority-legend__value">{{ p.count }}</span>
-                  <span class="priority-legend__share text-muted">{{ p.share | percent: '1.0-0' }}</span>
+                  <span class="priority-legend__share text-muted">{{
+                    p.share | percent: '1.0-0'
+                  }}</span>
                 </a>
               </li>
             }
@@ -289,7 +370,9 @@
                 [attr.title]="statusMeta[s.status].description"
               >
                 <span class="status-bars__label">{{ statusMeta[s.status].label }}</span>
-                <span class="status-bars__track"><span class="status-bars__bar" [style.width.%]="s.width"></span></span>
+                <span class="status-bars__track"
+                  ><span class="status-bars__bar" [style.width.%]="s.width"></span
+                ></span>
                 <span class="status-bars__value">{{ s.count }}</span>
               </a>
             </li>

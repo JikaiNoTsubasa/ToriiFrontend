@@ -1,6 +1,13 @@
 import { parseApiEnum } from '../../core/http/api-enum';
 import { TICKET_PRIORITIES, TICKET_TYPES, TicketPriority, TicketType } from '../../core/services/ticket-classification';
 import { OPEN_TICKET_STATUSES, TICKET_STATUSES, TicketStatus } from '../../core/services/ticket-status';
+import {
+  DEFAULT_TICKET_SORT,
+  SORT_DIRECTIONS,
+  TICKET_SORT_FIELDS,
+  TicketSort,
+  TicketSortField,
+} from '../../core/services/ticket-sort';
 
 /** URL value selecting every value of a filter. */
 export const ALL_PARAM = 'all';
@@ -64,4 +71,29 @@ export const sameStatuses = sameValues<TicketStatus>;
 export function parsePageParam(param: string | null | undefined): number {
   const page = Number(param);
   return Number.isInteger(page) && page > 0 ? page : 1;
+}
+
+/** Sort from the `sort` / `dir` query parameters (missing or unknown → newest first). */
+export function parseSortParams(sort: string | null | undefined, dir: string | null | undefined): TicketSort {
+  const field = parseApiEnum(TICKET_SORT_FIELDS, sort);
+  if (!field) return DEFAULT_TICKET_SORT;
+  return { field, direction: parseApiEnum(SORT_DIRECTIONS, dir) ?? firstDirection(field) };
+}
+
+/** Query parameters of a sort (`null` = the default, left out of the URL). */
+export function sortParams(sort: TicketSort): { sort: string | null; dir: string | null } {
+  const isDefault = sort.field === DEFAULT_TICKET_SORT.field && sort.direction === DEFAULT_TICKET_SORT.direction;
+  return isDefault ? { sort: null, dir: null } : { sort: sort.field, dir: sort.direction };
+}
+
+/** Header click: the same column flips its direction, another one starts in its natural one. */
+export function nextSort(current: TicketSort, field: TicketSortField): TicketSort {
+  return current.field === field
+    ? { field, direction: current.direction === 'ASC' ? 'DESC' : 'ASC' }
+    : { field, direction: firstDirection(field) };
+}
+
+/** Dates, numbers and priorities start with the newest / most urgent; text starts A → Z. */
+function firstDirection(field: TicketSortField): TicketSort['direction'] {
+  return field === 'TITLE' || field === 'TYPE' || field === 'CREATED_BY' ? 'ASC' : 'DESC';
 }
