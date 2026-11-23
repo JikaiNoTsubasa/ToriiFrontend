@@ -30,6 +30,7 @@
         <tr>
           <th>User</th>
           <th>Email</th>
+          <th>Account type</th>
           <th>Role</th>
           <th>Status</th>
           <th class="table__num">Customers</th>
@@ -49,9 +50,6 @@
                     @if (isSelf(user)) {
                       <span class="badge">You</span>
                     }
-                    @if (user.accountType === 'SINGPASS') {
-                      <span class="badge badge--singpass" title="Signs in with Singpass"><i class="fas fa-id-card"></i> Singpass</span>
-                    }
                   </span>
                   @if (user.position) {
                     <small class="text-muted">{{ user.position }}</small>
@@ -60,6 +58,7 @@
               </span>
             </td>
             <td class="text-muted" [title]="user.isDeleted ? 'Released address: ' + user.email : ''">{{ originalEmail(user) }}</td>
+            <td><app-account-type-chip [type]="user.accountType" /></td>
             <td>
               <span class="badge" [class.badge--new]="user.role === 'ADMIN'">
                 {{ user.role === 'ADMIN' ? 'Administrator' : 'User' }}
@@ -106,7 +105,7 @@
           </tr>
         } @empty {
           <tr>
-            <td class="table__empty" colspan="7">
+            <td class="table__empty" colspan="8">
               @if (users.isLoading()) {
                 Loading users…
               } @else if (users.error()) {

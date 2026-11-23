@@ -22,7 +22,7 @@
         <tr>
           <th>Requester</th>
           <th>Email</th>
-          <th>Sign-in</th>
+          <th>Account type</th>
           <th>Requested</th>
           <th></th>
         </tr>
@@ -42,15 +42,7 @@
               </span>
             </td>
             <td class="text-muted">{{ request.email }}</td>
-            <td>
-              @if (request.accountType === 'SINGPASS') {
-                <span class="badge badge--singpass" title="Signs in with Singpass (identity verified by Singpass)">
-                  <i class="fas fa-id-card"></i> Singpass
-                </span>
-              } @else {
-                <span class="badge" title="Signs in with email and password"><i class="fas fa-envelope"></i> Email</span>
-              }
-            </td>
+            <td><app-account-type-chip [type]="request.accountType" /></td>
             <td class="text-muted">
               <time [attr.datetime]="request.requestedAt" [title]="request.requestedAt | date: 'medium'">
                 {{ timeAgo(request.requestedAt) }}

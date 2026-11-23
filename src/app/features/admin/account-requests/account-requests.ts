@@ -6,6 +6,7 @@ import { AccountRequest } from '../../../core/services/admin-account-request.mod
 import { AdminAccountRequestService } from '../../../core/services/admin-account-request.service';
 import { InboxService } from '../../../core/services/inbox.service';
 import { Topbar } from '../../../layout/topbar/topbar';
+import { AccountTypeChip } from '../../../shared/account-type-chip/account-type-chip';
 import { RadialMenuService } from '../../../shared/radial-menu/radial-menu.service';
 import { timeAgo } from '../../../shared/time-ago/time-ago';
 
@@ -15,7 +16,7 @@ import { timeAgo } from '../../../shared/time-ago/time-ago';
  */
 @Component({
   selector: 'app-admin-account-requests',
-  imports: [Topbar, DatePipe],
+  imports: [Topbar, DatePipe, AccountTypeChip],
   templateUrl: './account-requests.html',
 })
 export class AdminAccountRequests {

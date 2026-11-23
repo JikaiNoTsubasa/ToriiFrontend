@@ -6,13 +6,14 @@ import { NotificationService } from '../../../core/notifications/notification.se
 import { AdminUser, originalEmail } from '../../../core/services/admin-user.models';
 import { AdminUserService } from '../../../core/services/admin-user.service';
 import { Topbar } from '../../../layout/topbar/topbar';
+import { AccountTypeChip } from '../../../shared/account-type-chip/account-type-chip';
 import { RadialMenuService } from '../../../shared/radial-menu/radial-menu.service';
 import { SidePanelService } from '../../../shared/side-panel/side-panel.service';
 import { UserFormPanel } from './user-form-panel/user-form-panel';
 
 @Component({
   selector: 'app-admin-users',
-  imports: [Topbar, DatePipe],
+  imports: [Topbar, DatePipe, AccountTypeChip],
   templateUrl: './users.html',
 })
 export class AdminUsers {

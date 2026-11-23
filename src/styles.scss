@@ -2260,11 +2260,17 @@ label.btn {
   }
 }
 
-/* Account type marker (e.g. a Singpass account request). */
+/* Account type chips (app-account-type-chip). */
 .badge--singpass {
   color: #c8102e;
   border-color: #c8102e;
   background: rgba(#c8102e, 0.06);
+}
+
+.badge--google {
+  color: #1a73e8;
+  border-color: #1a73e8;
+  background: rgba(#1a73e8, 0.06);
 }
 
 /* ----- Password strength meter ----- */
