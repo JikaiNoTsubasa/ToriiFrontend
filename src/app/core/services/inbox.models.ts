@@ -21,6 +21,8 @@ export interface InboxNotification {
   /** Plain-text excerpt of the latest message. */
   preview: string;
   isForward: boolean;
+  /** Posted in the internal thread of the user's customer (no counterpart). */
+  isInternal: boolean;
   count: number;
   createdAt: string;
   readAt: string | null;
@@ -42,6 +44,9 @@ export function notificationTarget(n: InboxNotification): NotificationTarget {
 export function notificationAction(n: InboxNotification): string {
   if (n.type === 'ACCOUNT_REQUESTED') {
     return 'requested an account';
+  }
+  if (n.isInternal) {
+    return n.isForward ? 'forwarded a message internally' : 'wrote an internal note';
   }
   return n.isForward ? 'forwarded a message' : 'replied';
 }

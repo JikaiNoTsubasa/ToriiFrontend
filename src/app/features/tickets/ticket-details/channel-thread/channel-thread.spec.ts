@@ -1,9 +1,16 @@
-import { TicketActivity, TicketChannelDetail, TicketMessage } from '../../../../core/services/ticket.models';
+import {
+  TicketActivity,
+  TicketChannelDetail,
+  TicketMessage,
+  draftInternalThread,
+  isSavedChannel,
+} from '../../../../core/services/ticket.models';
 import { buildFeed, sideNames } from './channel-thread';
 
 function channel(overrides: Partial<TicketChannelDetail> = {}): TicketChannelDetail {
   return {
     id: 1,
+    isInternal: false,
     status: 'NEW',
     statusChangedAt: null,
     participants: [],
@@ -79,5 +86,20 @@ describe('buildFeed', () => {
     );
 
     expect(feed.map((item) => item.key)).toEqual(['a1', 'm1']);
+  });
+});
+
+describe('draftInternalThread', () => {
+  it('is an unsaved internal thread of the customer, keyed by its negative id', () => {
+    const draft = draftInternalThread({ id: 7, name: 'ACME' });
+
+    expect(draft.id).toBe(-7);
+    expect(draft.isInternal).toBe(true);
+    expect(isSavedChannel(draft)).toBe(false);
+    expect(sideNames(draft, true)).toBe('ACME');
+  });
+
+  it('tells saved channels apart', () => {
+    expect(isSavedChannel(channel({ id: 12, isInternal: true }))).toBe(true);
   });
 });

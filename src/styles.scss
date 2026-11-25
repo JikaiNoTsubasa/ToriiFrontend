@@ -14,6 +14,8 @@ $color-muted: #6f6f6f; // secondary text
 $color-border: #d4d4d4; // borders / separators
 $color-input: #ffffff; // input fields
 $color-error: #b00020; // error messages
+$color-internal: #b7791f; // internal threads (private to a customer)
+$color-internal-soft: rgba($color-internal, 0.08);
 
 $radius: 0; // square panels
 $spacing: 1rem;
@@ -1493,6 +1495,34 @@ $side-panel-duration: 0.22s;
   font-size: 0.75rem;
 }
 
+/* Internal thread entry: amber edge + tint, like a private note. */
+.channel-list__item--internal {
+  border-left-color: $color-internal;
+  background: $color-internal-soft;
+
+  .channel-list__name i {
+    color: $color-internal;
+  }
+
+  &:hover,
+  &.channel-list__item--active {
+    border-left-color: $color-internal;
+    background: rgba($color-internal, 0.16);
+  }
+}
+
+.channel-list__separator {
+  margin: 0.35rem 0;
+  border: 0;
+  border-top: 1px dashed $color-border;
+}
+
+.badge--internal {
+  color: $color-internal;
+  border-color: $color-internal;
+  background: $color-internal-soft;
+}
+
 /* ----- Thread ----- */
 .thread {
   display: flex;
@@ -1517,6 +1547,19 @@ $side-panel-duration: 0.22s;
 .thread__parties {
   margin-top: 0.2rem;
   font-size: 0.85rem;
+}
+
+/* Internal thread: amber top rule and tinted header, so it is never mistaken for an exchange. */
+.thread--internal {
+  border-top: 3px solid $color-internal;
+
+  .thread__header {
+    background: $color-internal-soft;
+  }
+
+  .thread__title i {
+    color: $color-internal;
+  }
 }
 
 .thread__messages {
@@ -1665,6 +1708,14 @@ $side-panel-duration: 0.22s;
   padding-left: 0.6rem;
   border-left: 3px solid $color-primary;
   font-size: 0.9rem;
+
+  &--internal {
+    border-left-color: $color-internal;
+
+    > i {
+      color: $color-internal;
+    }
+  }
 
   .text-muted {
     font-size: 0.8rem;

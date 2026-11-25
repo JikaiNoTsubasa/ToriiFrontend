@@ -41,19 +41,49 @@ export interface ChannelParticipant {
   isOwn: boolean;
 }
 
-/** Ticket details as seen by the signed-in user — mirror of `TicketDetailDto`. */
+/**
+ * Ticket details as seen by the signed-in user — mirror of `TicketDetailDto`. `channels`
+ * lists the internal threads first; `ownCustomers` are the user's customers taking part in the
+ * ticket, each of which can have an internal thread (created by its first message).
+ */
 export interface TicketDetail extends TicketListItem {
   channels: TicketChannelDetail[];
+  ownCustomers: CustomerRef[];
 }
 
 /**
  * Channel with its conversation — mirror of `TicketChannelDetailDto`: messages and activity
  * events (both oldest first, merged into one feed by the UI) and the attached files.
+ * `isInternal`: the private thread of its single participant (seen by its members only, no
+ * status).
  */
 export interface TicketChannelDetail extends TicketChannel {
+  isInternal: boolean;
   messages: TicketMessage[];
   activities: TicketActivity[];
   files: ChannelFile[];
+}
+
+/**
+ * Internal thread not created yet (no message so far): shown with a negative id
+ * (`-customerId`) until its first message creates it.
+ */
+export function draftInternalThread(customer: CustomerRef): TicketChannelDetail {
+  return {
+    id: -customer.id,
+    isInternal: true,
+    status: 'NEW',
+    statusChangedAt: null,
+    participants: [{ customerId: customer.id, customerName: customer.name, isOwn: true }],
+    messages: [],
+    activities: [],
+    files: [],
+  };
+}
+
+/** The thread exists on the server (a draft internal thread has a negative id). */
+export function isSavedChannel(channel: TicketChannel): boolean {
+  return channel.id > 0;
 }
 
 /** File attached to a channel — mirror of `ChannelFileDto` (`fileId` is shared by forwards). */

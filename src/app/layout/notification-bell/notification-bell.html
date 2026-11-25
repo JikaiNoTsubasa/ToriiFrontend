@@ -64,7 +64,9 @@
                   <span class="notification-item__preview text-muted">{{ n.preview }}</span>
                 }
                 <span class="notification-item__meta text-muted">
-                  @if (n.counterpart) {
+                  @if (n.isInternal) {
+                    <i class="fas fa-lock" aria-hidden="true"></i> Internal ·
+                  } @else if (n.counterpart) {
                     With {{ n.counterpart }} ·
                   }
                   <time [attr.datetime]="n.createdAt">{{ timeAgo(n.createdAt) }}</time>

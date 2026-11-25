@@ -91,8 +91,10 @@ export class ForwardPanel {
       .filter((ch) => !file || !ch.files.some((f) => f.fileId === file.fileId))
       .map((ch) => ({
         key: `channel:${ch.id}`,
-        label: `Channel with ${sideNames(ch, false) || sideNames(ch, true)}`,
-        hint: this.meta[ch.status].label,
+        label: ch.isInternal
+          ? `Internal thread · ${sideNames(ch, true)}`
+          : `Channel with ${sideNames(ch, false) || sideNames(ch, true)}`,
+        hint: ch.isInternal ? 'private to your team' : this.meta[ch.status].label,
         isNew: false,
         request: { targetChannelId: ch.id, sourceCustomerId: null, targetCustomerId: null },
       }));

@@ -29,21 +29,17 @@
       {{ loading() ? 'Signing in…' : 'Sign in' }}
     </button>
 
-    <div class="login__divider"><span>or</span></div>
+    @if (singpass.value().enabled) {
+      <div class="login__divider"><span>or</span></div>
 
-    @if (singpassError(); as message) {
-      <div class="alert alert--error">{{ message }}</div>
+      @if (singpassError(); as message) {
+        <div class="alert alert--error">{{ message }}</div>
+      }
+      <button class="btn btn--singpass" type="button" [disabled]="redirecting()" (click)="withSingpass()">
+        <i class="fas fa-id-card" aria-hidden="true"></i>
+        {{ redirecting() ? 'Redirecting to Singpass…' : 'Sign in with Singpass' }}
+      </button>
     }
-    <button
-      class="btn btn--singpass"
-      type="button"
-      [disabled]="!singpass.value().enabled || redirecting()"
-      [title]="singpass.value().enabled ? '' : 'Singpass is not available'"
-      (click)="withSingpass()"
-    >
-      <i class="fas fa-id-card" aria-hidden="true"></i>
-      {{ redirecting() ? 'Redirecting to Singpass…' : 'Sign in with Singpass' }}
-    </button>
 
     <p class="login__footer text-muted">
       No account yet? <a routerLink="/register">Create an account</a>

@@ -10,6 +10,7 @@ import {
   TicketDetail,
   TicketListItem,
   TicketMessage,
+  draftInternalThread,
 } from '../../../core/services/ticket.models';
 import { InboxService } from '../../../core/services/inbox.service';
 import { TicketService } from '../../../core/services/ticket.service';
@@ -29,10 +30,11 @@ const PREVIEW_LENGTH = 90;
 
 /**
  * Ticket details (`/tickets/:number?channel=:id`). What is shown depends on who looks:
- * only the channels one of the user's customers takes part in. With several channels, a
- * channel list (inbox-like) sits next to the selected conversation; each channel keeps its
- * own composer and draft, and the selection lives in the URL. Leaving with an unsent draft
- * asks for confirmation.
+ * only the channels one of the user's customers takes part in, plus the internal thread of
+ * each of those customers (private to its members; created by its first message). A channel
+ * list (inbox-like) sits next to the selected conversation; each thread keeps its own
+ * composer and draft, and the selection lives in the URL. Leaving with an unsent draft asks
+ * for confirmation.
  */
 @Component({
   selector: 'app-ticket-details',
@@ -62,20 +64,40 @@ export class TicketDetails {
   protected readonly ticket = this.service.ticket(() => this.number());
   protected readonly sendOptions = this.service.sendOptions();
 
-  protected readonly channels = computed(() => this.ticket.value()?.channels ?? []);
+  /** Exchange channels with other customers. */
+  protected readonly exchanges = computed(() => (this.ticket.value()?.channels ?? []).filter((ch) => !ch.isInternal));
+
+  /** One internal thread per own customer: the saved one, or a draft until its first message. */
+  protected readonly internalThreads = computed(() => {
+    const ticket = this.ticket.value();
+    if (!ticket) {
+      return [];
+    }
+    const saved = ticket.channels.filter((ch) => ch.isInternal);
+    return ticket.ownCustomers.map(
+      (customer) => saved.find((ch) => ch.participants[0]?.customerId === customer.id) ?? draftInternalThread(customer),
+    );
+  });
+
+  /** Every thread of the page: internal ones first, then the exchanges. */
+  protected readonly channels = computed(() => [...this.internalThreads(), ...this.exchanges()]);
   protected readonly multiChannel = computed(() => this.channels().length > 1);
   protected readonly canOpenChannel = computed(() => this.sendOptions.value().length > 0);
 
   /** Customers of the user taking part in the ticket. */
-  protected readonly ownCustomers = computed(() =>
-    [...new Set(this.channels().flatMap((ch) => ch.participants.filter((p) => p.isOwn).map((p) => p.customerName)))].join(', '),
-  );
+  protected readonly ownCustomers = computed(() => (this.ticket.value()?.ownCustomers ?? []).map((c) => c.name).join(', '));
 
-  /** Selected channel: from the URL when valid, otherwise the first one. */
+  /**
+   * Selected thread: from the URL when valid (a draft internal thread `-customerId` maps to the
+   * saved one once created), otherwise the first exchange.
+   */
   protected readonly selectedId = linkedSignal(() => {
     const requested = Number(this.channel());
     const channels = this.channels();
-    return channels.find((ch) => ch.id === requested)?.id ?? channels[0]?.id ?? null;
+    const match =
+      channels.find((ch) => ch.id === requested) ??
+      (requested < 0 ? channels.find((ch) => ch.isInternal && ch.participants[0]?.customerId === -requested) : undefined);
+    return match?.id ?? this.exchanges()[0]?.id ?? channels[0]?.id ?? null;
   });
 
   private readonly threads = viewChildren(ChannelThread);
@@ -84,7 +106,7 @@ export class TicketDetails {
     // Viewing a channel reads its notifications.
     effect(() => {
       const id = this.selectedId();
-      if (id !== null) {
+      if (id !== null && id > 0) {
         this.inbox.markChannelRead(id).catch(() => {});
       }
     });
@@ -113,14 +135,14 @@ export class TicketDetails {
   }
 
   protected counterpart(channel: TicketChannelDetail): string {
-    return sideNames(channel, false) || sideNames(channel, true);
+    return channel.isInternal ? `${sideNames(channel, true)} (internal)` : sideNames(channel, false) || sideNames(channel, true);
   }
 
   /** Preview of the latest feed entry (message or activity) for the channel list. */
   protected preview(channel: TicketChannelDetail): string {
     const last = buildFeed(channel).at(-1);
     if (!last) {
-      return 'Nothing yet.';
+      return channel.isInternal ? 'Private notes, only for your team.' : 'Nothing yet.';
     }
     if (last.kind === 'activity') {
       return describeActivity(last.activity, this.meta);

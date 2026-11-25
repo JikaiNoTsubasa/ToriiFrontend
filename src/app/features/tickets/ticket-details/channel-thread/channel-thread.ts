@@ -18,6 +18,7 @@ import {
   TicketActivity,
   TicketChannelDetail,
   TicketMessage,
+  isSavedChannel,
 } from '../../../../core/services/ticket.models';
 import { TicketService } from '../../../../core/services/ticket.service';
 import { TICKET_STATUS_META } from '../../../../core/services/ticket-status';
@@ -42,7 +43,8 @@ export type FeedItem =
  * (messages interleaved with status changes, uploads, forwards…) and a composer bound to
  * *this* channel (reply + file upload). The ticket page keeps one instance per channel (only
  * the selected one is shown), so each channel has its own draft and nothing can be sent to
- * the wrong channel.
+ * the wrong channel. An internal thread is private to one customer: no status, and a draft
+ * one (not created yet) is created by its first message.
  */
 @Component({
   selector: 'app-channel-thread',
@@ -78,6 +80,9 @@ export class ChannelThread {
   /** The other side of the channel (falls back to everyone when the user is on both sides). */
   protected readonly counterpart = computed(() => sideNames(this.channel(), false) || sideNames(this.channel(), true));
   protected readonly ownSide = computed(() => sideNames(this.channel(), true));
+  protected readonly internal = computed(() => this.channel().isInternal);
+  /** Saved on the server (a draft internal thread gets its id with its first message). */
+  protected readonly saved = computed(() => isSavedChannel(this.channel()));
 
   /** Messages and activity events in chronological order (activities first on equal dates). */
   protected readonly feed = computed<FeedItem[]>(() => buildFeed(this.channel()));
@@ -116,7 +121,13 @@ export class ChannelThread {
     await submit(this.form, async () => {
       this.sending.set(true);
       try {
-        await firstValueFrom(this.service.postMessage(this.ticketNumber(), this.channel().id, this.model().content));
+        const channel = this.channel();
+        const content = this.model().content;
+        await firstValueFrom(
+          isSavedChannel(channel)
+            ? this.service.postMessage(this.ticketNumber(), channel.id, content)
+            : this.service.postInternalMessage(this.ticketNumber(), channel.participants[0].customerId, content),
+        );
         this.form().reset({ content: '' });
         this.changed.emit();
       } catch {

@@ -27,6 +27,13 @@
       </div>
     }
 
+    @if (channel().isInternal) {
+      <div class="alert alert--info">
+        <strong class="alert__title"><i class="fas fa-lock" aria-hidden="true"></i> From an internal thread</strong>
+        Forwarding it to a channel shows it to that channel's other customer.
+      </div>
+    }
+
     <!-- Destination -->
     <fieldset class="status-picker">
       <legend class="status-picker__legend">Forward to</legend>

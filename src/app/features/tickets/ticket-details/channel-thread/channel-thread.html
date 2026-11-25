@@ -1,23 +1,35 @@
-<section class="panel thread">
+<section class="panel thread" [class.thread--internal]="internal()">
   <!-- Who talks to whom in this channel, its status, and its files. -->
   <header class="thread__header">
-    <div>
-      <h2 class="thread__title">Channel with {{ counterpart() }}</h2>
-      <p class="text-muted thread__parties">
-        {{ ownSide() || '—' }} <i class="fas fa-right-left"></i> {{ counterpart() }}
-        · {{ channel().messages.length }} message{{ channel().messages.length > 1 ? 's' : '' }}
-        · {{ channel().files.length }} file{{ channel().files.length > 1 ? 's' : '' }}
-      </p>
-    </div>
-    <button
-      class="badge badge--button"
-      type="button"
-      [class]="meta[channel().status].badge"
-      [attr.title]="meta[channel().status].description + ' Click to change.'"
-      (click)="statusClick.emit()"
-    >
-      {{ meta[channel().status].label }}
-    </button>
+    @if (internal()) {
+      <div>
+        <h2 class="thread__title"><i class="fas fa-lock" aria-hidden="true"></i> Internal thread · {{ ownSide() }}</h2>
+        <p class="text-muted thread__parties">
+          Only members of <strong>{{ ownSide() }}</strong> can see this thread — never the other customers of the ticket.
+          · {{ channel().messages.length }} message{{ channel().messages.length > 1 ? 's' : '' }}
+          · {{ channel().files.length }} file{{ channel().files.length > 1 ? 's' : '' }}
+        </p>
+      </div>
+      <span class="badge badge--internal"><i class="fas fa-eye-slash" aria-hidden="true"></i> Private</span>
+    } @else {
+      <div>
+        <h2 class="thread__title">Channel with {{ counterpart() }}</h2>
+        <p class="text-muted thread__parties">
+          {{ ownSide() || '—' }} <i class="fas fa-right-left"></i> {{ counterpart() }}
+          · {{ channel().messages.length }} message{{ channel().messages.length > 1 ? 's' : '' }}
+          · {{ channel().files.length }} file{{ channel().files.length > 1 ? 's' : '' }}
+        </p>
+      </div>
+      <button
+        class="badge badge--button"
+        type="button"
+        [class]="meta[channel().status].badge"
+        [attr.title]="meta[channel().status].description + ' Click to change.'"
+        (click)="statusClick.emit()"
+      >
+        {{ meta[channel().status].label }}
+      </button>
+    }
   </header>
 
   @if (channel().files.length) {
@@ -167,7 +179,9 @@
         </li>
       }
     } @empty {
-      <li class="text-muted">Nothing yet.</li>
+      <li class="text-muted">
+        {{ internal() ? 'No internal note yet: discuss this ticket with your team here, the other customers will not see it.' : 'Nothing yet.' }}
+      </li>
     }
     <li #feedEnd aria-hidden="true"></li>
   </ol>
@@ -180,35 +194,50 @@
     (keydown.control.enter)="send($event)"
     (keydown.meta.enter)="send($event)"
   >
-    <div class="composer__label">
-      <i class="fas fa-reply"></i> Reply to <strong>{{ counterpart() }}</strong>
-      <span class="text-muted">— only this channel's participants will see it</span>
-    </div>
+    @if (internal()) {
+      <div class="composer__label composer__label--internal">
+        <i class="fas fa-lock"></i> Internal note for <strong>{{ ownSide() }}</strong>
+        <span class="text-muted">— only your team will see it</span>
+      </div>
+    } @else {
+      <div class="composer__label">
+        <i class="fas fa-reply"></i> Reply to <strong>{{ counterpart() }}</strong>
+        <span class="text-muted">— only this channel's participants will see it</span>
+      </div>
+    }
     <app-rich-text-editor
-      placeholder="Write your reply… Type '/' to insert a block, or paste an image to attach it."
+      [placeholder]="internal() ? 'Write an internal note… Type \'/\' to insert a block.' : 'Write your reply… Type \'/\' to insert a block, or paste an image to attach it.'"
       minHeight="7rem"
-      [pasteImages]="true"
+      [pasteImages]="saved()"
       [formField]="form.content"
       (imagesPasted)="pasteImages($event)"
     />
     <div class="composer__actions">
       <!-- Files are uploaded to this channel right away (visible in the feed). -->
-      <label class="btn btn--ghost btn--sm" [class.is-disabled]="uploading()">
-        <i class="fas fa-paperclip"></i> {{ uploading() ? 'Uploading…' : 'Attach files' }}
-        <input
-          class="visually-hidden"
-          type="file"
-          multiple
-          [disabled]="uploading()"
-          (change)="upload($any($event.target))"
-        />
-      </label>
+      @if (saved()) {
+        <label class="btn btn--ghost btn--sm" [class.is-disabled]="uploading()">
+          <i class="fas fa-paperclip"></i> {{ uploading() ? 'Uploading…' : 'Attach files' }}
+          <input
+            class="visually-hidden"
+            type="file"
+            multiple
+            [disabled]="uploading()"
+            (change)="upload($any($event.target))"
+          />
+        </label>
+      }
       @if (form.content().touched() && form.content().errors().length) {
         <small class="field__error">{{ form.content().errors()[0].message }}</small>
       }
-      <small class="text-muted composer__hint">Ctrl + Enter to send · paste an image to attach it</small>
+      <small class="text-muted composer__hint">
+        Ctrl + Enter to send{{ saved() ? ' · paste an image to attach it' : ' · files can be attached after the first note' }}
+      </small>
       <button class="btn" type="submit" [disabled]="sending()">
-        <i class="fas fa-paper-plane"></i> {{ sending() ? 'Sending…' : 'Send to ' + counterpart() }}
+        @if (internal()) {
+          <i class="fas fa-lock"></i> {{ sending() ? 'Posting…' : 'Post internal note' }}
+        } @else {
+          <i class="fas fa-paper-plane"></i> {{ sending() ? 'Sending…' : 'Send to ' + counterpart() }}
+        }
       </button>
     </div>
   </form>

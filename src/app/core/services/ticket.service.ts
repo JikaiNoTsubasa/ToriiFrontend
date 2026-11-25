@@ -110,6 +110,14 @@ export class TicketService {
     return this.http.post<TicketMessage>(`${this.baseUrl}/${number}/channels/${channelId}/messages`, { content });
   }
 
+  /**
+   * Posts in the internal thread of one of the user's customers (created by its first message);
+   * only that customer's members see it.
+   */
+  postInternalMessage(number: string, customerId: number, content: string): Observable<TicketMessage> {
+    return this.http.post<TicketMessage>(`${this.baseUrl}/${number}/internal/${customerId}/messages`, { content });
+  }
+
   /** Forwards a message to another channel of the ticket (created when needed). */
   forwardMessage(
     number: string,

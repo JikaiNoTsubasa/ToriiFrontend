@@ -41,7 +41,7 @@ export class Login {
     required(path.password);
   });
 
-  // --- Singpass (button greyed out while unavailable) ---
+  // --- Singpass (button hidden while unavailable) ---
   private readonly singpassService = inject(SingpassService);
   protected readonly singpass = this.singpassService.status();
   protected readonly redirecting = signal(false);

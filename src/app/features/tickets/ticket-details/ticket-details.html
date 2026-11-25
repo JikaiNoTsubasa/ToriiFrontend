@@ -63,7 +63,7 @@
         </div>
         <div class="detail__meta-item">
           <dt class="text-muted">Your channels</dt>
-          <dd>{{ channels().length }}</dd>
+          <dd>{{ exchanges().length }}</dd>
         </div>
       </dl>
     </div>
@@ -74,16 +74,25 @@
         <nav class="panel channel-list" aria-label="Channels of this ticket">
           <h2 class="channel-list__title">Channels</h2>
           @for (ch of channels(); track ch.id) {
+            @if (!ch.isInternal && $index > 0 && channels()[$index - 1].isInternal) {
+              <hr class="channel-list__separator" />
+            }
             <button
               class="channel-list__item"
               type="button"
+              [class.channel-list__item--internal]="ch.isInternal"
               [class.channel-list__item--active]="ch.id === selectedId()"
               [attr.aria-current]="ch.id === selectedId() ? 'true' : null"
               (click)="select(ch)"
             >
               <span class="channel-list__head">
-                <strong class="channel-list__name">{{ counterpart(ch) }}</strong>
-                <span class="badge" [class]="meta[ch.status].badge">{{ meta[ch.status].label }}</span>
+                @if (ch.isInternal) {
+                  <strong class="channel-list__name"><i class="fas fa-lock" aria-hidden="true"></i> Internal</strong>
+                  <span class="badge badge--internal">{{ ch.participants[0]?.customerName }}</span>
+                } @else {
+                  <strong class="channel-list__name">{{ counterpart(ch) }}</strong>
+                  <span class="badge" [class]="meta[ch.status].badge">{{ meta[ch.status].label }}</span>
+                }
               </span>
               <span class="channel-list__preview text-muted">{{ preview(ch) }}</span>
               <span class="channel-list__foot text-muted">
